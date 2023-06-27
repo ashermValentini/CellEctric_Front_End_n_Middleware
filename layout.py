@@ -13,7 +13,7 @@ class Ui_MainWindow(object):
         QtGui.QFontDatabase.addApplicationFont(r"C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_TEAM_GUI\assets\fonts\static/Archivo-Regular.ttf")
 
         # Set up styles for labels
-        title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; }"
+        title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; font-weight: bold; }"
         text_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 15px; }"
         header_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 50px; }"
         input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; }"
@@ -101,7 +101,7 @@ class Ui_MainWindow(object):
 
         label_sucrose = QtWidgets.QLabel(self.frame_sucrose)
         label_sucrose.setStyleSheet(title_style)
-        label_sucrose.setText("Sucrose Flow Rate")
+        label_sucrose.setText("SUCROSE")
         label_sucrose.setAlignment(QtCore.Qt.AlignCenter)
 
         #frame to hold the progress bar 
@@ -159,7 +159,7 @@ class Ui_MainWindow(object):
 
         label_blood = QtWidgets.QLabel(self.frame_blood)
         label_blood.setStyleSheet(title_style)
-        label_blood.setText("Blood Flow Rate")
+        label_blood.setText("BLOOD")
         label_blood.setAlignment(QtCore.Qt.AlignCenter)
 
         # Frame to hold the progress bar
@@ -216,7 +216,7 @@ class Ui_MainWindow(object):
 
         label_ethanol = QtWidgets.QLabel(self.frame_ethanol)
         label_ethanol.setStyleSheet(title_style)
-        label_ethanol.setText("Ethanol Flow Rate")
+        label_ethanol.setText("ETHANOL")
         label_ethanol.setAlignment(QtCore.Qt.AlignCenter)
 
         # Frame to hold the progress bar
@@ -272,28 +272,36 @@ class Ui_MainWindow(object):
         self.application_region_1_layout.addWidget(self.frame_blood)
         self.application_region.addWidget(self.application_region_1_widget)
 
-    # Dilution and voltage signal frame setup
+    # COMS and voltage signal frame setup
         self.application_region_2_widget = QtWidgets.QWidget(self.centralwidget)
         self.application_region_2_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_2_layout = QtWidgets.QVBoxLayout(self.application_region_2_widget)
 
-    # Frame for dilution
+        # Frame for COMS STATUS
         frame = QtWidgets.QFrame(self.centralwidget)
         frame.setStyleSheet("background-color: #222222; border-radius: 15px;")
         frame.setObjectName("frame_d_coms_status")
 
         # Create a layout for the frame
         layout = QtWidgets.QVBoxLayout(frame)
-        
+
         # Create the label and add it to the layout
         label = QtWidgets.QLabel()
+        title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; font-weight: bold; }"  # Add font-weight: bold; to make the text bold
         label.setStyleSheet(title_style)
-        label.setText("Coms. Status")
+        label.setText("CONNECTIONS")
         label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(label)  # Add the label to the layout
-        
+
+        # Add a spacer for some vertical space
+        spacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)  # Adjust the second parameter for more or less space
+        layout.addItem(spacer)
+
         # List of module names
         module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "3PAC", "Pressure Sensor"]
+
+        # Dictionary to hold the circles
+        self.circles = {}
 
         for module in module_names:
             # Create a layout for the module name and circle
@@ -311,9 +319,12 @@ class Ui_MainWindow(object):
             
             # Create the circle (using a radio button) and add it to the layout
             circle = QtWidgets.QRadioButton()
-            circle.setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 2px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
+            circle.setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
             circle.setEnabled(False)  # Initially set as disabled so it appears as white
             module_layout.addWidget(circle)
+
+            # Add the circle to the dictionary
+            self.circles[module] = circle
 
             # Add the module layout to the main layout
             layout.addLayout(module_layout)
@@ -333,7 +344,7 @@ class Ui_MainWindow(object):
         # Create the label and add it to the layout
         label = QtWidgets.QLabel()
         label.setStyleSheet(title_style)
-        label.setText("Voltage")
+        label.setText("PLOTS")
         label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(label)  # Add the label to the layout
         layout.addStretch(1)#
@@ -360,7 +371,7 @@ class Ui_MainWindow(object):
         spacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
 
         # Title for temperature frame
-        title_label = QtWidgets.QLabel("Electrode Temp")
+        title_label = QtWidgets.QLabel("Electrode Temp.")
         title_label.setStyleSheet(title_style)
         title_label.setAlignment(QtCore.Qt.AlignCenter)
         temp_layout.addWidget(title_label)

@@ -30,6 +30,12 @@ class Functionality(QtWidgets.QMainWindow):
         self.interval = 30  # ms
         self.plotdata = np.zeros(500)
         self.timer = None
+        
+    # Start the timer for the check_coms method
+        self.coms_timer = QtCore.QTimer()
+        self.coms_timer.setInterval(10000)  # 10 seconds
+        self.coms_timer.timeout.connect(self.check_coms)
+        self.coms_timer.start()
 
 
     # flow rate frames functionality 
@@ -37,7 +43,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.line_edit_blood.returnPressed.connect(self.updateBloodProgressBar)
         self.ui.line_edit_ethanol.returnPressed.connect(self.updateEthanolProgressBar)
 
-#plotting functions 
+#PLOTTING FUNCTIONS  
     def start_plotting(self):
         if not self.is_plotting:
             # Change button color to blue
@@ -107,7 +113,15 @@ class Functionality(QtWidgets.QMainWindow):
         
         self.ui.canvas_voltage.draw()
 
-            
+#UPDATING THE COMS CIRCLES           
+    def check_coms(self):
+        temperature = read_temperature()
+        if temperature is not None:
+            # Change circle color to green
+            self.ui.circles["Temperature Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
+        else:
+            # Change circle color to white
+            self.ui.circles["Temperature Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
 
 #ROUND PROGRESS BARS 
     def updateSucroseProgressBar(self):
@@ -137,10 +151,11 @@ class Functionality(QtWidgets.QMainWindow):
         else:
             self.ui.progress_bar_ethanol.setValue(0)
 
-
+#CLOSE EVENT 
     def closeEvent(self, event):
         # Clean up resources and exit the application properly
         self.ui.progress_bar_sucrose.deleteLater()
         self.ui.line_edit_sucrose.deleteLater()
+        self.coms_timer.stop()
         event.accept()
     
