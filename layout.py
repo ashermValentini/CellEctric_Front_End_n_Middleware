@@ -14,7 +14,7 @@ class Ui_MainWindow(object):
 
         # Set up styles for labels
         title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; }"
-        text_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 5px; }"
+        text_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 15px; }"
         header_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 50px; }"
         input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; }"
 
@@ -280,7 +280,7 @@ class Ui_MainWindow(object):
     # Frame for dilution
         frame = QtWidgets.QFrame(self.centralwidget)
         frame.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        frame.setObjectName("frame_d_dilution")
+        frame.setObjectName("frame_d_coms_status")
 
         # Create a layout for the frame
         layout = QtWidgets.QVBoxLayout(frame)
@@ -288,9 +288,35 @@ class Ui_MainWindow(object):
         # Create the label and add it to the layout
         label = QtWidgets.QLabel()
         label.setStyleSheet(title_style)
-        label.setText("Electronics")
+        label.setText("Coms. Status")
         label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(label)  # Add the label to the layout
+        
+        # List of module names
+        module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "3PAC", "Pressure Sensor"]
+
+        for module in module_names:
+            # Create a layout for the module name and circle
+            module_layout = QtWidgets.QHBoxLayout()
+            
+            # Create the module label and add it to the layout
+            module_label = QtWidgets.QLabel()
+            module_label.setStyleSheet(text_style) 
+            module_label.setText(module)
+            module_label.setAlignment(QtCore.Qt.AlignLeft)
+            module_layout.addWidget(module_label)
+            
+            # Add stretch to push the next widget to the right
+            module_layout.addStretch(1)
+            
+            # Create the circle (using a radio button) and add it to the layout
+            circle = QtWidgets.QRadioButton()
+            circle.setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 2px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
+            circle.setEnabled(False)  # Initially set as disabled so it appears as white
+            module_layout.addWidget(circle)
+
+            # Add the module layout to the main layout
+            layout.addLayout(module_layout)
 
         layout.addStretch(1)
 
