@@ -17,8 +17,8 @@ class Ui_MainWindow(object):
         text_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 15px; }"
         header_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 50px; }"
         input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; }"
-
-    # Dashboard
+        
+    # region : Dashboard
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(900, 1920)
         MainWindow.setStyleSheet("background-color: #121212;")
@@ -27,8 +27,9 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
 
         self.h_layout = QtWidgets.QHBoxLayout(self.centralwidget)
-
-    # Sidebar
+    #endregion
+    
+    # region : Sidebar
     
         #side bar frame
         self.frame_d_sidebar = QtWidgets.QFrame(self.centralwidget)
@@ -56,9 +57,9 @@ class Ui_MainWindow(object):
         self.v_layout = QtWidgets.QVBoxLayout()
         self.h_layout.addLayout(self.v_layout)
         self.v_layout.setContentsMargins(0, 0, 0, 0)
+    #endregion
 
-
-    # Topbar
+    # region: Topbar
         self.frame_d_topbar = QtWidgets.QFrame(self.centralwidget)
         self.frame_d_topbar.setFixedHeight(int(MainWindow.height() * 0.05))
         self.frame_d_topbar.setStyleSheet("background-color: #222222;")
@@ -80,7 +81,8 @@ class Ui_MainWindow(object):
 
         # Add the frame_d_topbar to the main layout (self.v_layout)
         self.v_layout.addWidget(self.frame_d_topbar)
-
+    #endregion
+    
     # Main content region
         self.main_content = QtWidgets.QVBoxLayout()
         self.v_layout.addLayout(self.main_content)
@@ -89,12 +91,12 @@ class Ui_MainWindow(object):
         self.application_region = QtWidgets.QHBoxLayout()
         self.main_content.addLayout(self.application_region)
 
-    # Flowrate frame setups
+    # region : Flowrate frame setups
         self.application_region_1_widget = QtWidgets.QWidget(self.centralwidget)
         self.application_region_1_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_1_layout = QtWidgets.QVBoxLayout(self.application_region_1_widget)
 
-    # Frame sucroseFlowrate
+        # region : Frame sucrose
         self.frame_sucrose = QtWidgets.QFrame(self.centralwidget)
         self.frame_sucrose.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_sucrose.setObjectName("frame_d_sucroseFlowrate")
@@ -151,8 +153,9 @@ class Ui_MainWindow(object):
         layout_sucrose.addWidget(group_box_sucrose)
 
         self.frame_sucrose.setLayout(layout_sucrose)
-
-    # Frame blood flow rate
+        #endregion
+        
+        # region : Frame blood
         self.frame_blood = QtWidgets.QFrame(self.centralwidget)
         self.frame_blood.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_blood.setObjectName("frame_d_bloodFlowrate")
@@ -164,7 +167,16 @@ class Ui_MainWindow(object):
 
         # Create a QGroupBox for the line edit and label
         group_box_blood = QtWidgets.QGroupBox(self.frame_blood)
-        group_box_blood.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
+        group_box_blood.setStyleSheet("""
+                                        QGroupBox {
+                                            border: 2px solid white;
+                                            border-radius: 10px;
+                                            background-color: #222222;
+                                        }
+                                        QGroupBox:hover {
+                                            background-color: rgba(255, 255, 255, 0.5);
+                                        }
+                                    """)
         group_box_blood.setAlignment(QtCore.Qt.AlignCenter)
 
         # Create a QHBoxLayout for the group box
@@ -188,13 +200,11 @@ class Ui_MainWindow(object):
         layout_blood = QtWidgets.QVBoxLayout(self.frame_blood)
         layout_blood.setAlignment(QtCore.Qt.AlignCenter)
         layout_blood.addWidget(label_blood)
-        #layout_blood.addWidget(progress_bar_frame_blood)
         layout_blood.addWidget(group_box_blood)
-
         self.frame_blood.setLayout(layout_blood)
+        #endregion
 
-
-    #Frame and label for "ethanolFlowrate"
+        # region : Frame ethanol
         self.frame_ethanol = QtWidgets.QFrame(self.centralwidget)
         self.frame_ethanol.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_ethanol.setObjectName("frame_d_ethanolFlowrate")
@@ -251,19 +261,21 @@ class Ui_MainWindow(object):
         layout_ethanol.addWidget(group_box_ethanol)
 
         self.frame_ethanol.setLayout(layout_ethanol)
+        #endregion 
         
-    #adding each of the frames to the application region 1 and then adding application region 1 to application region
+        #adding each of the frames to the application region 1 and then adding application region 1 to application region
         self.application_region_1_layout.addWidget(self.frame_sucrose)
         self.application_region_1_layout.addWidget(self.frame_ethanol)
         self.application_region_1_layout.addWidget(self.frame_blood)
         self.application_region.addWidget(self.application_region_1_widget)
-
-    # COMS and voltage signal frame setup
+    #endregion
+    
+    # region : COMS and voltage signal frame setup
         self.application_region_2_widget = QtWidgets.QWidget(self.centralwidget)
         self.application_region_2_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_2_layout = QtWidgets.QVBoxLayout(self.application_region_2_widget)
 
-        # Frame for COMS STATUS
+        # region : Frame for connections
         frame = QtWidgets.QFrame(self.centralwidget)
         frame.setStyleSheet("background-color: #222222; border-radius: 15px;")
         frame.setObjectName("frame_d_coms_status")
@@ -318,8 +330,9 @@ class Ui_MainWindow(object):
         layout.addStretch(1)
 
         self.application_region_2_layout.addWidget(frame)
+        #endregion 
         
-    # Frame for voltage signal
+        # region : Frame for voltage signal
         frame = QtWidgets.QFrame(self.centralwidget)
         frame.setStyleSheet("background-color: #222222; border-radius: 15px;")
         frame.setObjectName("frame_d_voltageSignal")
@@ -336,15 +349,17 @@ class Ui_MainWindow(object):
         layout.addStretch(1)#
         
         self.application_region_2_layout.addWidget(frame)
-
+        #endregion
+        
         self.application_region.addWidget(self.application_region_2_widget)
-
-    # Temperature and PSU enable button frame setup
+    #endregion
+    
+    # region : Temperature and PSU enable button frame setup
         self.application_region_3_widget = QtWidgets.QWidget(self.centralwidget)
         self.application_region_3_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_3_layout = QtWidgets.QVBoxLayout(self.application_region_3_widget)
 
-    # Frame for temperature
+        # region: Frame for temperature
         temp_frame = QtWidgets.QFrame(self.centralwidget)
         temp_frame.setStyleSheet("background-color: #222222; border-radius: 15px; height: 20%;")
         temp_frame.setObjectName("frame_d_temperature")
@@ -357,7 +372,7 @@ class Ui_MainWindow(object):
         spacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
 
         # Title for temperature frame
-        title_label = QtWidgets.QLabel("Electrode Temp.")
+        title_label = QtWidgets.QLabel("ELECTRODE TEMP.")
         title_label.setStyleSheet(title_style)
         title_label.setAlignment(QtCore.Qt.AlignCenter)
         temp_layout.addWidget(title_label)
@@ -398,16 +413,43 @@ class Ui_MainWindow(object):
         # Add vertical spacer for equal spacing
         spacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         temp_layout.addItem(spacer)
-
-    # Frame for PSU button
+        #endregion
+        
+        # region: Frame for PSU button
         frame_d_psuButton = QtWidgets.QFrame(self.centralwidget)
         frame_d_psuButton.setStyleSheet("background-color: #222222; border-radius: 15px;")
         frame_d_psuButton.setObjectName("frame_d_psuButton")
-
+        
         # Add a layout to this frame
-        frame_d_psuButton_layout = QtWidgets.QVBoxLayout(frame_d_psuButton)
+        frame_d_psuButton_layout = QtWidgets.QHBoxLayout(frame_d_psuButton)
+        
+        # Create a vertical layout for the group boxes
+        group_boxes_layout = QtWidgets.QVBoxLayout()
+        
+        # Create a QGroupBox for the line edit and label
+        group_box_psuButton1 = QtWidgets.QGroupBox(frame_d_psuButton)
+        group_box_psuButton1.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
+        group_box_psuButton1.setAlignment(QtCore.Qt.AlignCenter)
+        
+        # Create a QHBoxLayout for the first group box
+        group_box_layout1 = QtWidgets.QHBoxLayout(group_box_psuButton1)
+        group_box_psuButton1.setLayout(group_box_layout1)
 
-        self.application_region_3_layout.addWidget(frame_d_psuButton)
+        # Create a second QGroupBox for another set of widgets
+        group_box_psuButton2 = QtWidgets.QGroupBox(frame_d_psuButton)
+        group_box_psuButton2.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
+        group_box_psuButton2.setAlignment(QtCore.Qt.AlignCenter)
+
+        # Create a QHBoxLayout for the second group box
+        group_box_layout2 = QtWidgets.QHBoxLayout(group_box_psuButton2)
+        group_box_psuButton2.setLayout(group_box_layout2)
+        
+        # Add the group boxes to the vertical layout
+        group_boxes_layout.addWidget(group_box_psuButton1)
+        group_boxes_layout.addWidget(group_box_psuButton2)
+        
+        # Add the vertical layout to the frame's layout
+        frame_d_psuButton_layout.addLayout(group_boxes_layout)
 
         # PSU button creation
         self.psu_button = QtWidgets.QPushButton("", frame_d_psuButton) # Set the text to empty since we are using an image
@@ -431,13 +473,14 @@ class Ui_MainWindow(object):
                 background-color: #0796FF;
             }
         """)
+        #endregion
 
-        # Center the button within the frame's layout
         frame_d_psuButton_layout.addWidget(self.psu_button, 0, QtCore.Qt.AlignCenter)
-        
+        self.application_region_3_layout.addWidget(frame_d_psuButton)
         self.application_region.addWidget(self.application_region_3_widget)
-
-    # Plot region of the main content region
+    #endregion
+    
+    # region: Plot region of the main content region
     
         # Plot region of the main content region
         self.plot_layout = QtWidgets.QVBoxLayout()
@@ -489,8 +532,7 @@ class Ui_MainWindow(object):
         # Set static labels
         self.axes_voltage.set_xlabel('Time (ms)', color='#5C5C5D')
         self.axes_voltage.set_ylabel('Temperature (°C)', color='#5C5C5D')
-
-    #end layout 
+    #endregion
     
     
         MainWindow.setCentralWidget(self.centralwidget)
