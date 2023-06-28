@@ -270,7 +270,7 @@ class Ui_MainWindow(object):
         self.application_region.addWidget(self.application_region_1_widget)
     #endregion
     
-    # region : COMS and voltage signal frame setup
+    # region : COMS and voltage signal frame setup  
         self.application_region_2_widget = QtWidgets.QWidget(self.centralwidget)
         self.application_region_2_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_2_layout = QtWidgets.QVBoxLayout(self.application_region_2_widget)
@@ -354,7 +354,7 @@ class Ui_MainWindow(object):
         self.application_region.addWidget(self.application_region_2_widget)
     #endregion
     
-    # region : Temperature and PSU enable button frame setup
+    # region : Temperature and Signal frames' setup
         self.application_region_3_widget = QtWidgets.QWidget(self.centralwidget)
         self.application_region_3_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_3_layout = QtWidgets.QVBoxLayout(self.application_region_3_widget)
@@ -415,48 +415,93 @@ class Ui_MainWindow(object):
         temp_layout.addItem(spacer)
         #endregion
         
-        # region: Frame for PSU button
-        frame_d_psuButton = QtWidgets.QFrame(self.centralwidget)
-        frame_d_psuButton.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        frame_d_psuButton.setObjectName("frame_d_psuButton")
+        # region: Frame for voltage signal 
+        frame_d_signal = QtWidgets.QFrame(self.centralwidget)
+        frame_d_signal.setStyleSheet("background-color: #222222; border-radius: 15px;")
+        frame_d_signal.setObjectName("frame_d_psuButton")
+        self.application_region_3_layout.addWidget(frame_d_signal)
+
         
-        # Add a layout to this frame
-        frame_d_psuButton_layout = QtWidgets.QHBoxLayout(frame_d_psuButton)
+        frame_d_signal_layout = QtWidgets.QVBoxLayout(frame_d_signal)# Create a vertical layout for this frame
+
         
-        # Create a vertical layout for the group boxes
-        group_boxes_layout = QtWidgets.QVBoxLayout()
+        label = QtWidgets.QLabel("SIGNAL", frame_d_signal)# Create a label for this frame
+        label.setAlignment(QtCore.Qt.AlignCenter)
+        label.setStyleSheet(title_style)  # Set the color of the text as needed
         
-        # Create a QGroupBox for the line edit and label
-        group_box_psuButton1 = QtWidgets.QGroupBox(frame_d_psuButton)
-        group_box_psuButton1.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
-        group_box_psuButton1.setAlignment(QtCore.Qt.AlignCenter)
-        
+        frame_d_signal_layout.addWidget(label)   #Place SIGNAL at the top of the frame
+        frame_d_signal_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        inner_layout = QtWidgets.QHBoxLayout()      # Create a horizontal layout for group boxes and button
+        group_boxes_layout = QtWidgets.QVBoxLayout()# Create a vertical layout for the group boxes
+
+
+        # region : Create a QGroupBox for the line edit and label for max voltage
+        group_box_max_voltage = QtWidgets.QGroupBox(frame_d_signal)
+        group_box_max_voltage.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
+        group_box_max_voltage.setAlignment(QtCore.Qt.AlignCenter)
+
         # Create a QHBoxLayout for the first group box
-        group_box_layout1 = QtWidgets.QHBoxLayout(group_box_psuButton1)
-        group_box_psuButton1.setLayout(group_box_layout1)
+        group_box_max_voltage_layout = QtWidgets.QHBoxLayout(group_box_max_voltage)
 
-        # Create a second QGroupBox for another set of widgets
-        group_box_psuButton2 = QtWidgets.QGroupBox(frame_d_psuButton)
-        group_box_psuButton2.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
-        group_box_psuButton2.setAlignment(QtCore.Qt.AlignCenter)
+        # Create the QLabel for the unit
+        unit_label = QtWidgets.QLabel("V")
+        unit_label.setStyleSheet("color: white;")
 
-        # Create a QHBoxLayout for the second group box
-        group_box_layout2 = QtWidgets.QHBoxLayout(group_box_psuButton2)
-        group_box_psuButton2.setLayout(group_box_layout2)
+        # Create the QLabel for the higher pk-pk voltage
+        MAX_label = QtWidgets.QLabel("MAX :")
+        MAX_label.setStyleSheet("color: white;")
+
+        # Create the QLineEdit for the value
+        self.line_edit_max_signal = QtWidgets.QLineEdit()
+        self.line_edit_max_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+
+        # Add the line edit and label to the group box layout
+        group_box_max_voltage_layout.addWidget(MAX_label)
+        group_box_max_voltage_layout.addWidget(self.line_edit_max_signal)
+        group_box_max_voltage_layout.addWidget(unit_label)
+
+        group_box_max_voltage.setLayout(group_box_max_voltage_layout)
+        #endregion
         
-        # Add the group boxes to the vertical layout
-        group_boxes_layout.addWidget(group_box_psuButton1)
-        group_boxes_layout.addWidget(group_box_psuButton2)
-        
-        # Add the vertical layout to the frame's layout
-        frame_d_psuButton_layout.addLayout(group_boxes_layout)
+        # region : Create a QGroupBox for the line edit and label for min voltage
+        group_box_min_voltage = QtWidgets.QGroupBox(frame_d_signal)
+        group_box_min_voltage.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
+        group_box_min_voltage.setAlignment(QtCore.Qt.AlignCenter)
+
+        # Create a QHBoxLayout for the first group box
+        group_box_min_voltage_layout = QtWidgets.QHBoxLayout(group_box_min_voltage)
+
+        # Create the QLabel for the unit
+        min_unit_label = QtWidgets.QLabel("V")
+        min_unit_label.setStyleSheet("color: white;")
+
+        # Create the QLabel for the higher pk-pk voltage
+        MIN_label = QtWidgets.QLabel("MIN : ")
+        MIN_label.setStyleSheet("color: white;")
+
+        # Create the QLineEdit for the value
+        self.line_edit_min_signal = QtWidgets.QLineEdit()
+        self.line_edit_min_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+
+        # Add the line edit and label to the group box layout
+        group_box_min_voltage_layout.addWidget(MIN_label)
+        group_box_min_voltage_layout.addWidget(self.line_edit_min_signal)
+        group_box_min_voltage_layout.addWidget(min_unit_label)
+
+        group_box_min_voltage.setLayout(group_box_min_voltage_layout)
+        #endregion
+
+        group_boxes_layout.addWidget(group_box_max_voltage)# Add the group boxes to the vertical layout
+        group_boxes_layout.addWidget(group_box_min_voltage)
+        inner_layout.addLayout(group_boxes_layout)  # Add the vertical layout to the inner layout
 
         # PSU button creation
-        self.psu_button = QtWidgets.QPushButton("", frame_d_psuButton) # Set the text to empty since we are using an image
+        self.psu_button = QtWidgets.QPushButton("", frame_d_signal)  # Set the text to empty since we are using an image
+        #self.psu_button.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Expanding)  # This line adjusts the size policy
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_TEAM_GUI\assets\images\lightning_symbol.png'), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.psu_button.setIcon(icon)
-        self.psu_button.setIconSize(QtCore.QSize(74, 74)) # Adjust size as needed
+        self.psu_button.setIconSize(QtCore.QSize(95, 95))  # Adjust size as needed
         self.psu_button.setStyleSheet("""
             QPushButton {
                 border: 2px solid #8f8f91;
@@ -466,17 +511,17 @@ class Ui_MainWindow(object):
 
             QPushButton:hover {
                 background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-              
             }
 
             QPushButton:pressed {
                 background-color: #0796FF;
             }
         """)
-        #endregion
+        inner_layout.addWidget(self.psu_button)# Add the button to the inner layout
+        
+        frame_d_signal_layout.addLayout(inner_layout)# Add the inner layout to the frame's layout
+        # endregion
 
-        frame_d_psuButton_layout.addWidget(self.psu_button, 0, QtCore.Qt.AlignCenter)
-        self.application_region_3_layout.addWidget(frame_d_psuButton)
         self.application_region.addWidget(self.application_region_3_widget)
     #endregion
     
@@ -533,7 +578,6 @@ class Ui_MainWindow(object):
         self.axes_voltage.set_xlabel('Time (ms)', color='#5C5C5D')
         self.axes_voltage.set_ylabel('Temperature (°C)', color='#5C5C5D')
     #endregion
-    
     
         MainWindow.setCentralWidget(self.centralwidget)
 
