@@ -40,7 +40,6 @@ class Functionality(QtWidgets.QMainWindow):
 
     # flow rate frames functionality 
         self.ui.line_edit_sucrose.returnPressed.connect(self.updateSucroseProgressBar)
-        self.ui.line_edit_blood.returnPressed.connect(self.updateBloodProgressBar)
         self.ui.line_edit_ethanol.returnPressed.connect(self.updateEthanolProgressBar)
 
 #PLOTTING FUNCTIONS  
@@ -132,15 +131,6 @@ class Functionality(QtWidgets.QMainWindow):
                 self.ui.progress_bar_sucrose.setValue(value)
         else:
             self.ui.progress_bar_sucrose.setValue(0)
-    
-    def updateBloodProgressBar(self):
-        value = self.ui.line_edit_blood.text()
-        if value:
-            value = int(value)
-            if value <= self.ui.progress_bar_blood.max:
-                self.ui.progress_bar_blood.setValue(value)
-        else:
-            self.ui.progress_bar_blood.setValue(0)
             
     def updateEthanolProgressBar(self):
         value = self.ui.line_edit_ethanol.text()

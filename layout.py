@@ -162,20 +162,6 @@ class Ui_MainWindow(object):
         label_blood.setText("BLOOD")
         label_blood.setAlignment(QtCore.Qt.AlignCenter)
 
-        # Frame to hold the progress bar
-        #progress_bar_frame_blood = QtWidgets.QFrame(self.frame_blood)
-        #progress_bar_frame_blood.setObjectName("progress_bar_frame_blood")
-
-        #self.progress_bar_blood = QRoundProgressBar()
-        #self.progress_bar_blood.setFixedSize(65, 65)
-        #self.progress_bar_blood.setRange(0, 10)  # Set the range to 0-10ml
-        #self.progress_bar_blood.setValue(0)  # Set the initial value to 0
-
-        # Create a layout for the progress bar frame
-        #progress_bar_layout_blood = QtWidgets.QHBoxLayout(progress_bar_frame_blood)
-        #progress_bar_layout_blood.setAlignment(QtCore.Qt.AlignCenter)
-        #progress_bar_layout_blood.addWidget(self.progress_bar_blood)
-
         # Create a QGroupBox for the line edit and label
         group_box_blood = QtWidgets.QGroupBox(self.frame_blood)
         group_box_blood.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
