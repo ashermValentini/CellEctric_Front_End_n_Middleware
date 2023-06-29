@@ -18,16 +18,20 @@ class Ui_MainWindow(object):
         header_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 50px; }"
         input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; }"
         
-    # region : Dashboard
+        # Set up the main window 
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(900, 1920)
         MainWindow.setStyleSheet("background-color: #121212;")
-
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-
         self.h_layout = QtWidgets.QHBoxLayout(self.centralwidget)
-    #endregion
+ 
+        # Give all buttons the same padding in this layout 
+        QtWidgets.QApplication.instance().setStyleSheet("""
+            QPushButton {
+                padding: 10px;
+                }
+         """)
     
     # region : Sidebar
     
@@ -56,7 +60,6 @@ class Ui_MainWindow(object):
 
         self.v_layout = QtWidgets.QVBoxLayout()
         self.h_layout.addLayout(self.v_layout)
-        self.v_layout.setContentsMargins(0, 0, 0, 0)
     #endregion
 
     # region: Topbar
@@ -83,15 +86,15 @@ class Ui_MainWindow(object):
         self.v_layout.addWidget(self.frame_d_topbar)
     #endregion
     
-    # Main content region
+    # region : Main content
         self.main_content = QtWidgets.QVBoxLayout()
         self.v_layout.addLayout(self.main_content)
 
-    # Application region of main content region
+# region: Applications
         self.application_region = QtWidgets.QHBoxLayout()
         self.main_content.addLayout(self.application_region)
 
-    # region : Flowrate frame setups
+    # region : SUCROSE, EHTANOL, BLOOD frame setups
         self.application_region_1_widget = QtWidgets.QWidget(self.centralwidget)
         self.application_region_1_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_1_layout = QtWidgets.QVBoxLayout(self.application_region_1_widget)
@@ -270,7 +273,7 @@ class Ui_MainWindow(object):
         self.application_region.addWidget(self.application_region_1_widget)
     #endregion
     
-    # region : COMS and voltage signal frame setup  
+    # region : CONNECTION and PLOT frame setup  
         self.application_region_2_widget = QtWidgets.QWidget(self.centralwidget)
         self.application_region_2_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_2_layout = QtWidgets.QVBoxLayout(self.application_region_2_widget)
@@ -332,29 +335,97 @@ class Ui_MainWindow(object):
         self.application_region_2_layout.addWidget(frame)
         #endregion 
         
-        # region : Frame for voltage signal
-        frame = QtWidgets.QFrame(self.centralwidget)
-        frame.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        frame.setObjectName("frame_d_voltageSignal")
+        # region : Frame for plot buttons
+        plot_button_frame = QtWidgets.QFrame(self.centralwidget)
+        plot_button_frame.setStyleSheet("background-color: #222222; border-radius: 15px;")
+        plot_button_frame.setObjectName("frame_d_voltageSignal")
                 
         # Create a layout for the frame
-        layout = QtWidgets.QVBoxLayout(frame)
+        layout = QtWidgets.QVBoxLayout(plot_button_frame)
         
-        # Create the label and add it to the layout
+        # Label
         label = QtWidgets.QLabel()
         label.setStyleSheet(title_style)
         label.setText("PLOTS")
         label.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(label)  # Add the label to the layout
-        layout.addStretch(1)#
+        layout.addWidget(label)  
+        layout.addSpacing(20)    
         
-        self.application_region_2_layout.addWidget(frame)
+        # button creation
+        self.temp_button = QtWidgets.QPushButton("Electrode Temperature")  # Set the text to empty since we are using an image
+        self.temp_button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 10px;
+                background-color: #222222;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 15px;
+
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        self.voltage_button = QtWidgets.QPushButton("Voltage Signal")  # Set the text to empty since we are using an image
+        self.voltage_button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 10px;
+                background-color: #222222;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 15px;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+        
+        self.current_button = QtWidgets.QPushButton("Current Signal")  # Set the text to empty since we are using an image
+        self.current_button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 10px;
+                background-color: #222222;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 15px;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+        
+        layout.addWidget(self.temp_button) 
+        layout.addWidget(self.voltage_button) 
+        layout.addWidget(self.current_button) 
+      
+      
+        self.application_region_2_layout.addWidget(plot_button_frame)
+        
         #endregion
         
         self.application_region.addWidget(self.application_region_2_widget)
     #endregion
     
-    # region : Temperature and Signal frames' setup
+    # region : ELECTRODE TEMP and SIGNAL frames' setup
         self.application_region_3_widget = QtWidgets.QWidget(self.centralwidget)
         self.application_region_3_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_3_layout = QtWidgets.QVBoxLayout(self.application_region_3_widget)
@@ -421,18 +492,22 @@ class Ui_MainWindow(object):
         frame_d_signal.setObjectName("frame_d_psuButton")
         self.application_region_3_layout.addWidget(frame_d_signal)
 
-        
+            # Create a layout for this frame
         frame_d_signal_layout = QtWidgets.QVBoxLayout(frame_d_signal)# Create a vertical layout for this frame
 
-        
-        label = QtWidgets.QLabel("SIGNAL", frame_d_signal)# Create a label for this frame
+            # Create a label for this frame
+        label = QtWidgets.QLabel("SIGNAL", frame_d_signal)
         label.setAlignment(QtCore.Qt.AlignCenter)
         label.setStyleSheet(title_style)  # Set the color of the text as needed
         
         frame_d_signal_layout.addWidget(label)   #Place SIGNAL at the top of the frame
         frame_d_signal_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
-        inner_layout = QtWidgets.QHBoxLayout()      # Create a horizontal layout for group boxes and button
-        group_boxes_layout = QtWidgets.QVBoxLayout()# Create a vertical layout for the group boxes
+            
+            # Create a horizontal layout for group boxes and button
+        inner_layout = QtWidgets.QHBoxLayout()     
+        
+            # Create a vertical layout for JUST the group boxes 
+        group_boxes_layout = QtWidgets.QVBoxLayout()
 
 
         # region : Create a QGroupBox for the line edit and label for max voltage
@@ -493,15 +568,15 @@ class Ui_MainWindow(object):
 
         group_boxes_layout.addWidget(group_box_max_voltage)# Add the group boxes to the vertical layout
         group_boxes_layout.addWidget(group_box_min_voltage)
+        
         inner_layout.addLayout(group_boxes_layout)  # Add the vertical layout to the inner layout
 
         # PSU button creation
         self.psu_button = QtWidgets.QPushButton("", frame_d_signal)  # Set the text to empty since we are using an image
-        #self.psu_button.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Expanding)  # This line adjusts the size policy
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_TEAM_GUI\assets\images\lightning_symbol.png'), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.psu_button.setIcon(icon)
-        self.psu_button.setIconSize(QtCore.QSize(95, 95))  # Adjust size as needed
+        self.psu_button.setIconSize(QtCore.QSize(64, 64))  # Adjust size as needed
         self.psu_button.setStyleSheet("""
             QPushButton {
                 border: 2px solid #8f8f91;
@@ -524,8 +599,10 @@ class Ui_MainWindow(object):
 
         self.application_region.addWidget(self.application_region_3_widget)
     #endregion
-    
-    # region: Plot region of the main content region
+
+# endregion: Applications   
+  
+# region : Plots
     
         # Plot region of the main content region
         self.plot_layout = QtWidgets.QVBoxLayout()
@@ -578,11 +655,12 @@ class Ui_MainWindow(object):
         self.axes_voltage.set_xlabel('Time (ms)', color='#5C5C5D')
         self.axes_voltage.set_ylabel('Temperature (°C)', color='#5C5C5D')
     #endregion
-    
-        MainWindow.setCentralWidget(self.centralwidget)
 
+        MainWindow.setCentralWidget(self.centralwidget)
         self.main_content.setStretchFactor(self.application_region, 50)
         self.main_content.setStretchFactor(self.plot_layout, 50)
+
+    # endregion : Main content 
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

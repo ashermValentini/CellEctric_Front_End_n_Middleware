@@ -11,17 +11,17 @@ class Functionality(QtWidgets.QMainWindow):
     def __init__(self):
         super(Functionality, self).__init__()
     
-
     # Set up the UI layout
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         
 
-    # psu enbaled button frame
-        self.ui.psu_button.pressed.connect(self.start_plotting)
+
         
-    #plotting frame
-        self.is_plotting = False  #psuEnabled Button state flag
+    # temp plotting frame
+        self.temp_is_plotting = False  #temperature plotting button state flag
+        
+        self.ui.temp_button.pressed.connect(self.start_temp_plotting)
         
         #dynamic x axis 
         self.xdata = np.linspace(0, 499, 500)  # This creates an array from 0 to 499 with 500 elements.
@@ -42,32 +42,37 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.line_edit_sucrose.returnPressed.connect(self.updateSucroseProgressBar)
         self.ui.line_edit_ethanol.returnPressed.connect(self.updateEthanolProgressBar)
 
-#PLOTTING FUNCTIONS  
-    def start_plotting(self):
-        if not self.is_plotting:
+# region : PLOTTING FUNCTIONS  
+    def start_temp_plotting(self):
+        if not self.temp_is_plotting:
             # Change button color to blue
-            # Change button color to blue
-            self.ui.psu_button.setStyleSheet("""
+            self.ui.temp_button.setStyleSheet("""
                 QPushButton {
-                    border: 2px solid #8f8f91;
-                    border-radius: 6px;
+                    border: 2px solid white;
+                    border-radius: 10px;
                     background-color: #0796FF;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 15px;
                 }
 
                 QPushButton:hover {
                     background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
                 }
             """)
-            self.is_plotting = True
+            self.temp_is_plotting = True
             if self.timer is None:
                 self.timer = self.start_timer()
         else:
             # Change button color back to original
-            self.ui.psu_button.setStyleSheet("""
+            self.ui.temp_button.setStyleSheet("""
                 QPushButton {
-                    border: 2px solid #8f8f91;
-                    border-radius: 6px;
+                    border: 2px solid white;
+                    border-radius: 10px;
                     background-color: #222222;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 15px;
                 }
 
                 QPushButton:hover {
@@ -78,7 +83,7 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: #0796FF;
                 }
             """)
-            self.is_plotting = False
+            self.temp_is_plotting = False
             if self.timer:
                 self.timer.stop()
                 self.timer = None
@@ -86,11 +91,11 @@ class Functionality(QtWidgets.QMainWindow):
     def start_timer(self):
         timer = QtCore.QTimer()
         timer.setInterval(self.interval)
-        timer.timeout.connect(self.update_plot)
+        timer.timeout.connect(self.update_temp_plot)
         timer.start()
         return timer
 
-    def update_plot(self):
+    def update_temp_plot(self):
         temperature = read_temperature()
         if temperature is not None:
             shift = 1
@@ -111,8 +116,9 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.axes_voltage.set_title('My Title', color='#FFFFFF')
         
         self.ui.canvas_voltage.draw()
+#endregion: PLOTTING FUNCTIONS
 
-#UPDATING THE COMS CIRCLES           
+# region : CONNECTION CIRCLE FUNCTION           
     def check_coms(self):
         temperature = read_temperature()
         if temperature is not None:
@@ -121,8 +127,9 @@ class Functionality(QtWidgets.QMainWindow):
         else:
             # Change circle color to white
             self.ui.circles["Temperature Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
+#endregion : CONNECTION CIRCLE FUNCTION
 
-#ROUND PROGRESS BARS 
+# region : ROUND PROGRESS BAR FUNCTIONS 
     def updateSucroseProgressBar(self):
         value = self.ui.line_edit_sucrose.text()
         if value:
@@ -140,12 +147,13 @@ class Functionality(QtWidgets.QMainWindow):
                 self.ui.progress_bar_ethanol.setValue(value)
         else:
             self.ui.progress_bar_ethanol.setValue(0)
+#endregion : ROUND PROGRESS BAR FUNCTIONS
 
-#CLOSE EVENT 
+# region : CLOSE EVENT FUNCTION
     def closeEvent(self, event):
         # Clean up resources and exit the application properly
         self.ui.progress_bar_sucrose.deleteLater()
         self.ui.line_edit_sucrose.deleteLater()
         self.coms_timer.stop()
         event.accept()
-    
+# endregion : 
