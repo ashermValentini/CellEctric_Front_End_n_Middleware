@@ -24,7 +24,9 @@ class Ui_MainWindow(object):
         MainWindow.setStyleSheet("background-color: #121212;")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.h_layout = QtWidgets.QHBoxLayout(self.centralwidget)
+        
+
+
  
         # Give all buttons the same padding in this layout 
         QtWidgets.QApplication.instance().setStyleSheet("""
@@ -34,39 +36,47 @@ class Ui_MainWindow(object):
          """)
     
     # region : Sidebar
+        
+        self.h_layout = QtWidgets.QHBoxLayout(self.centralwidget)
+        self.h_layout.setContentsMargins(0, 0, 0, 0)
     
-        #side bar frame
-        self.frame_d_sidebar = QtWidgets.QFrame(self.centralwidget)
+        self.frame_d_sidebar = QtWidgets.QFrame()
+        self.frame_d_sidebar.setContentsMargins(0, 0, 0, 0)
         self.frame_d_sidebar.setFixedWidth(int(MainWindow.height() * 0.05))
         self.frame_d_sidebar.setStyleSheet("background-color: #222222;")
         self.frame_d_sidebar.setObjectName("frame_d_sidebar")
         
-        #side bar layout 
         self.h_layout.addWidget(self.frame_d_sidebar)
-        self.h_layout.setContentsMargins(0, 0, 0, 0)
+        
 
         # Add company logo to sidebar
         self.sidebar_logo = QtWidgets.QLabel(self.frame_d_sidebar)
         self.sidebar_logo.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
 
         buffer = 10  # Amount of buffer space on each side
-        self.sidebar_logo.setGeometry(buffer, 0, self.frame_d_sidebar.width() - 2 * buffer,
+        self.sidebar_logo.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 2 * buffer,
                                       int(MainWindow.height() * 0.2))
 
         logo_pixmap = QtGui.QPixmap(
             r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_TEAM_GUI\assets\images\logo_small_white.png')
         self.sidebar_logo.setPixmap(logo_pixmap.scaled(self.sidebar_logo.width(), self.sidebar_logo.height(),
                                                        QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
-
-        self.v_layout = QtWidgets.QVBoxLayout()
-        self.h_layout.addLayout(self.v_layout)
     #endregion
 
     # region: Topbar
-        self.frame_d_topbar = QtWidgets.QFrame(self.centralwidget)
+    
+        self.v_layout = QtWidgets.QVBoxLayout()
+        self.v_layout.setContentsMargins(0, 0, 0, 0)
+
+        
+        self.frame_d_topbar = QtWidgets.QFrame()
+        self.frame_d_topbar.setContentsMargins(0, 0, 0, 0)
         self.frame_d_topbar.setFixedHeight(int(MainWindow.height() * 0.05))
         self.frame_d_topbar.setStyleSheet("background-color: #222222;")
         self.frame_d_topbar.setObjectName("frame_d_topbar")
+        
+        self.v_layout.addWidget(self.frame_d_topbar)
+
 
         # Add "Dashboard" label to top bar
         self.label = QtWidgets.QLabel(self.frame_d_topbar)
@@ -76,18 +86,20 @@ class Ui_MainWindow(object):
 
         # Set up a layout for the frame_d_topbar
         topbar_layout = QtWidgets.QHBoxLayout(self.frame_d_topbar)
-        topbar_layout.setContentsMargins(0, 0, 0, 0)  # Set layout margins to zero
+        topbar_layout.setContentsMargins(0, 0, 0, 0)
+        self.frame_d_topbar.setLayout(topbar_layout)
         topbar_layout.addWidget(self.label)  # Add the label to the layout
 
-        # Set the layout for frame_d_topbar
-        self.frame_d_topbar.setLayout(topbar_layout)
+        self.h_layout.addLayout(self.v_layout)
+        
+        self.h_layout.setSpacing(0)
+        self.v_layout.setSpacing(0)
 
-        # Add the frame_d_topbar to the main layout (self.v_layout)
-        self.v_layout.addWidget(self.frame_d_topbar)
     #endregion
     
     # region : Main content
         self.main_content = QtWidgets.QVBoxLayout()
+        self.main_content.setContentsMargins(0, 0, 0, 0)
         self.v_layout.addLayout(self.main_content)
 
 # region: Applications
