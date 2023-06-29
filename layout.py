@@ -25,9 +25,6 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         
-
-
- 
         # Give all buttons the same padding in this layout 
         QtWidgets.QApplication.instance().setStyleSheet("""
             QPushButton {
@@ -36,7 +33,7 @@ class Ui_MainWindow(object):
          """)
     
     # region : Sidebar
-        
+
         self.h_layout = QtWidgets.QHBoxLayout(self.centralwidget)
         self.h_layout.setContentsMargins(0, 0, 0, 0)
     
@@ -111,76 +108,78 @@ class Ui_MainWindow(object):
         self.application_region_1_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_1_layout = QtWidgets.QVBoxLayout(self.application_region_1_widget)
 
-        # region : Frame sucrose
-        self.frame_sucrose = QtWidgets.QFrame(self.centralwidget)
+        # region : Sucrose
+        self.frame_sucrose = QtWidgets.QFrame(self.centralwidget)                           # create sucrose frame 
         self.frame_sucrose.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_sucrose.setObjectName("frame_d_sucroseFlowrate")
+        
+        layout_sucrose = QtWidgets.QVBoxLayout(self.frame_sucrose)                          # create layout for sucrose frame 
+        self.frame_sucrose.setLayout(layout_sucrose)                                        # set layout to sucrose frame 
+        layout_sucrose.setAlignment(QtCore.Qt.AlignCenter)
 
+        # region: label
         label_sucrose = QtWidgets.QLabel(self.frame_sucrose)
         label_sucrose.setStyleSheet(title_style)
         label_sucrose.setText("SUCROSE")
         label_sucrose.setAlignment(QtCore.Qt.AlignCenter)
+        #endregion
+        # region: progress bar 
+        progress_bar_frame = QtWidgets.QFrame(self.frame_sucrose)       # create frame for progress bar 
+        progress_bar_frame.setObjectName("progress_bar_frame")          
+        
+        progress_bar_layout = QtWidgets.QHBoxLayout(progress_bar_frame) # create layout for progress bar frame
+        progress_bar_layout.setAlignment(QtCore.Qt.AlignCenter)
+        progress_bar_frame.setLayout(progress_bar_layout)               # set layout to progress bar frame 
 
-        #frame to hold the progress bar 
-        progress_bar_frame = QtWidgets.QFrame(self.frame_sucrose)
-        progress_bar_frame.setObjectName("progress_bar_frame")
-
-        self.progress_bar_sucrose = QRoundProgressBar()
+        self.progress_bar_sucrose = QRoundProgressBar()                 # create progress bar  
         self.progress_bar_sucrose.setFixedSize(65, 65)
-        self.progress_bar_sucrose.setRange(0, 10)  # Set the range to 0-10ml
-        self.progress_bar_sucrose.setValue(0)  # Set the initial value to 0
+        self.progress_bar_sucrose.setRange(0, 10)  
+        self.progress_bar_sucrose.setValue(0)  
         self.progress_bar_sucrose.setBarColor('#0796FF')
 
-        
-        # Create a layout for the progress bar frame
-        progress_bar_layout = QtWidgets.QHBoxLayout(progress_bar_frame)
-        progress_bar_layout.setAlignment(QtCore.Qt.AlignCenter)
-        progress_bar_layout.addWidget(self.progress_bar_sucrose)
-
-        # Create a QGroupBox for the line edit and label
+        progress_bar_layout.addWidget(self.progress_bar_sucrose)        # add progress bar to the layout 
+        #endregion
+        # region: Groupbox
         group_box_sucrose = QtWidgets.QGroupBox(self.frame_sucrose)
         group_box_sucrose.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
         group_box_sucrose.setAlignment(QtCore.Qt.AlignCenter)
 
-        # Create a QHBoxLayout for the group box
+
         group_box_layout = QtWidgets.QHBoxLayout(group_box_sucrose)
 
-        # Create the QLabel for the unit
         unit_label = QtWidgets.QLabel("ml/min")
         unit_label.setStyleSheet("color: white;")
 
-        # Create the QLineEdit for the value
         self.line_edit_sucrose = QtWidgets.QLineEdit()
         self.line_edit_sucrose.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
 
-        # Add the line edit and label to the group box layout
         group_box_layout.addWidget(self.line_edit_sucrose)
         group_box_layout.addWidget(unit_label)
-
-        # Set the group box layout
         group_box_sucrose.setLayout(group_box_layout)
-
-        
-        layout_sucrose = QtWidgets.QVBoxLayout(self.frame_sucrose)
-        layout_sucrose.setAlignment(QtCore.Qt.AlignCenter)
-        layout_sucrose.addWidget(label_sucrose)
-        layout_sucrose.addWidget(progress_bar_frame)
-        layout_sucrose.addWidget(group_box_sucrose)
-
-        self.frame_sucrose.setLayout(layout_sucrose)
         #endregion
         
-        # region : Frame blood
-        self.frame_blood = QtWidgets.QFrame(self.centralwidget)
-        self.frame_blood.setStyleSheet("background-color: #222222; border-radius: 15px;")
+        layout_sucrose.addWidget(label_sucrose)                                             #add label to layout 
+        layout_sucrose.addWidget(progress_bar_frame)                                        #add progress bar to the layout 
+        layout_sucrose.addWidget(group_box_sucrose)                                         #add group box to the layout 
+        #endregion
+        
+        # region : Blood
+        self.frame_blood = QtWidgets.QFrame(self.centralwidget)                             # create blood frame 
+        self.frame_blood.setStyleSheet("background-color: #222222; border-radius: 15px;")   
         self.frame_blood.setObjectName("frame_d_bloodFlowrate")
-
+        
+        layout_blood = QtWidgets.QVBoxLayout(self.frame_blood)                              # create layout for blood frame 
+        self.frame_blood.setLayout(layout_blood)                                            # set layout to blood frame
+        layout_blood.setAlignment(QtCore.Qt.AlignCenter)
+        
+        #region : label
         label_blood = QtWidgets.QLabel(self.frame_blood)
         label_blood.setStyleSheet(title_style)
         label_blood.setText("BLOOD")
         label_blood.setAlignment(QtCore.Qt.AlignCenter)
-
-        # Create a QGroupBox for the line edit and label
+        #endregion
+        
+        #region : group box
         group_box_blood = QtWidgets.QGroupBox(self.frame_blood)
         group_box_blood.setStyleSheet("""
                                         QGroupBox {
@@ -210,27 +209,31 @@ class Ui_MainWindow(object):
         group_box_layout_blood.addWidget(unit_label_blood)
 
         # Set the group box layout
-        group_box_blood.setLayout(group_box_layout_blood)
-
-        layout_blood = QtWidgets.QVBoxLayout(self.frame_blood)
-        layout_blood.setAlignment(QtCore.Qt.AlignCenter)
-        layout_blood.addWidget(label_blood)
-        layout_blood.addWidget(group_box_blood)
-        self.frame_blood.setLayout(layout_blood)
+        group_box_blood.setLayout(group_box_layout_blood)        
+        #endregion 
+        
+        layout_blood.addWidget(label_blood)                                                 #add label to layout
+        layout_blood.addWidget(group_box_blood)                                             #add group box to layout 
         #endregion
 
         # region : Frame ethanol
-        self.frame_ethanol = QtWidgets.QFrame(self.centralwidget)
+        
+        self.frame_ethanol = QtWidgets.QFrame(self.centralwidget)                                   #create frame for ethanol
         self.frame_ethanol.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_ethanol.setObjectName("frame_d_ethanolFlowrate")
         
+        layout_ethanol = QtWidgets.QVBoxLayout(self.frame_ethanol)                                  #create layout for ethanol frame                   
+        layout_ethanol.setAlignment(QtCore.Qt.AlignCenter)
+        self.frame_ethanol.setLayout(layout_ethanol)                                                #set layout to ethanol frame 
 
+        # region : label 
         label_ethanol = QtWidgets.QLabel(self.frame_ethanol)
         label_ethanol.setStyleSheet(title_style)
         label_ethanol.setText("ETHANOL")
         label_ethanol.setAlignment(QtCore.Qt.AlignCenter)
+        #endregion
 
-        # Frame to hold the progress bar
+        # region : Progress bar 
         progress_bar_frame_ethanol = QtWidgets.QFrame(self.frame_ethanol)
         progress_bar_frame_ethanol.setObjectName("progress_bar_frame_ethanol")
 
@@ -245,8 +248,9 @@ class Ui_MainWindow(object):
         progress_bar_layout_ethanol = QtWidgets.QHBoxLayout(progress_bar_frame_ethanol)
         progress_bar_layout_ethanol.setAlignment(QtCore.Qt.AlignCenter)
         progress_bar_layout_ethanol.addWidget(self.progress_bar_ethanol)
-
-        # Create a QGroupBox for the line edit and label
+        #endregion
+        
+        # region : Group box 
         group_box_ethanol = QtWidgets.QGroupBox(self.frame_ethanol)
         group_box_ethanol.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
         group_box_ethanol.setAlignment(QtCore.Qt.AlignCenter)
@@ -268,14 +272,14 @@ class Ui_MainWindow(object):
 
         # Set the group box layout
         group_box_ethanol.setLayout(group_box_layout_ethanol)
-
-        layout_ethanol = QtWidgets.QVBoxLayout(self.frame_ethanol)
-        layout_ethanol.setAlignment(QtCore.Qt.AlignCenter)
+        #endregion 
+        
+        
         layout_ethanol.addWidget(label_ethanol)
         layout_ethanol.addWidget(progress_bar_frame_ethanol)
         layout_ethanol.addWidget(group_box_ethanol)
 
-        self.frame_ethanol.setLayout(layout_ethanol)
+        
         #endregion 
         
         #adding each of the frames to the application region 1 and then adding application region 1 to application region

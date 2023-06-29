@@ -116,7 +116,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.axes_voltage.set_title('My Title', color='#FFFFFF')
         
         self.ui.canvas_voltage.draw()
-#endregion: PLOTTING FUNCTIONS
+#endregion
 
 # region : CONNECTION CIRCLE FUNCTION           
     def check_coms(self):
@@ -127,7 +127,7 @@ class Functionality(QtWidgets.QMainWindow):
         else:
             # Change circle color to white
             self.ui.circles["Temperature Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
-#endregion : CONNECTION CIRCLE FUNCTION
+#endregion 
 
 # region : ROUND PROGRESS BAR FUNCTIONS 
     def updateSucroseProgressBar(self):
@@ -147,7 +147,7 @@ class Functionality(QtWidgets.QMainWindow):
                 self.ui.progress_bar_ethanol.setValue(value)
         else:
             self.ui.progress_bar_ethanol.setValue(0)
-#endregion : ROUND PROGRESS BAR FUNCTIONS
+#endregion 
 
 # region : CLOSE EVENT FUNCTION
     def closeEvent(self, event):
@@ -156,4 +156,4 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.line_edit_sucrose.deleteLater()
         self.coms_timer.stop()
         event.accept()
-# endregion : 
+# endregion 
