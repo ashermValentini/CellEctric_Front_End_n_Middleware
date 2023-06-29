@@ -109,12 +109,12 @@ class Ui_MainWindow(object):
         self.application_region_1_layout = QtWidgets.QVBoxLayout(self.application_region_1_widget)
 
         # region : Sucrose
-        self.frame_sucrose = QtWidgets.QFrame(self.centralwidget)                           # create sucrose frame 
+        self.frame_sucrose = QtWidgets.QFrame(self.centralwidget)  # create sucrose frame
         self.frame_sucrose.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_sucrose.setObjectName("frame_d_sucroseFlowrate")
-        
-        layout_sucrose = QtWidgets.QVBoxLayout(self.frame_sucrose)                          # create layout for sucrose frame 
-        self.frame_sucrose.setLayout(layout_sucrose)                                        # set layout to sucrose frame 
+
+        layout_sucrose = QtWidgets.QVBoxLayout(self.frame_sucrose)  # create layout for sucrose frame
+        self.frame_sucrose.setLayout(layout_sucrose)  # set layout to sucrose frame
         layout_sucrose.setAlignment(QtCore.Qt.AlignCenter)
 
         # region: label
@@ -122,30 +122,57 @@ class Ui_MainWindow(object):
         label_sucrose.setStyleSheet(title_style)
         label_sucrose.setText("SUCROSE")
         label_sucrose.setAlignment(QtCore.Qt.AlignCenter)
-        #endregion
-        # region: progress bar 
-        progress_bar_frame = QtWidgets.QFrame(self.frame_sucrose)       # create frame for progress bar 
-        progress_bar_frame.setObjectName("progress_bar_frame")          
-        
-        progress_bar_layout = QtWidgets.QHBoxLayout(progress_bar_frame) # create layout for progress bar frame
-        progress_bar_layout.setAlignment(QtCore.Qt.AlignCenter)
-        progress_bar_frame.setLayout(progress_bar_layout)               # set layout to progress bar frame 
+        layout_sucrose.addWidget(label_sucrose)  # add label to layout
+        layout_sucrose.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        # endregion
 
-        self.progress_bar_sucrose = QRoundProgressBar()                 # create progress bar  
+        # region: progress bar and button
+        progress_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
+
+        self.progress_bar_sucrose = QRoundProgressBar()  # create progress bar
         self.progress_bar_sucrose.setFixedSize(65, 65)
-        self.progress_bar_sucrose.setRange(0, 10)  
-        self.progress_bar_sucrose.setValue(0)  
+        self.progress_bar_sucrose.setRange(0, 10)
+        self.progress_bar_sucrose.setValue(0)
         self.progress_bar_sucrose.setBarColor('#0796FF')
+        
+        progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
+        progress_button_layout.addWidget(self.progress_bar_sucrose)  # add progress bar to the layout
+        progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
 
-        progress_bar_layout.addWidget(self.progress_bar_sucrose)        # add progress bar to the layout 
-        #endregion
-        # region: Groupbox
-        group_box_sucrose = QtWidgets.QGroupBox(self.frame_sucrose)
+        button_sucrose = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_TEAM_GUI\assets\images\play_pause.png'), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        button_sucrose.setIcon(icon)
+        button_sucrose.setIconSize(QtCore.QSize(24, 24))  # Adjust size as needed
+        button_sucrose.setStyleSheet("""
+            QPushButton {
+                border: 2px solid #8f8f91;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        progress_button_layout.addWidget(button_sucrose)  # add button to the layout
+
+        layout_sucrose.addLayout(progress_button_layout)  # add layout for progress bar and button to main layout
+        # endregion
+       
+        # region : Inputs
+        group_boxes_layout = QtWidgets.QHBoxLayout()  # create layout for both group boxes
+        # region: Groupbox 1
+        group_box_sucrose = QtWidgets.QGroupBox(self.frame_sucrose)  # create groupbox
         group_box_sucrose.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
         group_box_sucrose.setAlignment(QtCore.Qt.AlignCenter)
-
-
-        group_box_layout = QtWidgets.QHBoxLayout(group_box_sucrose)
+        group_box_layout = QtWidgets.QHBoxLayout(group_box_sucrose)  # create layout for groupbox
+        group_box_sucrose.setLayout(group_box_layout)  # set layout to groupbox
 
         unit_label = QtWidgets.QLabel("ml/min")
         unit_label.setStyleSheet("color: white;")
@@ -155,13 +182,29 @@ class Ui_MainWindow(object):
 
         group_box_layout.addWidget(self.line_edit_sucrose)
         group_box_layout.addWidget(unit_label)
-        group_box_sucrose.setLayout(group_box_layout)
+        # endregion
+        # region: Groupbox 2
+        group_box_sucrose_2 = QtWidgets.QGroupBox(self.frame_sucrose)  # create second groupbox
+        group_box_sucrose_2.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
+        group_box_sucrose_2.setAlignment(QtCore.Qt.AlignCenter)
+        group_box_layout_2 = QtWidgets.QHBoxLayout(group_box_sucrose_2)  # create layout for second groupbox
+        group_box_sucrose_2.setLayout(group_box_layout_2)  # set layout to second groupbox
+
+        unit_label_2 = QtWidgets.QLabel("s")  # unit for time variable
+        unit_label_2.setStyleSheet("color: white;")
+
+        self.line_edit_sucrose_2 = QtWidgets.QLineEdit()
+        self.line_edit_sucrose_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+
+        group_box_layout_2.addWidget(self.line_edit_sucrose_2)
+        group_box_layout_2.addWidget(unit_label_2)
+        # endregion
+        group_boxes_layout.addWidget(group_box_sucrose)
+        group_boxes_layout.addWidget(group_box_sucrose_2)
+        layout_sucrose.addLayout(group_boxes_layout)  # add layout for group boxes to main layout
         #endregion
-        
-        layout_sucrose.addWidget(label_sucrose)                                             #add label to layout 
-        layout_sucrose.addWidget(progress_bar_frame)                                        #add progress bar to the layout 
-        layout_sucrose.addWidget(group_box_sucrose)                                         #add group box to the layout 
-        #endregion
+
+        # endregion
         
         # region : Blood
         self.frame_blood = QtWidgets.QFrame(self.centralwidget)                             # create blood frame 
@@ -508,10 +551,10 @@ class Ui_MainWindow(object):
         frame_d_signal.setObjectName("frame_d_psuButton")
         self.application_region_3_layout.addWidget(frame_d_signal)
 
-            # Create a layout for this frame
+        # Create a layout for this frame
         frame_d_signal_layout = QtWidgets.QVBoxLayout(frame_d_signal)# Create a vertical layout for this frame
 
-            # Create a label for this frame
+        # Create a label for this frame
         label = QtWidgets.QLabel("SIGNAL", frame_d_signal)
         label.setAlignment(QtCore.Qt.AlignCenter)
         label.setStyleSheet(title_style)  # Set the color of the text as needed
