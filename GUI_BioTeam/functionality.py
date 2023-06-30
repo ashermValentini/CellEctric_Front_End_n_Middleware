@@ -7,6 +7,8 @@ import matplotlib.ticker as ticker
 import numpy as np
 from read_temperature import read_temperature
 
+from example_handshake_3PAC import handshake_3PAC, find_esp
+
 class Functionality(QtWidgets.QMainWindow):
     def __init__(self):
         super(Functionality, self).__init__()
@@ -14,9 +16,6 @@ class Functionality(QtWidgets.QMainWindow):
     # Set up the UI layout
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        
-
-
         
     # temp plotting frame
         self.temp_is_plotting = False  #temperature plotting button state flag
@@ -121,12 +120,19 @@ class Functionality(QtWidgets.QMainWindow):
 # region : CONNECTION CIRCLE FUNCTION           
     def check_coms(self):
         temperature = read_temperature()
+        esp = find_esp()
         if temperature is not None:
             # Change circle color to green
             self.ui.circles["Temperature Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
         else:
             # Change circle color to white
             self.ui.circles["Temperature Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
+            
+        if esp is not None:
+            self.ui.circles["3PAC"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
+        else: 
+            self.ui.circles["3PAC"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
+
 #endregion 
 
 # region : ROUND PROGRESS BAR FUNCTIONS 
