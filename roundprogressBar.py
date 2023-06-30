@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont, QColor, QPen
 
 
 class QRoundProgressBar(QtWidgets.QWidget):
@@ -32,7 +33,7 @@ class QRoundProgressBar(QtWidgets.QWidget):
         self.outlinePenWidth = 2
         self.dataPenWidth = 2
         self.rebuildBrush = False
-        self.format = "%v ml"  # Update the format to display values in ml
+        self.format = "%v ml/mn"  # Update the format to display values in ml
         self.decimals = 0  # Update the number of decimals to 0
         self.updateFlags = self.UF_VALUE
         self.gradientData = []
@@ -245,8 +246,8 @@ class QRoundProgressBar(QtWidgets.QWidget):
 
         text = self.valueToText(value)
 
-        f = self.font()
-        f.setPixelSize(int(innerRadius * 0.3))  # Adjust font size to make it smaller
+        f = QFont("Archivo")  # Set font family to Archivo
+        f.setPixelSize(int(innerRadius * 0.25))  # Adjust font size to make it smaller
         p.setFont(f)
 
         textRect = innerRect
