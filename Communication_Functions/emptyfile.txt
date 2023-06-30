@@ -1,0 +1,2 @@
+This is just a temporary file for folder creation
+(Not so easy on GitHub. Need to make a file to initialize the folder)
