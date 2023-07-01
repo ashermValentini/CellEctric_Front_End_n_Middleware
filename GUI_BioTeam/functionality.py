@@ -7,7 +7,7 @@ import matplotlib.ticker as ticker
 import numpy as np
 from read_temperature import read_temperature
 
-from example_handshake_3PAC import handshake_3PAC, find_esp
+from example_handshake_3PAC import find_esp
 
 class Functionality(QtWidgets.QMainWindow):
     def __init__(self):
