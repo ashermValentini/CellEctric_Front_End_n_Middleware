@@ -1,0 +1,33 @@
+PWD c:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_Team_GUI\Documentation
+INPUT C:\Users\offic\AppData\Local\MiKTeX\miktex\data\le\pdftex\pdflatex.fmt
+INPUT c:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_Team_GUI\Documentation\Specifications.tex
+OUTPUT Specifications.log
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\base\report.cls
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\base\report.cls
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\base\size12.clo
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\base\size12.clo
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\base\size12.clo
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmr12.tfm
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\lipsum\lipsum.sty
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\lipsum\lipsum.sty
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\l3packages\l3keys2e\l3keys2e.sty
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\l3packages\l3keys2e\l3keys2e.sty
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\l3kernel\expl3.sty
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\l3kernel\expl3.sty
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\l3backend\l3backend-pdftex.def
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\l3backend\l3backend-pdftex.def
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\lipsum\lipsum.ltd.tex
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\tex\latex\lipsum\lipsum.ltd.tex
+INPUT .\Specifications.aux
+INPUT .\Specifications.aux
+INPUT Specifications.aux
+OUTPUT Specifications.aux
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmr17.tfm
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\fonts\tfm\public\cm\cmbx12.tfm
+OUTPUT Specifications.pdf
+INPUT C:\Users\offic\AppData\Local\MiKTeX\fonts\map\pdftex\pdftex.map
+INPUT Specifications.aux
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmbx12.pfb
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmbx12.pfb
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmr12.pfb
+INPUT C:\Users\offic\AppData\Local\Programs\MiKTeX\fonts\type1\public\amsfonts\cm\cmr12.pfb
