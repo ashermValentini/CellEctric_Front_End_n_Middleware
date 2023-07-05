@@ -1,0 +1,38 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>icons/elastizitat.png</file>
+    <file>icons_bright/CellEctric-Logo-wide.png</file>
+    <file>icons_bright/dark blue cropped.PNG</file>
+    <file>icons_bright/icon_control_w.png</file>
+    <file>icons_bright/icon_current_w.png</file>
+    <file>icons_bright/icon_dashboard_w.png</file>
+    <file>icons_bright/icon_down_w.png</file>
+    <file>icons_bright/icon_gear_w.png</file>
+    <file>icons_bright/icon_graph_w.png</file>
+    <file>icons_bright/icon_lama_w.png</file>
+    <file>icons_bright/icon_menu_w.png</file>
+    <file>icons_bright/icon_minus_w.png</file>
+    <file>icons_bright/icon_plus_w.png</file>
+    <file>icons_bright/icon_pressure_w.png</file>
+    <file>icons_bright/icon_temperature_w.png</file>
+    <file>icons_bright/icon_up_w.png</file>
+    <file>icons_bright/icon_voltage_w.png</file>
+    <file>icons/lama.png</file>
+    <file>icons/minus.png</file>
+    <file>icons/minus.png</file>
+    <file>icons/schaltflache-hinzufugen.png</file>
+    <file>icons/batterie.png</file>
+    <file>icons/hoch.png</file>
+    <file>icons/runter.png</file>
+    <file>icons/donner.png</file>
+    <file>icons/thermometer.png</file>
+    <file>icons/Pulse_Image.png</file>
+    <file>icons/menu-offnen.png</file>
+    <file>icons/dark blue cropped.PNG</file>
+    <file>icons/CellEctric-Logo-wide.png</file>
+    <file>icons/chart-aufstellung.png</file>
+    <file>icons/controller-pad.png</file>
+    <file>icons/dashboard-oberflache.png</file>
+    <file>icons/rahmen.png</file>
+  </qresource>
+</RCC>
