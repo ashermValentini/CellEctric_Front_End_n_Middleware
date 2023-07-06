@@ -1,4 +1,12 @@
 import sys
+
+# from ..Communication_Functions.pgpsu_communication_functions import *
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from Communication_Functions.pgpsu_communication_functions import *
+
+
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QLineEdit, QLabel, QButtonGroup
 from PyQt5.QtCore import pyqtSlot, QFile, QTextStream
 from pathlib import Path
@@ -80,8 +88,13 @@ class MainWindow(QMainWindow):
         self.ui.button_valvestate_cleaning.clicked.connect(self.change_valve_state_cleaning)
 
 
-
-
+        # =================
+        # START SERIAL CONNECTION TO DEVICES
+        # =================
+        self.device_serials = serial_start_connections()
+        self.ui.display_system_log.append("Connection to Devices established:")
+        for device_serial in self.device_serials:
+            self.ui.display_system_log.append("Port: " + device_serial.name)
 
 
     # =================================================
@@ -238,12 +251,28 @@ class MainWindow(QMainWindow):
     # =================================================
 
     def psu_button_toggle(self):
+        # PSU IS SWITCHING OFF
         if self.flag_psu_on:
-            self.ui.display_system_log.append("PSU: OFF")
-            self.flag_psu_on = False
+            sucess = send_PSU_enable(self.device_serials[0], 1)
+
+            # CHECK IF DATA WAS SENT SUCESSFULLY
+            if sucess:                                          # SENDING SUCESSFUL
+                self.ui.display_system_log.append("PSU: OFF")   # LOG TO GUI
+                self.flag_psu_on = False                        # SET FLAG FOR PSU STATE
+            else:                                                                       # SENDING NOT POSSIBLE (5 tries)
+                self.ui.display_system_log.append("ERROR: Could not switch PSU OFF")    # LOG TO GUI
+                self.ui.button_toggle_psu_enable.setChecked(True)                       # SET THE BUTTON TO "ON" AGAIN
+
+        # PSU IS SWITCHING ON
         else:
-            self.ui.display_system_log.append("PSU: ON")
-            self.flag_psu_on = True
+            sucess = send_PSU_disable(self.device_serials[0], 1)
+            if sucess:
+                self.ui.display_system_log.append("PSU: ON")
+                self.flag_psu_on = True
+            else: 
+                self.ui.display_system_log.append("ERROR: Could not switch PSU ON")
+                self.ui.button_toggle_psu_enable.setChecked(False)
+
 
     def pg_button_toggle(self):
         if self.flag_pg_on:
@@ -289,7 +318,7 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     # OPEN THE WINDOW
     app = QApplication(sys.argv)
-    app.setStyleSheet(Path('style.qss').read_text())
+    app.setStyleSheet(Path('GUI_ElectronicsTeam/style.qss').read_text())
 
     window = MainWindow()
     window.show()
