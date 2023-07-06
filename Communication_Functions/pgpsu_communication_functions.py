@@ -170,7 +170,7 @@ def find_serial_port(vendor_id, product_id):
         Returns:
                 ser (str):	Device (e.g. "COM12")
     '''
-    ser = None
+    serial = None
 
     # LIST ALL COM PORTS
     ports = list_ports.comports()
@@ -181,9 +181,12 @@ def find_serial_port(vendor_id, product_id):
             if port.vid == vendor_id and port.pid == product_id:
                 serial = port.device
         except Exception as error:
-            print("An exception occurred:", error)
+            print("An exception occurred while searching for ports:", error)
 
+    if serial == None:
+        raise Exception("Could not find the device: Vendor-ID: {}, Product-ID: {}".format(hex(vendor_id), hex(product_id)))
     return serial
+
 
 # ESTABLISH ALL SERIAL CONNECTIONS TO DEVICES IN THE LIST
 def establish_serial_connections(com_list):
@@ -203,9 +206,10 @@ def establish_serial_connections(com_list):
             ser = serial.Serial(com_port, 9600, write_timeout=5)
             serials.append(ser)
         except:
-            return False
+            raise Exception("Could not establish a connection to the port {}".format(com_port))
 
     return serials
+
 
 # FUNCTION TO READ AND PRINT SERIAL DATA FROM CONNECTED DEVICE
 def readSerialData(ser, verbose=0):
@@ -262,6 +266,8 @@ def writeSerialData(ser, data_to_send, num_attempts=NUM_ATTEMPTS, verbose=0):
     for i in range(num_attempts):
         try:
             ser.flushOutput()
+            ser.flushInput()
+            time.sleep(0.25)
             ser.write(data_to_send)
             success = True
             if verbose: print('Data sent successfully')
@@ -311,7 +317,7 @@ def CraftPackage_run(verbose=0):
     if verbose: print(sendable_bytedata)
 
     # TEST THE CRC AND SET DATA TO 0 IF CRC IS WRONG
-    crc_check, _ = (sendable_bytedata, verbose)
+    crc_check, _ = testCRC(sendable_bytedata, verbose)
     if not crc_check: sendable_bytedata = 0
 
     return sendable_bytedata
@@ -349,7 +355,7 @@ def CraftPackage_stop(verbose=0):
     if verbose: print(sendable_bytedata)
 
     # TEST THE CRC AND SET DATA TO 0 IF CRC IS WRONG
-    crc_check, _ = (sendable_bytedata, verbose)
+    crc_check, _ = testCRC(sendable_bytedata, verbose)
     if not crc_check: sendable_bytedata = 0
 
     return sendable_bytedata
@@ -405,7 +411,7 @@ def PSU_CraftPackage_setSetpoints(posVoltVal, negVoltVal, verbose=0):
     if verbose: print(sendable_bytedata)
 
     # TEST THE CRC AND SET DATA TO 0 IF CRC IS WRONG
-    crc_check, _ = (sendable_bytedata, verbose)
+    crc_check, _ = testCRC(sendable_bytedata, verbose)
     if not crc_check: sendable_bytedata = 0
 
     return sendable_bytedata
@@ -465,7 +471,7 @@ def PG_CraftPackage_setTimes(repRate=5000, frequency=0 ,pulseLength=75, onTime=2
     if verbose: print(sendable_bytedata)
 
     # TEST THE CRC AND SET DATA TO 0 IF CRC IS WRONG
-    crc_check, _ = (sendable_bytedata, verbose)
+    crc_check, _ = testCRC(sendable_bytedata, verbose)
     if not crc_check: sendable_bytedata = 0
 
     return sendable_bytedata
