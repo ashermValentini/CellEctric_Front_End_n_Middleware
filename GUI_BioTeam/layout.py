@@ -259,71 +259,103 @@ class Ui_MainWindow(object):
         layout_blood.addWidget(group_box_blood)                                             #add group box to layout 
         #endregion
 
-        # region : Frame ethanol
-        
-        self.frame_ethanol = QtWidgets.QFrame(self.centralwidget)                                   #create frame for ethanol
+        # region : Ethanol
+        self.frame_ethanol = QtWidgets.QFrame(self.centralwidget)  # create ethanol frame
         self.frame_ethanol.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_ethanol.setObjectName("frame_d_ethanolFlowrate")
-        
-        layout_ethanol = QtWidgets.QVBoxLayout(self.frame_ethanol)                                  #create layout for ethanol frame                   
-        layout_ethanol.setAlignment(QtCore.Qt.AlignCenter)
-        self.frame_ethanol.setLayout(layout_ethanol)                                                #set layout to ethanol frame 
 
-        # region : label 
+        layout_ethanol = QtWidgets.QVBoxLayout(self.frame_ethanol)  # create layout for ethanol frame
+        self.frame_ethanol.setLayout(layout_ethanol)  # set layout to ethanol frame
+        layout_ethanol.setAlignment(QtCore.Qt.AlignCenter)
+
+        # region: label
         label_ethanol = QtWidgets.QLabel(self.frame_ethanol)
         label_ethanol.setStyleSheet(title_style)
         label_ethanol.setText("ETHANOL")
         label_ethanol.setAlignment(QtCore.Qt.AlignCenter)
-        #endregion
+        layout_ethanol.addWidget(label_ethanol)  # add label to layout
+        layout_ethanol.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        # endregion
 
-        # region : Progress bar 
-        progress_bar_frame_ethanol = QtWidgets.QFrame(self.frame_ethanol)
-        progress_bar_frame_ethanol.setObjectName("progress_bar_frame_ethanol")
+        # region: progress bar and button
+        progress_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
 
-        self.progress_bar_ethanol = QRoundProgressBar()
+        self.progress_bar_ethanol = QRoundProgressBar()  # create progress bar
         self.progress_bar_ethanol.setFixedSize(65, 65)
-        self.progress_bar_ethanol.setRange(0, 10)  # Set the range to 0-10ml
-        self.progress_bar_ethanol.setValue(0)  # Set the initial value to 0
+        self.progress_bar_ethanol.setRange(0, 10)
+        self.progress_bar_ethanol.setValue(0)
         self.progress_bar_ethanol.setBarColor('#0796FF')
-
-
-        # Create a layout for the progress bar frame
-        progress_bar_layout_ethanol = QtWidgets.QHBoxLayout(progress_bar_frame_ethanol)
-        progress_bar_layout_ethanol.setAlignment(QtCore.Qt.AlignCenter)
-        progress_bar_layout_ethanol.addWidget(self.progress_bar_ethanol)
-        #endregion
         
-        # region : Group box 
-        group_box_ethanol = QtWidgets.QGroupBox(self.frame_ethanol)
+        progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
+        progress_button_layout.addWidget(self.progress_bar_ethanol)  # add progress bar to the layout
+        progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
+
+        button_ethanol = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_Team_GUI\GUI_BioTeam\assets\images\play_pause.png'), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        button_ethanol.setIcon(icon)
+        button_ethanol.setIconSize(QtCore.QSize(24, 24))  # Adjust size as needed
+        button_ethanol.setStyleSheet("""
+            QPushButton {
+                border: 2px solid #8f8f91;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        progress_button_layout.addWidget(button_ethanol)  # add button to the layout
+
+        layout_ethanol.addLayout(progress_button_layout)  # add layout for progress bar and button to main layout
+        # endregion
+       
+        # region : Inputs
+        group_boxes_layout = QtWidgets.QHBoxLayout()  # create layout for both group boxes
+        # region: Groupbox 1
+        group_box_ethanol = QtWidgets.QGroupBox(self.frame_ethanol)  # create groupbox
         group_box_ethanol.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
         group_box_ethanol.setAlignment(QtCore.Qt.AlignCenter)
+        group_box_layout = QtWidgets.QHBoxLayout(group_box_ethanol)  # create layout for groupbox
+        group_box_ethanol.setLayout(group_box_layout)  # set layout to groupbox
 
-        # Create a QHBoxLayout for the group box
-        group_box_layout_ethanol = QtWidgets.QHBoxLayout(group_box_ethanol)
+        unit_label = QtWidgets.QLabel("ml/min")
+        unit_label.setStyleSheet("color: white;")
 
-        # Create the QLabel for the unit
-        unit_label_ethanol = QtWidgets.QLabel("ml/min")
-        unit_label_ethanol.setStyleSheet("color: white;")
-
-        # Create the QLineEdit for the value
         self.line_edit_ethanol = QtWidgets.QLineEdit()
         self.line_edit_ethanol.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
 
-        # Add the line edit and label to the group box layout
-        group_box_layout_ethanol.addWidget(self.line_edit_ethanol)
-        group_box_layout_ethanol.addWidget(unit_label_ethanol)
+        group_box_layout.addWidget(self.line_edit_ethanol)
+        group_box_layout.addWidget(unit_label)
+        # endregion
+        # region: Groupbox 2
+        group_box_ethanol_2 = QtWidgets.QGroupBox(self.frame_ethanol)  # create second groupbox
+        group_box_ethanol_2.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
+        group_box_ethanol_2.setAlignment(QtCore.Qt.AlignCenter)
+        group_box_layout_2 = QtWidgets.QHBoxLayout(group_box_ethanol_2)  # create layout for second groupbox
+        group_box_ethanol_2.setLayout(group_box_layout_2)  # set layout to second groupbox
 
-        # Set the group box layout
-        group_box_ethanol.setLayout(group_box_layout_ethanol)
-        #endregion 
-        
-        
-        layout_ethanol.addWidget(label_ethanol)
-        layout_ethanol.addWidget(progress_bar_frame_ethanol)
-        layout_ethanol.addWidget(group_box_ethanol)
+        unit_label_2 = QtWidgets.QLabel("s")  # unit for time variable
+        unit_label_2.setStyleSheet("color: white;")
 
-        
-        #endregion 
+        self.line_edit_ethanol_2 = QtWidgets.QLineEdit()
+        self.line_edit_ethanol_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+
+        group_box_layout_2.addWidget(self.line_edit_ethanol_2)
+        group_box_layout_2.addWidget(unit_label_2)
+        # endregion
+        group_boxes_layout.addWidget(group_box_ethanol)
+        group_boxes_layout.addWidget(group_box_ethanol_2)
+        layout_ethanol.addLayout(group_boxes_layout)  # add layout for group boxes to main layout
+        #endregion
+
+        # endregion
         
         #adding each of the frames to the application region 1 and then adding application region 1 to application region
         self.application_region_1_layout.addWidget(self.frame_sucrose)
