@@ -8,6 +8,7 @@ import numpy as np                  # because science
 import struct                       # needed for CRC Check (unpacking bytes to array)
 import time                         # to sleep
 import matplotlib.pyplot as plt     # to print stuff nicely
+import minimalmodbus                # speceific to the temp sensor
 
 __author__ = "Nicolas Heimburger"
 __version__ = "1.0.0"
@@ -183,8 +184,9 @@ def find_serial_port(vendor_id, product_id):
         except Exception as error:
             print("An exception occurred while searching for ports:", error)
 
-    if serial == None:
-        raise Exception("Could not find the device: Vendor-ID: {}, Product-ID: {}".format(hex(vendor_id), hex(product_id)))
+    #if serial == None:
+    #    raise Exception("Could not find the device: Vendor-ID: {}, Product-ID: {}".format(hex(vendor_id), hex(product_id)))
+    
     return serial
 
 
@@ -512,13 +514,27 @@ def serial_start_connections(verbose=0):
     # FIND SERIAL PORTS OF THE DEVICES AND PUT IT INTO A LIST
     psu_serial = find_serial_port(SERIAL_VENDOR_ID, SERIAL_PSU_PRODUCT_ID)
     pg_serial = find_serial_port(SERIAL_VENDOR_ID, SERIAL_PG_PRODUCT_ID)
-    com_list = [psu_serial, pg_serial]
+    pac_serial = None                                                       # TODO: Needs to be implemented
+    #tempsens_serial = find_serial_port(SERIAL_TEMPSENS_VENDOR_ID, SERIAL_TEMPSENS_PRODUCT_ID)
+
+    com_list = [psu_serial, pg_serial, pac_serial]
     if verbose: print(com_list)
 
     # ESTABLISH ALL SERIAL CONNECTIONS (OR RETURN FALSE, IF NOT POSSIBLE)
     my_serials = establish_serial_connections(com_list)
     if my_serials == False:
         return False
+
+    temperature_port = find_serial_port(SERIAL_TEMPSENS_VENDOR_ID, SERIAL_TEMPSENS_PRODUCT_ID)
+    temp_sensor = minimalmodbus.Instrument(temperature_port, 1) 
+    temp_sensor.serial.baudrate = 9600
+    temp_sensor.serial.bytesize = 8
+    temp_sensor.serial.parity = serial.PARITY_NONE
+    temp_sensor.serial.stopbits = 1
+    temp_sensor.serial.timeout = 0.1
+    temp_sensor.mode = minimalmodbus.MODE_RTU
+
+    my_serials.append(temp_sensor)
     
     # PRINT STUFF
     if verbose:
@@ -549,8 +565,6 @@ def serial_close_connections(ser_list, verbose=0):
             success = False
     
     return success
-
-
 
 # ==============================
 # .______     _______. __    __  
@@ -850,3 +864,28 @@ def read_next_PG_pulse(ser, timeout=0, verbose=0):
     if verbose: print("PULSE END RECEIVED")
 
     return pulseData, pulseDataLength
+
+
+# =============================================================================================
+# .___________. _______ .___  ___. .______             _______. _______ .__   __.      _______.
+# |           ||   ____||   \/   | |   _  \           /       ||   ____||  \ |  |     /       |
+# `---|  |----`|  |__   |  \  /  | |  |_)  |  ______ |   (----`|  |__   |   \|  |    |   (----`
+#     |  |     |   __|  |  |\/|  | |   ___/  |______| \   \    |   __|  |  . `  |     \   \    
+#     |  |     |  |____ |  |  |  | |  |           .----)   |   |  |____ |  |\   | .----)   |   
+#     |__|     |_______||__|  |__| | _|           |_______/    |_______||__| \__| |_______/    
+#
+# =============================================================================================
+
+
+#==================================================================
+#=============FETCH TEMPERATURE DATA===============================
+#==================================================================
+
+def read_temperature(ser):
+    try:
+        raw_temperature = ser.read_register(0x0E, functioncode=4, signed=True)
+        temperature = raw_temperature / 10.0
+        return temperature
+    except IOError:
+        print("Failed to read from temperature sensor, retrying...")
+        return None

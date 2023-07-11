@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1194, 668)
+        MainWindow.resize(1109, 770)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
@@ -334,12 +334,9 @@ class Ui_MainWindow(object):
         self.Window_Graphs.setObjectName("Window_Graphs")
         self.verticalLayout_10 = QtWidgets.QVBoxLayout(self.Window_Graphs)
         self.verticalLayout_10.setObjectName("verticalLayout_10")
-        self.graph_voltage = QtWidgets.QGraphicsView(self.Window_Graphs)
-        self.graph_voltage.setObjectName("graph_voltage")
-        self.verticalLayout_10.addWidget(self.graph_voltage)
-        self.graph_current = QtWidgets.QGraphicsView(self.Window_Graphs)
-        self.graph_current.setObjectName("graph_current")
-        self.verticalLayout_10.addWidget(self.graph_current)
+        self.MplWidget = MplWidget(self.Window_Graphs)
+        self.MplWidget.setObjectName("MplWidget")
+        self.verticalLayout_10.addWidget(self.MplWidget)
         self.gridLayout_6.addWidget(self.Window_Graphs, 2, 2, 1, 1)
         self.Window_Fluidics = QtWidgets.QWidget(self.Dashboard)
         self.Window_Fluidics.setMinimumSize(QtCore.QSize(550, 350))
@@ -1246,6 +1243,7 @@ class Ui_MainWindow(object):
         self.label_4.setText(_translate("MainWindow", "GRAPHS"))
         self.label_5.setText(_translate("MainWindow", "CONTROL"))
         self.label_6.setText(_translate("MainWindow", "SETTINGS"))
+from mplwidget import MplWidget
 import resources_rc
 
 
