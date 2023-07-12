@@ -4,23 +4,26 @@ import sys
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from Communication_Functions.pgpsu_communication_functions import *
+from Communication_Functions.communication_functions import *
 
 
-from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QLineEdit, QLabel, QButtonGroup
-from PyQt5.QtCore import pyqtSlot, QFile, QTextStream
+from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QLineEdit, QLabel, QButtonGroup, QVBoxLayout
+from PyQt5.QtCore import pyqtSlot, QFile, QTextStream, QTimer
+from PyQt5.uic import loadUi
 from pathlib import Path
 
-from Ui_GUI_Design_01 import Ui_MainWindow
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+import matplotlib.ticker as ticker
 
-#import psu_pg_functions
+import numpy as np
+
+from Ui_GUI_Design_01 import Ui_MainWindow
 
 
 SUCROSE_FLOWRATE_MAX = 10
 ETHANOL_FLOWRATE_MAX = 10
 BLOOD_FLOWRATE_MAX = 5
-
-
 
 
 
@@ -93,8 +96,16 @@ class MainWindow(QMainWindow):
         # =================
         self.device_serials = serial_start_connections()
         self.ui.display_system_log.append("Connection to Devices established:")
-        for device_serial in self.device_serials:
-            self.ui.display_system_log.append("Port: " + device_serial.name)
+        #for device_serial in self.device_serials:
+        #    if device_serial.name is not None:
+        #        self.ui.display_system_log.append("Port: " + device_serial.name)
+        #    else:
+        #        self.ui.display_system_log.append("Port: None")
+
+        # =================
+        # START TEMPERATURE PLOT
+        # =================
+        self.start_temp_plotting()
 
 
     # =================================================
@@ -242,9 +253,41 @@ class MainWindow(QMainWindow):
 
         return input_value_float, input_value_string
 
+    # =================================================
+    # PLOTTING - TEMPERATURE
+    # =================================================
+
+    def start_temp_plotting(self):
+
+        #dynamic x axis 
+        self.xdata = np.linspace(0, 499, 500)  # This creates an array from 0 to 499 with 500 elements.
+
+        # Plotting variables
+        self.interval = 30  # ms
+        self.plotdata = np.zeros(500)
+
+        # TIMER
+        self.timer = QTimer()
+        self.timer.setInterval(self.interval)
+        self.timer.timeout.connect(self.update_temp_plot)
+        self.timer.start()
 
 
 
+    def update_temp_plot(self):
+        temperature = read_temperature(self.device_serials[3])
+        if temperature is not None:
+            self.plotdata = np.roll(self.plotdata, -1)
+            self.plotdata[-1:] = temperature
+            self.ydata = self.plotdata
+            
+            self.xdata = np.roll(self.xdata, -1)
+            self.xdata[-1] = self.xdata[-2] + 1  # This will keep increasing the count on the x-axis
+
+
+        self.ui.MplWidget.canvas.axes.clear()
+        self.ui.MplWidget.canvas.axes.plot(self.xdata, self.ydata)
+        self.ui.MplWidget.canvas.draw()
 
     # =================================================
     # DEVICE TOGGLES
@@ -253,7 +296,7 @@ class MainWindow(QMainWindow):
     def psu_button_toggle(self):
         # PSU IS SWITCHING OFF
         if self.flag_psu_on:
-            sucess = send_PSU_enable(self.device_serials[0], 1)
+            sucess = send_PSU_disable(self.device_serials[0], 1)
 
             # CHECK IF DATA WAS SENT SUCESSFULLY
             if sucess:                                          # SENDING SUCESSFUL
@@ -265,22 +308,39 @@ class MainWindow(QMainWindow):
 
         # PSU IS SWITCHING ON
         else:
-            sucess = send_PSU_disable(self.device_serials[0], 1)
-            if sucess:
-                self.ui.display_system_log.append("PSU: ON")
-                self.flag_psu_on = True
-            else: 
-                self.ui.display_system_log.append("ERROR: Could not switch PSU ON")
-                self.ui.button_toggle_psu_enable.setChecked(False)
+            sucess = send_PSU_enable(self.device_serials[0], 1)
+
+            # CHECK IF DATA WAS SENT SUCESSFULLY
+            if sucess:                                          # SENDING SUCESSFUL
+                self.ui.display_system_log.append("PSU: ON")    # LOG TO GUI
+                self.flag_psu_on = True                         # SET FLAG FOR PSU STATE
+            else:                                                                       # SENDING NOT POSSIBLE (5 tries)
+                self.ui.display_system_log.append("ERROR: Could not switch PSU ON")     # LOG TO GUI
+                self.ui.button_toggle_psu_enable.setChecked(False)                      # SET THE BUTTON TO "ON" AGAIN
 
 
     def pg_button_toggle(self):
         if self.flag_pg_on:
-            self.ui.display_system_log.append("PG: OFF")
-            self.flag_pg_on = False
+            sucess = send_PG_disable(self.device_serials[1], 1)
+
+            # CHECK IF DATA WAS SENT SUCESSFULLY
+            if sucess:                                          # SENDING SUCESSFUL
+                self.ui.display_system_log.append("PG: OFF")    # LOG TO GUI
+                self.flag_pg_on = False                        # SET FLAG FOR PG STATE
+            else:                                                                       # SENDING NOT POSSIBLE (5 tries)
+                self.ui.display_system_log.append("ERROR: Could not switch PG OFF")     # LOG TO GUI
+                self.ui.button_toggle_pg_enable.setChecked(True)                       # SET THE BUTTON TO "ON" AGAIN
         else:
-            self.ui.display_system_log.append("PG: ON")
-            self.flag_pg_on = True
+            sucess = send_PG_enable(self.device_serials[1], 1)
+
+            # CHECK IF DATA WAS SENT SUCESSFULLY
+            if sucess:                                          # SENDING SUCESSFUL
+                self.ui.display_system_log.append("PG: ON")     # LOG TO GUI
+                self.flag_pg_on = True                          # SET FLAG FOR PG STATE
+            else:                                                                       # SENDING NOT POSSIBLE (5 tries)
+                self.ui.display_system_log.append("ERROR: Could not switch PG ON")      # LOG TO GUI
+                self.ui.button_toggle_pg_enable.setChecked(False)                       # SET THE BUTTON TO "ON" AGAIN
+
 
     def pac_button_toggle(self):
         if self.flag_3pac_on:
