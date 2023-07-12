@@ -215,7 +215,7 @@ def establish_serial_connections(com_list):
 
     for com_port in com_list:
         try:
-            ser = serial.Serial(com_port, 9600, write_timeout=5)
+            ser = serial.Serial(com_port, 115200, write_timeout=5)
             serials.append(ser)
         except:
             raise Exception("Could not establish a connection to the port {}".format(com_port))
@@ -940,12 +940,52 @@ def read_flowrate(ser):
 #==================================================================
 #=============3PAC COMMANDS========================================
 #================================================================== 
+
+# HANDSHAKE FUNCTION
+def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_code="HANDSHAKE"):
+    """Make sure connection is established by sending and receiving stuff."""
     
+    # Close and reopen, just to make sure. Had some troubles without it after uploading new firmware and without manual restart of the 3PAC board.
+    print("closing")
+    ser.close()
+    time.sleep(2)
+    print("opening")
+    ser.open()
+
+    # Chill out while everything gets set
+    time.sleep(15)
+
+    # Set a long timeout to complete handshake (and save original timeout in variable for later)
+    timeout = ser.timeout
+    ser.timeout = 2
+
+    # Read and discard everything that may be in the input buffer
+    _ = ser.read_all()
+
+    # Send request to Arduino & read in what Arduino sent
+    ser.write(handshake_code.encode())
+    handshake_message = ser.readline()
+    # Print the handshake message, if desired
+    if print_handshake_message:
+        print("Handshake message: " + handshake_message.decode())
+
+    # Send and receive request again
+    ser.write(handshake_code.encode())
+    handshake_message = ser.readline()
+    # Print the handshake message, if desired
+    if print_handshake_message:
+        print("Handshake message: " + handshake_message.decode())
+
+    # Reset the timeout
+    ser.timeout = timeout
+
+
+
+  
 # CRAFT PACKAGE TO TURN ON PID MODE 
 def turnOnPumpPID(ser):
     # Construct the message
     msg = f'wPS-22'
-    
     # Write the message
     ser.write(msg.encode())
     

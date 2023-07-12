@@ -139,12 +139,12 @@ class Ui_MainWindow(object):
         progress_button_layout.addWidget(self.progress_bar_sucrose)  # add progress bar to the layout
         progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
 
-        button_sucrose = QtWidgets.QPushButton()  # create button
+        self.button_sucrose = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_Team_GUI\GUI_BioTeam\assets\images\play_pause.png'), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        button_sucrose.setIcon(icon)
-        button_sucrose.setIconSize(QtCore.QSize(24, 24))  # Adjust size as needed
-        button_sucrose.setStyleSheet("""
+        self.button_sucrose.setIcon(icon)
+        self.button_sucrose.setIconSize(QtCore.QSize(24, 24))  # Adjust size as needed
+        self.button_sucrose.setStyleSheet("""
             QPushButton {
                 border: 2px solid #8f8f91;
                 border-radius: 6px;
@@ -160,7 +160,7 @@ class Ui_MainWindow(object):
             }
         """)
 
-        progress_button_layout.addWidget(button_sucrose)  # add button to the layout
+        progress_button_layout.addWidget(self.button_sucrose)  # add button to the layout
 
         layout_sucrose.addLayout(progress_button_layout)  # add layout for progress bar and button to main layout
         # endregion

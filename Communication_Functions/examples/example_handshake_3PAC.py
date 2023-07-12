@@ -154,21 +154,7 @@ print("MESSAGE: Send Flow Rates")
 writePumpFlowRate(ser_3PAC, p1fr, p2fr)
 time.sleep(5)
 
-'''
 
-try:
-    while True:  # This loop will run forever
-        if ser_3PAC.in_waiting > 0:  # Check if there is data waiting in the serial buffer
-            line = ser_3PAC.readline().decode('utf-8').strip()  # Read a line from the serial port
-            print(f"Received: {line}")  # Print the received line
-        else:
-            time.sleep(0.1)  # Sleep for a short time to reduce CPU usage
-except KeyboardInterrupt:
-    print("Interrupted by user, closing...")
-finally:
-    ser_3PAC.flush()
-    ser_3PAC.close()
-'''
 
 try:
     while True:  # This loop will run forever
