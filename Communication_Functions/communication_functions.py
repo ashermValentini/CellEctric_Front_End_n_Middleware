@@ -889,3 +889,47 @@ def read_temperature(ser):
     except IOError:
         print("Failed to read from temperature sensor, retrying...")
         return None
+
+
+
+
+#==================================================================
+#=============FETCH FLOWRATE DATA==================================
+#================================================================== 
+
+def read_flowrate(ser):
+    if ser.in_waiting > 0: # Check if there is data waiting in the buffer
+        line = ser.readline().decode('utf-8').strip() # Read line from serial port, decode, and strip whitespace
+        if line.startswith('rAC-'): # Check if the line starts with 'rAC-'
+            try:
+                # Extract the part of the line after 'rAC-', convert to float, and return
+                flow_rate = float(line[4:])
+                return flow_rate
+            except ValueError:
+                print("Error: Couldn't convert string to float.")
+    else:
+        return None
+
+    
+#==================================================================
+#=============3PAC COMMANDS========================================
+#================================================================== 
+    
+# CRAFT PACKAGE TO TURN ON PID MODE 
+def turnOnPumpPID(ser):
+    # Construct the message
+    msg = f'wPS-22'
+    
+    # Write the message
+    ser.write(msg.encode())
+    
+    
+# CRAFT PACKAGE TO TURN ON PID MODE 
+def writePumpFlowRate(ser, val1=2.50, val2=0.00):
+    # Construct the message
+    msg = f'wPF-{val1:.2f}-{val2:.2f}'
+    # Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+    
+    
+    

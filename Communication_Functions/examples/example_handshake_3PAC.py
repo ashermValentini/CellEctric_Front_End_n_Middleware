@@ -62,6 +62,39 @@ def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_c
     ser.timeout = timeout
 
 
+
+# CRAFT PACKAGE TO TURN ON PID MODE 
+def turnOnPumpPID(ser):
+    # Construct the message
+    msg = f'wPS-22'
+    
+    # Write the message
+    ser.write(msg.encode())
+ 
+def writePumpFlowRate(ser, val1=2.50, val2=0.00):
+    # Construct the message
+    msg = f'wPF-{val1:.2f}-{val2:.2f}'
+    print(msg)  # Print the message
+
+    # Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
+
+
+def read_flowrate(ser):
+    if ser.in_waiting > 0:  # Check if there is data waiting in the serial buffer
+        line = ser.readline().decode('utf-8').strip()  # Read line from serial port, decode, and strip whitespace
+        if line.startswith('rPF-'):  # Check if the line starts with 'rAC-'
+            try:
+                # Extract the part of the line after 'rAC-', convert to float, and return
+                flow_rate = float(line[4:])
+                return flow_rate
+            except ValueError:
+                print("Error: Couldn't convert string to float.")
+    return None
+
+
+
 # =================
 # EXAMPLE CODE
 # =================
@@ -108,8 +141,44 @@ print("RESPONSE: " + msg.decode())
 time.sleep(0.25)
 
 
+p1fr=2.50
+p2fr=0.00
 
+print("MESSAGE: PID On")
+turnOnPumpPID(ser_3PAC)
+msg = ser_3PAC.readline()
+print("RESPONSE: " + msg.decode())
+time.sleep(5)
 
-# CLOSE CONNECTION
-ser_3PAC.flush()
-ser_3PAC.close()
+print("MESSAGE: Send Flow Rates")
+writePumpFlowRate(ser_3PAC, p1fr, p2fr)
+time.sleep(5)
+
+'''
+
+try:
+    while True:  # This loop will run forever
+        if ser_3PAC.in_waiting > 0:  # Check if there is data waiting in the serial buffer
+            line = ser_3PAC.readline().decode('utf-8').strip()  # Read a line from the serial port
+            print(f"Received: {line}")  # Print the received line
+        else:
+            time.sleep(0.1)  # Sleep for a short time to reduce CPU usage
+except KeyboardInterrupt:
+    print("Interrupted by user, closing...")
+finally:
+    ser_3PAC.flush()
+    ser_3PAC.close()
+'''
+
+try:
+    while True:  # This loop will run forever
+        flow_rate = read_flowrate(ser_3PAC)  # Call the read_flowrate function
+        if flow_rate is not None:  # If a float was returned
+            print(f"Flow rate: {flow_rate}")  # Print the flow rate
+        else:
+            time.sleep(0.1)  # Sleep for a short time to reduce CPU usage
+except KeyboardInterrupt:
+    print("Interrupted by user, closing...")
+finally:
+    ser_3PAC.flush()
+    ser_3PAC.close()
