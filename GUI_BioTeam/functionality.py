@@ -1,3 +1,9 @@
+
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from Communication_Functions.communication_functions import *
+
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt
 from layout import Ui_MainWindow
@@ -5,13 +11,20 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.ticker as ticker
 import numpy as np
-from read_temperature import read_temperature
-
-from example_handshake_3PAC import find_esp
 
 class Functionality(QtWidgets.QMainWindow):
     def __init__(self):
         super(Functionality, self).__init__()
+        
+    # =================
+    # START SERIAL CONNECTION TO DEVICES
+    # =================
+        self.device_serials = serial_start_connections() 
+        #for device_serial in self.device_serials:
+        #    if device_serial.name is not None:
+        #        self.ui.display_system_log.append("Port: " + device_serial.name)
+        #    else:
+        #        self.ui.display_system_log.append("Port: None")
     
     # Set up the UI layout
         self.ui = Ui_MainWindow()
@@ -95,7 +108,7 @@ class Functionality(QtWidgets.QMainWindow):
         return timer
 
     def update_temp_plot(self):
-        temperature = read_temperature()
+        temperature = read_temperature(self.device_serials[3])
         if temperature is not None:
             shift = 1
             self.plotdata = np.roll(self.plotdata, -shift)
@@ -119,7 +132,9 @@ class Functionality(QtWidgets.QMainWindow):
 
 # region : CONNECTION CIRCLE FUNCTION           
     def check_coms(self):
-        temperature = read_temperature()
+
+        #temperature = find_serial_port(SERIAL_TEMPSENS_VENDOR_ID, SERIAL_TEMPSENS_PRODUCT_ID)
+        temperature = read_temperature(self.device_serials[3])
         esp = find_esp()
         if temperature is not None:
             # Change circle color to green

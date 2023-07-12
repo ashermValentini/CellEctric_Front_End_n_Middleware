@@ -190,6 +190,16 @@ def find_serial_port(vendor_id, product_id):
     return serial
 
 
+# FIND PORT OF ESP32
+def find_esp(port=None):
+    """Get the name of the port that is connected to the ESP32."""
+    if port is None:
+        ports = serial.tools.list_ports.comports()
+        for p in ports:
+            if p.manufacturer is not None and "Silicon" in p.manufacturer:  # "Silicon" is in the name of the ESP32 manufacturer
+                port = p.device
+    return port
+
 # ESTABLISH ALL SERIAL CONNECTIONS TO DEVICES IN THE LIST
 def establish_serial_connections(com_list):
     '''
@@ -501,6 +511,8 @@ def PG_CraftPackage_setTimes(repRate=5000, frequency=0 ,pulseLength=75, onTime=2
 # ===============================================================
 
 # START THE CONNECTION TO THE PSU AND THE PG
+
+
 def serial_start_connections(verbose=0):
     '''
     Starts all serial communication (pyserial) with the PSU and the PG.
@@ -512,11 +524,16 @@ def serial_start_connections(verbose=0):
                 my_serials (dict):  A dictionary of the serial connections. KEYS: ["psu_serial", "pg_serial"]
     '''
     # FIND SERIAL PORTS OF THE DEVICES AND PUT IT INTO A LIST
+    
+    pac_serial=None
+    ports = serial.tools.list_ports.comports()
+    for p in ports:
+        if p.manufacturer is not None and "Silicon" in p.manufacturer:  # "Silicon" is in the name of the ESP32 manufacturer
+            pac_serial = p.device
+    
     psu_serial = find_serial_port(SERIAL_VENDOR_ID, SERIAL_PSU_PRODUCT_ID)
     pg_serial = find_serial_port(SERIAL_VENDOR_ID, SERIAL_PG_PRODUCT_ID)
-    pac_serial = None                                                       # TODO: Needs to be implemented
-    #tempsens_serial = find_serial_port(SERIAL_TEMPSENS_VENDOR_ID, SERIAL_TEMPSENS_PRODUCT_ID)
-
+    
     com_list = [psu_serial, pg_serial, pac_serial]
     if verbose: print(com_list)
 
@@ -526,13 +543,18 @@ def serial_start_connections(verbose=0):
         return False
 
     temperature_port = find_serial_port(SERIAL_TEMPSENS_VENDOR_ID, SERIAL_TEMPSENS_PRODUCT_ID)
-    temp_sensor = minimalmodbus.Instrument(temperature_port, 1) 
-    temp_sensor.serial.baudrate = 9600
-    temp_sensor.serial.bytesize = 8
-    temp_sensor.serial.parity = serial.PARITY_NONE
-    temp_sensor.serial.stopbits = 1
-    temp_sensor.serial.timeout = 0.1
-    temp_sensor.mode = minimalmodbus.MODE_RTU
+    if not temperature_port:
+        temperature_port=None
+    
+    temp_sensor=None
+    if temperature_port is not None:
+        temp_sensor = minimalmodbus.Instrument(temperature_port, 1) 
+        temp_sensor.serial.baudrate = 9600
+        temp_sensor.serial.bytesize = 8
+        temp_sensor.serial.parity = serial.PARITY_NONE
+        temp_sensor.serial.stopbits = 1
+        temp_sensor.serial.timeout = 0.1
+        temp_sensor.mode = minimalmodbus.MODE_RTU
 
     my_serials.append(temp_sensor)
     
@@ -542,7 +564,7 @@ def serial_start_connections(verbose=0):
         for connection in com_list:
             print(connection)
         print("---------------------------------------------")
-    
+    print(my_serials)
     return my_serials
 
 # CLOSE THE CONNECTION TO THE PSU AND THE PG
@@ -882,6 +904,9 @@ def read_next_PG_pulse(ser, timeout=0, verbose=0):
 #==================================================================
 
 def read_temperature(ser):
+    if ser is None:
+        return None
+
     try:
         raw_temperature = ser.read_register(0x0E, functioncode=4, signed=True)
         temperature = raw_temperature / 10.0
@@ -889,6 +914,7 @@ def read_temperature(ser):
     except IOError:
         print("Failed to read from temperature sensor, retrying...")
         return None
+
 
 
 
