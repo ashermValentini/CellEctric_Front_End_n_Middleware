@@ -52,7 +52,7 @@ PG_TYPE_ZERODATA = 0x1003
 # |_______| \______/   \______/  |__|\__\ |__| |__| \__|  \______|    |__|      \______/  | _| `._____|   (__)   (__)   (__)
 #
 # ======================================================================================================================================================================
-# source: https://patorjk.com/software/taag/#p=display&f=Star%20Wars&t=text
+# source: https://patorjk.oftware/taag/#p=display&f=Star%20Wars&t=text
 # style: Star Wars
 
 
@@ -216,9 +216,12 @@ def establish_serial_connections(com_list):
     '''
     serials = []
 
-    for com_port in com_list:
+    for i, com_port in enumerate(com_list):
         try:
-            ser = serial.Serial(com_port, 115200, write_timeout=5)
+            if i == 2:  # Check if it's the third COM port ie this is the 3PAC which for some reason hates to be spoken to on a 9600 baudrate setting
+                ser = serial.Serial(com_port, 115200, write_timeout=5)
+            else:
+                ser = serial.Serial(com_port, 9600, write_timeout=5)
             serials.append(ser)
         except:
             raise Exception("Could not establish a connection to the port {}".format(com_port))
@@ -930,6 +933,20 @@ def read_temperature(ser):
     except IOError:
         print("Failed to read from temperature sensor, retrying...")
         return None
+
+
+
+
+
+#=============================================================================================
+#____   .______      ___       ______ 
+#|___ \  |   _  \    /   \     /      |
+#  __) | |  |_)  |  /  ^  \   |  ,----'
+# |__ <  |   ___/  /  /_\  \  |  |     
+# ___) | |  |     /  _____  \ |  `----.
+#|____/  | _|    /__/     \__\ \______|
+#                                     
+#==============================================================================================
 
 
 #==================================================================

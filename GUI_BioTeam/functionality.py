@@ -247,7 +247,6 @@ class Functionality(QtWidgets.QMainWindow):
         
 #endregion
 
-
 # region : CONNECTION CIRCLE FUNCTION           
     def check_coms(self):
 
