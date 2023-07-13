@@ -1,5 +1,5 @@
 '''
-This module contains all functions needed to communicate with the CELLECTRIC BIOSCIENCES boards (PSU and PG).
+This module contains all functions needed to communicate with the CELLECTRIC BIOSCIENCES serial communication modules (PSU, PG, 3PAC, Temperature sensor, and Pressure Sensor).
 '''
 
 import serial                       # communication with the board
@@ -10,7 +10,7 @@ import time                         # to sleep
 import matplotlib.pyplot as plt     # to print stuff nicely
 import minimalmodbus                # speceific to the temp sensor
 
-__author__ = "Nicolas Heimburger"
+__author__ = "Nicolas Heimburger Asher Valentini"
 __version__ = "1.0.0"
 __status__ = "Production"
 
@@ -60,6 +60,7 @@ PG_TYPE_ZERODATA = 0x1003
 # ======================== FUNCTIONS: CRC =======================
 # ===============================================================
 
+#region: 
 # CRC TABLE FOR CRC CALCULATION
 crc16_table = [
     0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
@@ -152,11 +153,13 @@ def testCRC(binaryData, verbose=0):
     # RETURN DATA
     return crc_check, calcCRC
 
-
+#endregion
 
 # ===============================================================
 # ====================== FUNCTIONS: SERIAL ======================
 # ===============================================================
+
+#region
 
 # FIND SERIAL PORT DEPENDING ON VENDOR_ID AND PRODUCT_ID
 def find_serial_port(vendor_id, product_id):
@@ -291,10 +294,13 @@ def writeSerialData(ser, data_to_send, num_attempts=NUM_ATTEMPTS, verbose=0):
     if verbose: print("--- end: writeSerialData ---")
     return success
 
+#endregion
 
 # ===============================================================
 # =============== FUNCTIONS: PREPARE DATA PACKETS ===============
 # ===============================================================
+
+#region
 
 # CRAFT RUN PACKAGE FOR PSU
 def CraftPackage_run(verbose=0):
@@ -489,6 +495,7 @@ def PG_CraftPackage_setTimes(repRate=5000, frequency=0 ,pulseLength=75, onTime=2
     return sendable_bytedata
 
 
+#endregion
 
 # ===========================================================================================================================================================
 #  _______  __    __  .__   __.   ______ .___________. __    ______   .__   __.      _______.   .___________.  ______       __    __       _______. _______ 
@@ -510,9 +517,9 @@ def PG_CraftPackage_setTimes(repRate=5000, frequency=0 ,pulseLength=75, onTime=2
 #                                                               
 # ===============================================================
 
+#region
+
 # START THE CONNECTION TO THE PSU AND THE PG
-
-
 def serial_start_connections(verbose=0):
     '''
     Starts all serial communication (pyserial) with the PSU and the PG.
@@ -588,6 +595,8 @@ def serial_close_connections(ser_list, verbose=0):
     
     return success
 
+#endregion
+
 # ==============================
 # .______     _______. __    __  
 # |   _  \   /       ||  |  |  | 
@@ -597,6 +606,9 @@ def serial_close_connections(ser_list, verbose=0):
 # | _|   |_______/     \______/  
 #                                 
 # ==============================
+
+#region
+
 # COMMUNICATION WITH THE POWER SUPPLY UNIT
 
 # START THE PSU
@@ -685,7 +697,7 @@ def read_PSU_data(ser, verbose=0):
 
     return psuData, crcStatus
 
-
+#endregion
 
 # ====================
 # .______     _______ 
@@ -696,6 +708,8 @@ def read_PSU_data(ser, verbose=0):
 # | _|       \______| 
 #                               
 # ====================
+
+#region
 
 # COMMUNICATION WITH THE PULSE GENERATOR
 # ENABLES THE PG AND READS THE NEXT RETURN VALUES TO GET "ZEROCURRENT" AND "ZEROVOLTAGE"
@@ -888,6 +902,8 @@ def read_next_PG_pulse(ser, timeout=0, verbose=0):
     return pulseData, pulseDataLength
 
 
+#endregion
+
 # =============================================================================================
 # .___________. _______ .___  ___. .______             _______. _______ .__   __.      _______.
 # |           ||   ____||   \/   | |   _  \           /       ||   ____||  \ |  |     /       |
@@ -916,9 +932,6 @@ def read_temperature(ser):
         return None
 
 
-
-
-
 #==================================================================
 #=============FETCH FLOWRATE DATA==================================
 #================================================================== 
@@ -926,7 +939,7 @@ def read_temperature(ser):
 def read_flowrate(ser):
     if ser.in_waiting > 0: # Check if there is data waiting in the buffer
         line = ser.readline().decode('utf-8').strip() # Read line from serial port, decode, and strip whitespace
-        if line.startswith('rAC-'): # Check if the line starts with 'rAC-'
+        if line.startswith('rPF-'): # Check if the line starts with 'rAC-'
             try:
                 # Extract the part of the line after 'rAC-', convert to float, and return
                 flow_rate = float(line[4:])
@@ -935,6 +948,7 @@ def read_flowrate(ser):
                 print("Error: Couldn't convert string to float.")
     else:
         return None
+    print(line)
 
     
 #==================================================================
@@ -980,8 +994,6 @@ def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_c
     ser.timeout = timeout
 
 
-
-  
 # CRAFT PACKAGE TO TURN ON PID MODE 
 def turnOnPumpPID(ser):
     # Construct the message

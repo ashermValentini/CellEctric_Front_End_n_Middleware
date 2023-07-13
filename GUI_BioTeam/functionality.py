@@ -12,7 +12,8 @@ from matplotlib.figure import Figure
 import matplotlib.ticker as ticker
 import numpy as np
 
-VALVE_ON = "wVS-010"
+VALVE_OFF = "wVS-010"
+VALVE_ON = "wVS-000"
 PELTIER_ON = "wCS-1"
 PELTIER_OFF = "wCS-0"
 
@@ -42,7 +43,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.sucrose_is_pumping = False # sucrose pumping button state flag 
         self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump)
         self.sucroseTimer = None
-        self.read_sucrose_interval= 500 #ms
+        self.read_sucrose_interval= 1000 #ms
        
         
     # Temp plotting frame functionality
@@ -63,7 +64,7 @@ class Functionality(QtWidgets.QMainWindow):
 
 
     # flow rate frames functionality 
-        self.ui.line_edit_sucrose.returnPressed.connect(self.updateSucroseProgressBar)
+        #self.ui.line_edit_sucrose.returnPressed.connect(self.updateSucroseProgressBar)
         self.ui.line_edit_ethanol.returnPressed.connect(self.updateEthanolProgressBar)
 
 # region : PLOTTING FUNCTIONS  
@@ -174,7 +175,25 @@ class Functionality(QtWidgets.QMainWindow):
             else: 
                 flowRate2=0.00
                 
-            self.device_serials[2].write(PELTIER_ON.encode())
+            print("MESSAGE: " + VALVE_ON)
+            self.device_serials[2].write(VALVE_ON.encode())
+            msg = self.device_serials[2].readline()
+            print("RESPONSE: " + msg.decode())
+            time.sleep(0.25)
+            
+            p1fr=1.00
+            p2fr=0.00
+
+            print("MESSAGE: PID On")
+            turnOnPumpPID(self.device_serials[2])
+            msg = self.device_serials[2].readline()
+            print("RESPONSE: " + msg.decode())
+            time.sleep(5)
+
+            print("MESSAGE: Send Flow Rates")
+            writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
+            time.sleep(5)
+
             
             if self.sucroseTimer is None: #If the time is none we can be sure that we were in a state of not reading flow rate but now we should go into a state of reading flow rate
                 self.sucroseTimer = self.start_sucrose_timer() #we get into a state of reading flow rate by starting the timer for the surcrose reading function
@@ -200,15 +219,27 @@ class Functionality(QtWidgets.QMainWindow):
             """)
             #Change the status of temp_is_plotting from true to False because we are about to stop plotting
             self.sucrose_is_pumping = False 
-            self.device_serials[2].write(PELTIER_OFF.encode())
+            
+            print("MESSAGE: " + VALVE_OFF)
+            self.device_serials[2].write(VALVE_OFF.encode())
+            msg = self.device_serials[2].readline()
+            print("RESPONSE: " + msg.decode())
+            time.sleep(2)
+            
+            p1fr=0.00
+            p2fr=0.00
+
+            print("MESSAGE: Send Flow Rates")
+            writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
+            
             if self.sucroseTimer:                #If the temp plot timer is true it means we were indeed in a state of reading flow rate and can therefore be sure that we need to stop reading flow rate
                 self.sucroseTimer.stop()         #to stop reading the flow rate simply stop the timer
                 self.sucroseTimer = None         #but remember to set the timer to none so that we can start the timer the next time we click the button
-
+                self.ui.progress_bar_sucrose.setValue(0)
     def start_sucrose_timer(self):
         sucroseTimer = QtCore.QTimer()
         sucroseTimer.setInterval(self.read_sucrose_interval)
-        #sucroseTimer.timeout.connect(self.update_temp_plot) #add the reading function later
+        sucroseTimer.timeout.connect(self.updateSucroseProgressBar) #add the reading function later
         sucroseTimer.start()
         return sucroseTimer
        
@@ -239,13 +270,17 @@ class Functionality(QtWidgets.QMainWindow):
 
 # region : ROUND PROGRESS BAR FUNCTIONS 
     def updateSucroseProgressBar(self):
-        value = self.ui.line_edit_sucrose.text()
+        
+        value = read_flowrate(self.device_serials[2])
+        
+        line_edit_value = self.ui.line_edit_sucrose.text()
+        line_edit_value=float(line_edit_value)
         if value:
-            value = int(value)
+            value = float(value)
             if value <= self.ui.progress_bar_sucrose.max:
                 self.ui.progress_bar_sucrose.setValue(value)
         else:
-            self.ui.progress_bar_sucrose.setValue(0)
+            self.ui.progress_bar_sucrose.setValue(line_edit_value)
             
     def updateEthanolProgressBar(self):
         value = self.ui.line_edit_ethanol.text()

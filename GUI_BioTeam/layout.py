@@ -131,9 +131,10 @@ class Ui_MainWindow(object):
 
         self.progress_bar_sucrose = QRoundProgressBar()  # create progress bar
         self.progress_bar_sucrose.setFixedSize(65, 65)
-        self.progress_bar_sucrose.setRange(0, 10)
+        self.progress_bar_sucrose.setRange(0, 5)
         self.progress_bar_sucrose.setValue(0)
         self.progress_bar_sucrose.setBarColor('#0796FF')
+        self.progress_bar_sucrose.setDecimals(2)
         
         progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
         progress_button_layout.addWidget(self.progress_bar_sucrose)  # add progress bar to the layout
@@ -179,6 +180,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_sucrose = QtWidgets.QLineEdit()
         self.line_edit_sucrose.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_sucrose.setText("1.00")
 
         group_box_layout.addWidget(self.line_edit_sucrose)
         group_box_layout.addWidget(unit_label)
