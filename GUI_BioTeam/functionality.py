@@ -24,14 +24,13 @@ class Functionality(QtWidgets.QMainWindow):
   
     # START SERIAL CONNECTION TO DEVICES
         self.device_serials = serial_start_connections() 
+        handshake_3PAC(self.device_serials[2], print_handshake_message=True)
         
     # Set up the UI layout
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         
         
-        handshake_3PAC(self.device_serials[2], print_handshake_message=True)
-       
     # Sucrose frame functionality
         self.sucrose_is_pumping = False # sucrose pumping button state flag 
         self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump)
@@ -71,6 +70,11 @@ class Functionality(QtWidgets.QMainWindow):
         self.coms_timer.setInterval(10000)  # 10 seconds
         self.coms_timer.timeout.connect(self.check_coms)
         self.coms_timer.start()
+    
+    #Voltage Signal Frame Functionality
+        self.signal_is_enabled=False 
+        self.ui.psu_button.pressed.connect(self.start_psu_pg)
+        
 
 
     # flow rate frames functionality 
@@ -159,6 +163,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.canvas_voltage.draw()
     
     #endregion
+     
+    #region: Voltage Plot
     def start_voltage_plotting(self):
         if not self.voltage_is_plotting:   #if voltage_is_plottingt is false (ie the button has just been pressed to start plotting) the change the color to blue
             # Change button color to blue
@@ -240,10 +246,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.axes_voltage.set_title('Voltage Signal', color='#FFFFFF')
         
         self.ui.canvas_voltage.draw()
-        
-    #region: Voltage Plot
-    
+   
     #endregion
+
 #endregion
 
 #region : SUCROSE PUMPING 
@@ -401,3 +406,58 @@ class Functionality(QtWidgets.QMainWindow):
         self.coms_timer.stop()
         event.accept()
 # endregion 
+
+# region : ENABLE/DISABLE THE VOLTAGE SIGNAL (PSU AND PG)
+
+    def start_psu_pg(self): 
+        if not self.signal_is_enabled:  
+            self.ui.psu_button.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #0796FF;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 15px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+            """)
+            self.signal_is_enabled = True
+            send_PSU_enable(self.device_serials[0], 1)
+            self.zerodata = send_PG_enable(self.device_serials[1], 1)
+            # CHECK IF DATA WAS SENT SUCESSFULLY
+            if self.zerodata:                                         
+                self.maxval_pulse = 0   
+                self.minval_pulse = 0
+
+        else: 
+            self.ui.psu_button.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #222222;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 15px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+
+                QPushButton:pressed {
+                    background-color: #0796FF;
+                }
+            """)
+            self.signal_is_enabled = False #Change the status of temp_is_plotting from true to False because we are about to stop plotting        
+            send_PSU_disable(self.device_serials[0], 1)
+            time.sleep(0.25)
+            send_PG_disable(self.device_serials[1], 1)
+            
+
+            
+          
+#endregion
