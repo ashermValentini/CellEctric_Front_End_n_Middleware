@@ -702,7 +702,7 @@ class Ui_MainWindow(object):
         self.plot_layout.setContentsMargins(10, 0, 10, 0)
         self.main_content.addLayout(self.plot_layout)
         
-        # Create the Matplotlib canvas for voltage plot
+        # Create the Matplotlib canvas for the voltage plots
         self.canvas_voltage = FigureCanvas(Figure(figsize=(5, 4), dpi=100, facecolor='#222222'))
         self.canvas_voltage.setObjectName("canvas_voltage_plot")
         self.plot_layout.addWidget(self.canvas_voltage)
@@ -728,25 +728,7 @@ class Ui_MainWindow(object):
         self.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF')
         self.axes_voltage.set_title('My Title', color='#FFFFFF')
         
-        # Create the Matplotlib canvas for current plot
-        self.canvas_current = FigureCanvas(Figure(figsize=(4, 2), dpi=100))
-        self.canvas_current.setObjectName("canvas_current_plot")
-        #self.plot_layout.addWidget(self.canvas_current)
 
-        # Get the Axes object from the Figure for current plot
-        self.axes_current = self.canvas_current.figure.add_subplot(111)
-        self.axes_current.grid(True, color='white', linestyle='--')
-        self.axes_current.set_facecolor('#222222')
-        self.axes_current.spines['bottom'].set_color('#5C5C5D')
-        self.axes_current.spines['top'].set_color('#5C5C5D')
-        self.axes_current.spines['right'].set_color('#5C5C5D')
-        self.axes_current.spines['left'].set_color('#5C5C5D')
-        self.axes_current.xaxis.label.set_color('#5C5C5D')
-        self.axes_current.yaxis.label.set_color('#5C5C5D')
-        self.axes_current.tick_params(colors='#5C5C5D')
-        # Set static labels
-        self.axes_voltage.set_xlabel('Time (ms)', color='#5C5C5D')
-        self.axes_voltage.set_ylabel('Temperature (°C)', color='#5C5C5D')
     #endregion
 
         MainWindow.setCentralWidget(self.centralwidget)

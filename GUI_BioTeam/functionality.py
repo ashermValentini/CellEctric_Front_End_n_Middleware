@@ -25,13 +25,6 @@ class Functionality(QtWidgets.QMainWindow):
     # START SERIAL CONNECTION TO DEVICES
         self.device_serials = serial_start_connections() 
         
-        
-        #for device_serial in self.device_serials:
-        #    if device_serial.name is not None:
-        #        self.ui.display_system_log.append("Port: " + device_serial.name)
-        #    else:
-        #        self.ui.display_system_log.append("Port: None")
-    
     # Set up the UI layout
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -47,14 +40,31 @@ class Functionality(QtWidgets.QMainWindow):
        
         
     # Temp plotting frame functionality
-        self.temp_is_plotting = False  #temperature plotting button state flag
+        self.temp_is_plotting = False  
         self.ui.temp_button.pressed.connect(self.start_temp_plotting)
-        
-        self.xdata = np.linspace(0, 499, 500)  # This creates an array from 0 to 499 with 500 elements.
+        self.timer = None
+                
+        self.xdata = np.linspace(0, 499, 500)  
+        self.plotdata = np.zeros(500)
 
         self.interval = 30  # ms
+
+        
+    # Voltage plotting frame functionality
+        self.voltage_is_plotting = False 
+        self.ui.voltage_button.pressed.connect(self.start_voltage_plotting)
+        
+        self.voltageTimer = None        
+        
+        self.voltage_xdata = np.linspace(0, 499, 500)  
         self.plotdata = np.zeros(500)
-        self.timer = None
+        self.zerodata = [2000, 2000]
+        
+        self.voltage_plot_interval = 30  # ms
+        self.maxval_pulse = 10  
+        self.minval_pulse = -10
+
+
         
     # Connections Frame Functionality
         self.coms_timer = QtCore.QTimer()
@@ -67,7 +77,10 @@ class Functionality(QtWidgets.QMainWindow):
         #self.ui.line_edit_sucrose.returnPressed.connect(self.updateSucroseProgressBar)
         self.ui.line_edit_ethanol.returnPressed.connect(self.updateEthanolProgressBar)
 
-# region : PLOTTING FUNCTIONS  
+#region : PLOTTING FUNCTIONS  
+
+    #region: Temperature Plot 
+    
     def start_temp_plotting(self):
         if not self.temp_is_plotting:   #if temp_is_plotting is false (ie the button has just been pressed to start plotting) the change the color to blue
             # Change button color to blue
@@ -112,7 +125,10 @@ class Functionality(QtWidgets.QMainWindow):
             if self.timer:                #If the temp plot timer is true it means we were indeed in a state of plotting and can therefore be sure that we need to stop plotting
                 self.timer.stop()         #to stop plottng simply stop the timer
                 self.timer = None         #but remember to set the timer to none so that we can start the timer the next time we click the button
+                self.ui.axes_voltage.clear()
+                self.ui.canvas_voltage.draw()
 
+                
     def start_timer(self):
         timer = QtCore.QTimer()
         timer.setInterval(self.interval)
@@ -141,6 +157,93 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.axes_voltage.set_title('My Title', color='#FFFFFF')
         
         self.ui.canvas_voltage.draw()
+    
+    #endregion
+    def start_voltage_plotting(self):
+        if not self.voltage_is_plotting:   #if voltage_is_plottingt is false (ie the button has just been pressed to start plotting) the change the color to blue
+            # Change button color to blue
+            self.ui.voltage_button.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #0796FF;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 15px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+            """)
+            self.voltage_is_plotting = True  #Change the status of temp_is_plotting from false to true because we are about to begin plotting
+            if self.voltageTimer is None:        #If the time is none we can be sure that we were in a state of not plotting but now we should go into a state of plotting 
+                self.voltageTimer = self.start_voltage_timer() #we get into a stat of plotting by starting the timer for the temp plot (which has been poorly named timer-too generic must change it)
+        else: #Else if temp_is_plotting is true then it means the button was pressed during a state of plotting and the user would like to stop plotting which means we need to:
+            # Change button color back to original
+            self.ui.voltage_button.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #222222;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 15px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+
+                QPushButton:pressed {
+                    background-color: #0796FF;
+                }
+            """)
+            self.voltage_is_plotting = False #Change the status of temp_is_plotting from true to False because we are about to stop plotting
+            if self.voltageTimer:                #If the temp plot timer is true it means we were indeed in a state of plotting and can therefore be sure that we need to stop plotting
+                self.voltageTimer.stop()         #to stop plottng simply stop the timer
+                self.voltageTimer = None         #but remember to set the timer to none so that we can start the timer the next time we click the button
+
+    def start_voltage_timer(self):
+        voltageTimer = QtCore.QTimer()
+        voltageTimer.setInterval(self.interval)
+        voltageTimer.timeout.connect(self.update_voltage_plot)
+        voltageTimer.start()
+        return voltageTimer
+
+    def update_voltage_plot(self):
+        
+        self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1])  # READ NEXT PULSE
+        
+        self.voltage_y[:, 0] -= self.zerodata[0]        # ZERO THE VOLTAGE DATA
+        self.voltage_y[:, -1] -= self.zerodata[1]       # ZERO THE CURRENT DATA
+        
+        maxval_pulse_new = self.voltage_y.max(axis=0)[0]    # GET MAX VALUE FROM VOLTAGE PULSE
+        minval_pulse_new = self.voltage_y.min(axis=0)[0]    # GET MIN VALUE FROM VOLTAGE PULSE
+
+        if maxval_pulse_new > self.maxval_pulse:        # CHECK MAX VALUE OVER TIME
+            self.maxval_pulse = maxval_pulse_new
+            
+        if minval_pulse_new < self.minval_pulse:        # CHECK MIN VALUE OVER TIME
+            self.minval_pulse = minval_pulse_new
+        
+        
+        self.voltage_xdata = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0])
+        
+        self.ui.axes_voltage.clear()
+        self.ui.axes_voltage.plot(self.voltage_xdata,self.voltage_y[:, 0], color='blue')
+        #self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
+        self.ui.axes_voltage.set_ylim(self.minval_pulse-10, self.maxval_pulse+10)  # dynamically update y range
+
+        self.ui.axes_voltage.set_xlabel('Time (not scaled yet) (us)', color='#FFFFFF')
+        self.ui.axes_voltage.set_ylabel('Voltage (V)', color='#FFFFFF')
+        self.ui.axes_voltage.set_title('Voltage Signal', color='#FFFFFF')
+        
+        self.ui.canvas_voltage.draw()
+        
+    #region: Voltage Plot
+    
+    #endregion
 #endregion
 
 #region : SUCROSE PUMPING 
@@ -236,15 +339,14 @@ class Functionality(QtWidgets.QMainWindow):
                 self.sucroseTimer.stop()         #to stop reading the flow rate simply stop the timer
                 self.sucroseTimer = None         #but remember to set the timer to none so that we can start the timer the next time we click the button
                 self.ui.progress_bar_sucrose.setValue(0)
+                
     def start_sucrose_timer(self):
         sucroseTimer = QtCore.QTimer()
         sucroseTimer.setInterval(self.read_sucrose_interval)
         sucroseTimer.timeout.connect(self.updateSucroseProgressBar) #add the reading function later
         sucroseTimer.start()
         return sucroseTimer
-       
-
-        
+    
 #endregion
 
 # region : CONNECTION CIRCLE FUNCTION           
