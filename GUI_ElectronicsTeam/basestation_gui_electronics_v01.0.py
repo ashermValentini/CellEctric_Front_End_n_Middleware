@@ -1,7 +1,4 @@
 import sys
-
-# from ..Communication_Functions.pgpsu_communication_functions import *
-import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Communication_Functions.communication_functions import *
@@ -101,6 +98,11 @@ class MainWindow(QMainWindow):
         #        self.ui.display_system_log.append("Port: " + device_serial.name)
         #    else:
         #        self.ui.display_system_log.append("Port: None")
+
+        # INITIALIZE SCALING VALUES
+        self.zerodata = [2000, 2000]
+        self.maxval_pulse = 10  
+        self.minval_pulse = -10
 
         # =================
         # START TEMPERATURE PLOT
@@ -260,33 +262,87 @@ class MainWindow(QMainWindow):
     def start_temp_plotting(self):
 
         #dynamic x axis 
-        self.xdata = np.linspace(0, 499, 500)  # This creates an array from 0 to 499 with 500 elements.
+        self.temp_x = np.linspace(0, 499, 500)  # This creates an array from 0 to 499 with 500 elements.
+        self.tempmax = np.zeros(500)
+        self.tempmax.fill(37)
+        self.voltage_x = np.linspace(0, 499, 500)
+
 
         # Plotting variables
-        self.interval = 30  # ms
-        self.plotdata = np.zeros(500)
+        self.interval = 500  # ms
+        self.tempplotdata = np.zeros(500)   # initialize Temperature values with 0
+        self.voltageplotdata = np.zeros(500)   # initialize Temperature values with 0
 
         # TIMER
         self.timer = QTimer()
         self.timer.setInterval(self.interval)
-        self.timer.timeout.connect(self.update_temp_plot)
+        self.timer.timeout.connect(self.update_plot)
         self.timer.start()
 
 
 
-    def update_temp_plot(self):
+    def update_plot(self):
         temperature = read_temperature(self.device_serials[3])
         if temperature is not None:
-            self.plotdata = np.roll(self.plotdata, -1)
-            self.plotdata[-1:] = temperature
-            self.ydata = self.plotdata
+            self.tempplotdata = np.roll(self.tempplotdata, -1)
+            self.tempplotdata[-1:] = temperature
+            self.temp_y = self.tempplotdata
             
-            self.xdata = np.roll(self.xdata, -1)
-            self.xdata[-1] = self.xdata[-2] + 1  # This will keep increasing the count on the x-axis
+            self.temp_x = np.roll(self.temp_x, -1)
+            self.temp_x[-1] = self.temp_x[-2] + 1  # This will keep increasing the count on the x-axis
+
+        
+        self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1])  # READ NEXT PULSE
+
+        self.voltage_y[:, 0] -= self.zerodata[0]        # ZERO THE VOLTAGE DATA
+        self.voltage_y[:, -1] -= self.zerodata[1]       # ZERO THE CURRENT DATA
+
+        maxval_pulse_new = self.voltage_y.max(axis=0)[0]    # GET MAX VALUE FROM CURRENT PULSE
+        minval_pulse_new = self.voltage_y.min(axis=0)[0]    # GET MIN VALUE FROM CURRENT PULSE
+
+        if maxval_pulse_new > self.maxval_pulse:        # CHECK MAX VALUE OVER TIME
+            self.maxval_pulse = maxval_pulse_new
+            
+        if minval_pulse_new < self.minval_pulse:        # CHECK MIN VALUE OVER TIME
+            self.minval_pulse = minval_pulse_new
+        
+        self.ui.value_voltage_max.setText("{:.2f}".format(maxval_pulse_new))    # SET GUI TEXT
+        self.ui.value_voltage_min.setText("{:.2f}".format(minval_pulse_new))    # SET GUI TEXT
 
 
-        self.ui.MplWidget.canvas.axes.clear()
-        self.ui.MplWidget.canvas.axes.plot(self.xdata, self.ydata)
+
+        print("Data Length: {}".format(self.voltage_y.shape[0]))
+        print("MINVAL: {}".format(self.minval_pulse))
+        print("MAXVAL: {}".format(self.maxval_pulse))
+        print(self.voltage_y.shape)
+        #print(self.voltage_y)
+
+        
+        self.voltage_x = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0])
+    
+
+
+
+        #self.ui.MplWidget.canvas.axes.clear()
+        #self.ui.MplWidget.canvas.axes.plot(self.xdata, self.ydata)
+        #self.ui.MplWidget.canvas.draw()
+
+        self.ui.MplWidget.canvas.axes1.clear()
+        self.ui.MplWidget.canvas.axes2.clear()
+        self.ui.MplWidget.canvas.axes3.clear()
+
+        #self.ui.MplWidget.canvas.axes1.set_title("Voltage")
+        self.ui.MplWidget.canvas.axes1.set_ylabel("Voltage [V]")
+        self.ui.MplWidget.canvas.axes1.set_ylim(self.minval_pulse-10, self.maxval_pulse+10)
+        #self.ui.MplWidget.canvas.axes2.set_title("Current")
+        self.ui.MplWidget.canvas.axes2.set_ylabel("Current [A]")
+        #self.ui.MplWidget.canvas.axes3.set_title("Temperature")
+        self.ui.MplWidget.canvas.axes3.set_ylabel("Temperature [°C]")
+
+        self.ui.MplWidget.canvas.axes1.plot(self.voltage_x, self.voltage_y[:, 0])
+        self.ui.MplWidget.canvas.axes2.plot(self.voltage_x, self.voltage_y[:, -1])
+        self.ui.MplWidget.canvas.axes3.plot(self.temp_x, self.temp_y)
+        self.ui.MplWidget.canvas.axes3.plot(self.temp_x, self.tempmax)
         self.ui.MplWidget.canvas.draw()
 
     # =================================================
@@ -331,10 +387,17 @@ class MainWindow(QMainWindow):
                 self.ui.display_system_log.append("ERROR: Could not switch PG OFF")     # LOG TO GUI
                 self.ui.button_toggle_pg_enable.setChecked(True)                       # SET THE BUTTON TO "ON" AGAIN
         else:
-            sucess = send_PG_enable(self.device_serials[1], 1)
+            self.zerodata = send_PG_enable(self.device_serials[1], 1)
+              
 
             # CHECK IF DATA WAS SENT SUCESSFULLY
-            if sucess:                                          # SENDING SUCESSFUL
+            if self.zerodata:                                          # SENDING SUCESSFUL
+                print("ZERO VOLTAGE: {}".format(self.zerodata[0]))      # JUST PRINT STUFF
+                print("ZERO CURRENT: {}".format(self.zerodata[1]))
+
+                self.maxval_pulse = 0   # RESET PLOT SCALE
+                self.minval_pulse = 0
+
                 self.ui.display_system_log.append("PG: ON")     # LOG TO GUI
                 self.flag_pg_on = True                          # SET FLAG FOR PG STATE
             else:                                                                       # SENDING NOT POSSIBLE (5 tries)

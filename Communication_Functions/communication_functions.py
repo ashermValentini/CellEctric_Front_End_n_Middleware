@@ -841,6 +841,9 @@ def read_next_PG_pulse(ser, timeout=0, verbose=0):
     '''
     # READ DATA AND WAIT UNTIL "PULSE DATA START"-SIGNAL IS RECEIVED
     dtype = 0
+
+    ser.flushInput()
+
     while dtype != PG_TYPE_DATASTART:
         PG_data, dtype, _= read_PG_data(ser)
 
@@ -887,5 +890,5 @@ def read_temperature(ser):
         temperature = raw_temperature / 10.0
         return temperature
     except IOError:
-        print("Failed to read from temperature sensor, retrying...")
+        #print("Failed to read from temperature sensor, retrying...")
         return None
