@@ -880,6 +880,9 @@ def read_next_PG_pulse(ser, timeout=0, verbose=0):
     '''
     # READ DATA AND WAIT UNTIL "PULSE DATA START"-SIGNAL IS RECEIVED
     dtype = 0
+
+    ser.flushInput()
+
     while dtype != PG_TYPE_DATASTART:
         PG_data, dtype, _= read_PG_data(ser)
 
@@ -1026,5 +1029,4 @@ def writePumpFlowRate(ser, val1=2.50, val2=0.00):
     # Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
-    
-    
+   
