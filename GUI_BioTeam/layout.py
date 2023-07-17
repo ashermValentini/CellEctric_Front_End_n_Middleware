@@ -25,6 +25,19 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         
+        # Create a stacked widget object so that we can create multiple pages with mutliple layouts 
+        self.stack = QtWidgets.QStackedWidget(self.centralwidget)
+        self.dashboard = QtWidgets.QWidget()  #index 0 
+        self.experiment = QtWidgets.QWidget() #index 1
+        
+        # Add pages to the stack
+        self.stack.addWidget(self.dashboard)
+        self.stack.addWidget(self.experiment)
+
+        # Layout for the central widget
+        self.central_layout = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.central_layout.addWidget(self.stack)
+        
         # Give all buttons the same padding in this layout 
         QtWidgets.QApplication.instance().setStyleSheet("""
             QPushButton {
@@ -32,9 +45,12 @@ class Ui_MainWindow(object):
                 }
          """)
     
+
+        
+#region : Dashboard Page Layout        
     # region : Sidebar
 
-        self.h_layout = QtWidgets.QHBoxLayout(self.centralwidget)
+        self.h_layout = QtWidgets.QHBoxLayout(self.dashboard)
         self.h_layout.setContentsMargins(0, 0, 0, 0)
     
         self.frame_d_sidebar = QtWidgets.QFrame()
@@ -63,6 +79,9 @@ class Ui_MainWindow(object):
     # region: Topbar
     
         self.v_layout = QtWidgets.QVBoxLayout()
+        self.h_layout.addLayout(self.v_layout)
+        self.h_layout.setSpacing(0)
+        self.v_layout.setSpacing(0)
         self.v_layout.setContentsMargins(0, 0, 0, 0)
 
         
@@ -87,10 +106,6 @@ class Ui_MainWindow(object):
         self.frame_d_topbar.setLayout(topbar_layout)
         topbar_layout.addWidget(self.label)  # Add the label to the layout
 
-        self.h_layout.addLayout(self.v_layout)
-        
-        self.h_layout.setSpacing(0)
-        self.v_layout.setSpacing(0)
 
     #endregion
     
@@ -104,12 +119,12 @@ class Ui_MainWindow(object):
         self.main_content.addLayout(self.application_region)
 
     # region : SUCROSE, EHTANOL, BLOOD frame setups
-        self.application_region_1_widget = QtWidgets.QWidget(self.centralwidget)
+        self.application_region_1_widget = QtWidgets.QWidget()
         self.application_region_1_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_1_layout = QtWidgets.QVBoxLayout(self.application_region_1_widget)
 
         # region : Sucrose
-        self.frame_sucrose = QtWidgets.QFrame(self.centralwidget)  # create sucrose frame
+        self.frame_sucrose = QtWidgets.QFrame()  # create sucrose frame
         self.frame_sucrose.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_sucrose.setObjectName("frame_d_sucroseFlowrate")
 
@@ -209,7 +224,7 @@ class Ui_MainWindow(object):
         # endregion
         
         # region : Blood
-        self.frame_blood = QtWidgets.QFrame(self.centralwidget)                             # create blood frame 
+        self.frame_blood = QtWidgets.QFrame()                                               # create blood frame 
         self.frame_blood.setStyleSheet("background-color: #222222; border-radius: 15px;")   
         self.frame_blood.setObjectName("frame_d_bloodFlowrate")
         
@@ -262,7 +277,7 @@ class Ui_MainWindow(object):
         #endregion
 
         # region : Ethanol
-        self.frame_ethanol = QtWidgets.QFrame(self.centralwidget)  # create ethanol frame
+        self.frame_ethanol = QtWidgets.QFrame()  # create ethanol frame
         self.frame_ethanol.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_ethanol.setObjectName("frame_d_ethanolFlowrate")
 
@@ -367,12 +382,12 @@ class Ui_MainWindow(object):
     #endregion
     
     # region : CONNECTION and PLOT frame setup  
-        self.application_region_2_widget = QtWidgets.QWidget(self.centralwidget)
+        self.application_region_2_widget = QtWidgets.QWidget()
         self.application_region_2_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_2_layout = QtWidgets.QVBoxLayout(self.application_region_2_widget)
 
         # region : Frame for connections
-        frame = QtWidgets.QFrame(self.centralwidget)
+        frame = QtWidgets.QFrame()
         frame.setStyleSheet("background-color: #222222; border-radius: 15px;")
         frame.setObjectName("frame_d_coms_status")
 
@@ -429,7 +444,7 @@ class Ui_MainWindow(object):
         #endregion 
         
         # region : Frame for plot buttons
-        plot_button_frame = QtWidgets.QFrame(self.centralwidget)
+        plot_button_frame = QtWidgets.QFrame()
         plot_button_frame.setStyleSheet("background-color: #222222; border-radius: 15px;")
         plot_button_frame.setObjectName("frame_d_voltageSignal")
                 
@@ -519,12 +534,12 @@ class Ui_MainWindow(object):
     #endregion
     
     # region : ELECTRODE TEMP and SIGNAL frames' setup
-        self.application_region_3_widget = QtWidgets.QWidget(self.centralwidget)
+        self.application_region_3_widget = QtWidgets.QWidget()
         self.application_region_3_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_3_layout = QtWidgets.QVBoxLayout(self.application_region_3_widget)
 
         # region: Frame for temperature
-        temp_frame = QtWidgets.QFrame(self.centralwidget)
+        temp_frame = QtWidgets.QFrame()
         temp_frame.setStyleSheet("background-color: #222222; border-radius: 15px; height: 20%;")
         temp_frame.setObjectName("frame_d_temperature")
         self.application_region_3_layout.addWidget(temp_frame)
@@ -580,7 +595,7 @@ class Ui_MainWindow(object):
         #endregion
         
         # region: Frame for voltage signal 
-        frame_d_signal = QtWidgets.QFrame(self.centralwidget)
+        frame_d_signal = QtWidgets.QFrame()
         frame_d_signal.setStyleSheet("background-color: #222222; border-radius: 15px;")
         frame_d_signal.setObjectName("frame_d_psuButton")
         self.application_region_3_layout.addWidget(frame_d_signal)
@@ -719,9 +734,7 @@ class Ui_MainWindow(object):
         self.axes_voltage.spines['top'].set_color('#5C5C5D')
         self.axes_voltage.spines['right'].set_color('#5C5C5D')
         self.axes_voltage.spines['left'].set_color('#5C5C5D')
-        self.axes_voltage.xaxis.label.set_color('#5C5C5D')
-        self.axes_voltage.yaxis.label.set_color('#5C5C5D')
-        self.axes_voltage.tick_params(colors='#5C5C5D')
+        self.axes_voltage.tick_params(colors='#FFFFFF')
         
         # Set static labels
         self.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF')
@@ -730,13 +743,86 @@ class Ui_MainWindow(object):
         
 
     #endregion
-
+    
+    # endregion : Main content 
+        
+        
         MainWindow.setCentralWidget(self.centralwidget)
         self.main_content.setStretchFactor(self.application_region, 50)
-        self.main_content.setStretchFactor(self.plot_layout, 50)
+        self.main_content.setStretchFactor(self.plot_layout, 50)    
+#endregion
 
-    # endregion : Main content 
+#region : Experiment Page Layout        
+    # region : Sidebar
 
+        self.h_layout = QtWidgets.QHBoxLayout(self.experiment)
+        self.h_layout.setContentsMargins(0, 0, 0, 0)
+    
+        self.frame_d_sidebar = QtWidgets.QFrame()
+        self.frame_d_sidebar.setContentsMargins(0, 0, 0, 0)
+        self.frame_d_sidebar.setFixedWidth(int(MainWindow.height() * 0.05))
+        self.frame_d_sidebar.setStyleSheet("background-color: #222222;")
+        self.frame_d_sidebar.setObjectName("frame_d_sidebar")
+        
+        self.h_layout.addWidget(self.frame_d_sidebar)
+        
+
+        # Add company logo to sidebar
+        self.sidebar_logo = QtWidgets.QLabel(self.frame_d_sidebar)
+        self.sidebar_logo.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
+
+        buffer = 10  # Amount of buffer space on each side
+        self.sidebar_logo.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 2 * buffer,
+                                      int(MainWindow.height() * 0.2))
+
+        logo_pixmap = QtGui.QPixmap(
+            r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_Team_GUI\GUI_BioTeam\assets\images\logo_small_white.png')
+        self.sidebar_logo.setPixmap(logo_pixmap.scaled(self.sidebar_logo.width(), self.sidebar_logo.height(),
+                                                       QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
+    #endregion
+
+    # region: Topbar
+    
+        self.v_layout = QtWidgets.QVBoxLayout()
+        self.h_layout.addLayout(self.v_layout)
+        self.h_layout.setSpacing(0)
+        self.v_layout.setSpacing(0)
+        self.v_layout.setContentsMargins(0, 0, 0, 0)
+
+        
+        self.frame_d_topbar = QtWidgets.QFrame()
+        self.frame_d_topbar.setContentsMargins(0, 0, 0, 0)
+        self.frame_d_topbar.setFixedHeight(int(MainWindow.height() * 0.05))
+        self.frame_d_topbar.setStyleSheet("background-color: #222222;")
+        self.frame_d_topbar.setObjectName("frame_d_topbar")
+        
+        self.v_layout.addWidget(self.frame_d_topbar)
+
+
+        # Add "Dashboard" label to top bar
+        self.label = QtWidgets.QLabel(self.frame_d_topbar)
+        self.label.setText("Dashboard")
+        self.label.setStyleSheet(header_style)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+
+        # Set up a layout for the frame_d_topbar
+        topbar_layout = QtWidgets.QHBoxLayout(self.frame_d_topbar)
+        topbar_layout.setContentsMargins(0, 0, 0, 0)
+        self.frame_d_topbar.setLayout(topbar_layout)
+        topbar_layout.addWidget(self.label)  # Add the label to the layout
+
+
+    #endregion
+    
+    # region : Main content
+        self.main_content = QtWidgets.QVBoxLayout()
+        self.main_content.setContentsMargins(0, 0, 0, 0)
+        self.v_layout.addLayout(self.main_content)
+    #endregion
+    
+#endregion    
+    
+    
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
