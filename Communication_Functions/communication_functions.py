@@ -984,7 +984,7 @@ def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_c
     ser.open()
 
     # Chill out while everything gets set
-    time.sleep(2)
+    time.sleep(10)
 
     # Set a long timeout to complete handshake (and save original timeout in variable for later)
     timeout = ser.timeout

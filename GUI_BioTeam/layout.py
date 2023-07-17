@@ -47,12 +47,11 @@ class Ui_MainWindow(object):
     
 
         
-#region : Dashboard Page Layout        
-    # region : Sidebar
-
+#region : Dashboard Page Layout     
         self.h_layout = QtWidgets.QHBoxLayout(self.dashboard)
-        self.h_layout.setContentsMargins(0, 0, 0, 0)
-    
+        self.h_layout.setContentsMargins(0, 0, 0, 0)   
+        
+    # region : Sidebar
         self.frame_d_sidebar = QtWidgets.QFrame()
         self.frame_d_sidebar.setContentsMargins(0, 0, 0, 0)
         self.frame_d_sidebar.setFixedWidth(int(MainWindow.height() * 0.05))
@@ -96,7 +95,7 @@ class Ui_MainWindow(object):
 
         # Add "Dashboard" label to top bar
         self.label = QtWidgets.QLabel(self.frame_d_topbar)
-        self.label.setText("Dashboard")
+        self.label.setText("DASHBOARD")
         self.label.setStyleSheet(header_style)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
 
@@ -801,7 +800,7 @@ class Ui_MainWindow(object):
 
         # Add "Dashboard" label to top bar
         self.label = QtWidgets.QLabel(self.frame_d_topbar)
-        self.label.setText("Dashboard")
+        self.label.setText("EXPERIMENT")
         self.label.setStyleSheet(header_style)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
 
