@@ -46,7 +46,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.xdata = np.linspace(0, 499, 500)  
         self.plotdata = np.zeros(500)
 
-        self.interval = 30  # ms
+        self.interval = 500  # ms
 
         
     # Voltage plotting frame functionality

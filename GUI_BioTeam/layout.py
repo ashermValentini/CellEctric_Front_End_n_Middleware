@@ -14,9 +14,9 @@ class Ui_MainWindow(object):
 
         # Set up styles for labels
         title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; font-weight: bold; }"
-        text_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 15px; }"
-        header_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 50px; }"
-        input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; }"
+        text_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 15px;  font-weight: bold; }"
+        header_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 50px; font-weight: bold;  }"
+        input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; font-weight: bold; }"
         
         # Set up the main window 
         MainWindow.setObjectName("MainWindow")
@@ -92,19 +92,60 @@ class Ui_MainWindow(object):
         
         self.v_layout.addWidget(self.frame_d_topbar)
 
+        # Set up a layout for the frame_d_topbar
+        topbar_layout = QtWidgets.QHBoxLayout(self.frame_d_topbar)
+        topbar_layout.setContentsMargins(0, 0, 0, 0)
+        self.frame_d_topbar.setLayout(topbar_layout)
 
-        # Add "Dashboard" label to top bar
+        # Add label to top bar
         self.label = QtWidgets.QLabel(self.frame_d_topbar)
         self.label.setText("DASHBOARD")
         self.label.setStyleSheet(header_style)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
 
-        # Set up a layout for the frame_d_topbar
-        topbar_layout = QtWidgets.QHBoxLayout(self.frame_d_topbar)
-        topbar_layout.setContentsMargins(0, 0, 0, 0)
-        self.frame_d_topbar.setLayout(topbar_layout)
+        topbar_layout.addStretch(1)
         topbar_layout.addWidget(self.label)  # Add the label to the layout
+        topbar_layout.addStretch(1)
 
+        # Add experiment button to topbar 
+        self.experiment_page_button = QtWidgets.QPushButton(self.frame_d_topbar)
+        # load the image as an icon
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("C:/Users/offic/CellEctric Biosciences/Sepsis Project - Documents/Development/4 Automation and Control Systems/11_GUI/BIO_Team_GUI/GUI_BioTeam/assets/images/dark-on.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        # set the icon to the button
+        self.experiment_page_button.setIcon(icon)
+        # adjust the size of the button's icon to fit properly
+        self.experiment_page_button.setIconSize(QtCore.QSize(74,74))  # adjust the size accordingly
+        # if you don't want any text on the button, set an empty string as the button text
+        self.experiment_page_button.setText('')
+        # set the button's style (optional)
+        self.experiment_page_button.setStyleSheet('QPushButton {background-color: #222222; border: none;}')  # make the button's background color match with topbar
+        # add the button to the layout
+        # set the button's style
+        self.experiment_page_button.setStyleSheet("""
+            QPushButton {
+                padding: 0px;
+                border: 2px solid white;
+                border-radius: 10px;
+                background-color: #222222;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 15px;
+                
+
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        
+        topbar_layout.addWidget(self.experiment_page_button)
 
     #endregion
     
