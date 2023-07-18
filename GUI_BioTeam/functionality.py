@@ -5,7 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Communication_Functions.communication_functions import *
 
 from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from layout import Ui_MainWindow
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -16,6 +16,26 @@ VALVE_OFF = "wVS-010"
 VALVE_ON = "wVS-000"
 PELTIER_ON = "wCS-1"
 PELTIER_OFF = "wCS-0"
+
+class TempWorker(QObject):
+    update_temp = pyqtSignal(float)
+    interval = 100
+
+    def __init__(self, device_serials):
+        super(TempWorker, self).__init__()
+        self.device_serials = device_serials
+        self.isRunning = True
+
+    def run(self):
+        while self.isRunning:
+            temperature = read_temperature(self.device_serials[3])
+            if temperature is not None:
+                self.update_temp.emit(temperature)
+            time.sleep(self.interval/1000)  # converting interval to seconds for time.sleep
+
+    def stop(self):
+        self.isRunning = False
+
 
 class Functionality(QtWidgets.QMainWindow):
     def __init__(self):
@@ -29,7 +49,7 @@ class Functionality(QtWidgets.QMainWindow):
     # Set up the UI layout
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        
+         
         
     # Sucrose frame functionality
         self.sucrose_is_pumping = False # sucrose pumping button state flag 
@@ -38,15 +58,19 @@ class Functionality(QtWidgets.QMainWindow):
         self.read_sucrose_interval= 1000 #ms
        
         
-    # Temp plotting frame functionality
-        self.temp_is_plotting = False  
-        self.ui.temp_button.pressed.connect(self.start_temp_plotting)
-        self.timer = None
+    # Temp plotting (with threads)
+
+
+        self.temp_is_plotting = False
+
+        self.ui.temp_button.pressed.connect(self.start_stop_temp_plotting)
+        #self.ui.temp_button.pressed.connect(self.start_temp_plotting)
+        #self.timer = None
                 
         self.xdata = np.linspace(0, 499, 500)  
         self.plotdata = np.zeros(500)
 
-        self.interval = 500  # ms
+
 
         
     # Voltage plotting frame functionality
@@ -86,7 +110,7 @@ class Functionality(QtWidgets.QMainWindow):
 #region : PLOTTING FUNCTIONS  
 
     #region: Temperature Plot 
-    
+    '''
     def start_temp_plotting(self):
         if not self.temp_is_plotting:   #if temp_is_plotting is false (ie the button has just been pressed to start plotting) the change the color to blue
             # Change button color to blue
@@ -163,7 +187,72 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.axes_voltage.set_title('My Title', color='#FFFFFF')
         
         self.ui.canvas_voltage.draw()
-    
+        '''
+    def start_stop_temp_plotting(self):
+        if not self.temp_is_plotting:  # If not currently plotting, start
+            self.tempThread = QThread()
+            self.tempWorker = TempWorker(self.device_serials)
+            self.tempWorker.moveToThread(self.tempThread)
+            self.tempWorker.update_temp.connect(self.update_temp_plot)
+            self.tempThread.started.connect(self.tempWorker.run)
+            self.tempThread.start()
+            self.temp_is_plotting = True
+            self.ui.temp_button.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #0796FF;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 15px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+            """)
+        else:  # If currently plotting, stop
+            self.tempWorker.stop()
+            self.tempThread.quit()
+            self.tempThread.wait()
+            self.temp_is_plotting = False
+            self.ui.temp_button.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #222222;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 15px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+
+                QPushButton:pressed {
+                    background-color: #0796FF;
+                }
+            """)
+    def update_temp_plot(self, temperature):
+        shift = 1
+        self.plotdata = np.roll(self.plotdata, -shift)
+        self.plotdata[-shift:] = temperature
+        self.ydata = self.plotdata[:]
+
+        self.xdata = np.roll(self.xdata, -shift)
+        self.xdata[-1] = self.xdata[-2] + 1  # This will keep increasing the count on the x-axis
+
+        self.ui.axes_voltage.clear()
+        self.ui.axes_voltage.plot(self.xdata, self.ydata, color='#0796FF')
+        self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
+        self.ui.axes_voltage.set_ylim(min(self.ydata) - 1, max(self.ydata) + 10)  # dynamically update y range
+
+        self.ui.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF')
+        self.ui.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF')
+        self.ui.axes_voltage.set_title('My Title', color='#FFFFFF')
+
+        self.ui.canvas_voltage.draw()
     #endregion
      
     #region: Voltage Plot
