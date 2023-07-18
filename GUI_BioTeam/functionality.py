@@ -46,7 +46,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.xdata = np.linspace(0, 499, 500)  
         self.plotdata = np.zeros(500)
 
-        self.interval = 30  # ms
+        self.interval = 500  # ms
 
         
     # Voltage plotting frame functionality
@@ -63,7 +63,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.maxval_pulse = 10  
         self.minval_pulse = -10
 
-
+    # Using the current button to check moving within the page stack 
+    
+        self.ui.current_button.pressed.connect(self.go_to_route2)
         
     # Connections Frame Functionality
         self.coms_timer = QtCore.QTimer()
@@ -152,7 +154,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.xdata[-1] = self.xdata[-2] + 1  # This will keep increasing the count on the x-axis
 
             self.ui.axes_voltage.clear()
-            self.ui.axes_voltage.plot(self.xdata, self.ydata, color='blue')
+            self.ui.axes_voltage.plot(self.xdata, self.ydata, color='#0796FF')
             self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
             self.ui.axes_voltage.set_ylim(min(self.ydata) - 1, max(self.ydata) + 10)  # dynamically update y range
 
@@ -237,9 +239,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.voltage_xdata = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0])
         
         self.ui.axes_voltage.clear()
-        self.ui.axes_voltage.plot(self.voltage_xdata,self.voltage_y[:, 0], color='blue')
-        #self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
-        self.ui.axes_voltage.set_ylim(self.minval_pulse-10, self.maxval_pulse+10)  # dynamically update y range
+        self.ui.axes_voltage.plot(self.voltage_xdata,self.voltage_y[:, 0], color='#0796FF')
+        self.ui.axes_voltage.set_ylim(self.minval_pulse-10, self.maxval_pulse+10)  
 
         self.ui.axes_voltage.set_xlabel('Time (not scaled yet) (us)', color='#FFFFFF')
         self.ui.axes_voltage.set_ylabel('Voltage (V)', color='#FFFFFF')
@@ -296,11 +297,11 @@ class Functionality(QtWidgets.QMainWindow):
             turnOnPumpPID(self.device_serials[2])
             msg = self.device_serials[2].readline()
             print("RESPONSE: " + msg.decode())
-            time.sleep(5)
+            time.sleep(.25)
 
             print("MESSAGE: Send Flow Rates")
             writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
-            time.sleep(5)
+            time.sleep(.25)
 
             
             if self.sucroseTimer is None: #If the time is none we can be sure that we were in a state of not reading flow rate but now we should go into a state of reading flow rate
@@ -328,18 +329,11 @@ class Functionality(QtWidgets.QMainWindow):
             #Change the status of temp_is_plotting from true to False because we are about to stop plotting
             self.sucrose_is_pumping = False 
             
-            print("MESSAGE: " + VALVE_OFF)
             self.device_serials[2].write(VALVE_OFF.encode())
-            msg = self.device_serials[2].readline()
-            print("RESPONSE: " + msg.decode())
-            time.sleep(2)
-            
+            time.sleep(.25)
             p1fr=0.00
             p2fr=0.00
-
-            print("MESSAGE: Send Flow Rates")
             writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
-            
             if self.sucroseTimer:                #If the temp plot timer is true it means we were indeed in a state of reading flow rate and can therefore be sure that we need to stop reading flow rate
                 self.sucroseTimer.stop()         #to stop reading the flow rate simply stop the timer
                 self.sucroseTimer = None         #but remember to set the timer to none so that we can start the timer the next time we click the button
@@ -456,8 +450,16 @@ class Functionality(QtWidgets.QMainWindow):
             send_PSU_disable(self.device_serials[0], 1)
             time.sleep(0.25)
             send_PG_disable(self.device_serials[1], 1)
-            
-
-            
-          
+                 
 #endregion
+
+#region : Changing pages 
+    def go_to_route1(self):
+        # This is the slot that gets called when the button is clicked
+        self.ui.stack.setCurrentIndex(0)
+
+    def go_to_route2(self):
+        # This is the slot that gets called when the button is clicked
+        self.ui.stack.setCurrentIndex(1)
+        
+#endregion 
