@@ -1,5 +1,5 @@
 '''
-This module contains all functions needed to communicate with the CELLECTRIC BIOSCIENCES boards (PSU and PG).
+This module contains all functions needed to communicate with the CELLECTRIC BIOSCIENCES serial communication modules (PSU, PG, 3PAC, Temperature sensor, and Pressure Sensor).
 '''
 
 import serial                       # communication with the board
@@ -10,7 +10,7 @@ import time                         # to sleep
 import matplotlib.pyplot as plt     # to print stuff nicely
 import minimalmodbus                # speceific to the temp sensor
 
-__author__ = "Nicolas Heimburger"
+__author__ = "Nicolas Heimburger Asher Valentini"
 __version__ = "1.0.0"
 __status__ = "Production"
 
@@ -52,7 +52,7 @@ PG_TYPE_ZERODATA = 0x1003
 # |_______| \______/   \______/  |__|\__\ |__| |__| \__|  \______|    |__|      \______/  | _| `._____|   (__)   (__)   (__)
 #
 # ======================================================================================================================================================================
-# source: https://patorjk.com/software/taag/#p=display&f=Star%20Wars&t=text
+# source: https://patorjk.oftware/taag/#p=display&f=Star%20Wars&t=text
 # style: Star Wars
 
 
@@ -60,6 +60,7 @@ PG_TYPE_ZERODATA = 0x1003
 # ======================== FUNCTIONS: CRC =======================
 # ===============================================================
 
+#region: 
 # CRC TABLE FOR CRC CALCULATION
 crc16_table = [
     0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
@@ -152,11 +153,13 @@ def testCRC(binaryData, verbose=0):
     # RETURN DATA
     return crc_check, calcCRC
 
-
+#endregion
 
 # ===============================================================
 # ====================== FUNCTIONS: SERIAL ======================
 # ===============================================================
+
+#region
 
 # FIND SERIAL PORT DEPENDING ON VENDOR_ID AND PRODUCT_ID
 def find_serial_port(vendor_id, product_id):
@@ -190,6 +193,16 @@ def find_serial_port(vendor_id, product_id):
     return serial
 
 
+# FIND PORT OF ESP32
+def find_esp(port=None):
+    """Get the name of the port that is connected to the ESP32."""
+    if port is None:
+        ports = serial.tools.list_ports.comports()
+        for p in ports:
+            if p.manufacturer is not None and "Silicon" in p.manufacturer:  # "Silicon" is in the name of the ESP32 manufacturer
+                port = p.device
+    return port
+
 # ESTABLISH ALL SERIAL CONNECTIONS TO DEVICES IN THE LIST
 def establish_serial_connections(com_list):
     '''
@@ -203,9 +216,12 @@ def establish_serial_connections(com_list):
     '''
     serials = []
 
-    for com_port in com_list:
+    for i, com_port in enumerate(com_list):
         try:
-            ser = serial.Serial(com_port, 9600, write_timeout=5)
+            if i == 2:  # Check if it's the third COM port ie this is the 3PAC which for some reason hates to be spoken to on a 9600 baudrate setting
+                ser = serial.Serial(com_port, 115200, write_timeout=5)
+            else:
+                ser = serial.Serial(com_port, 9600, write_timeout=5)
             serials.append(ser)
         except:
             raise Exception("Could not establish a connection to the port {}".format(com_port))
@@ -281,10 +297,13 @@ def writeSerialData(ser, data_to_send, num_attempts=NUM_ATTEMPTS, verbose=0):
     if verbose: print("--- end: writeSerialData ---")
     return success
 
+#endregion
 
 # ===============================================================
 # =============== FUNCTIONS: PREPARE DATA PACKETS ===============
 # ===============================================================
+
+#region
 
 # CRAFT RUN PACKAGE FOR PSU
 def CraftPackage_run(verbose=0):
@@ -479,6 +498,7 @@ def PG_CraftPackage_setTimes(repRate=5000, frequency=0 ,pulseLength=75, onTime=2
     return sendable_bytedata
 
 
+#endregion
 
 # ===========================================================================================================================================================
 #  _______  __    __  .__   __.   ______ .___________. __    ______   .__   __.      _______.   .___________.  ______       __    __       _______. _______ 
@@ -500,6 +520,8 @@ def PG_CraftPackage_setTimes(repRate=5000, frequency=0 ,pulseLength=75, onTime=2
 #                                                               
 # ===============================================================
 
+#region
+
 # START THE CONNECTION TO THE PSU AND THE PG
 def serial_start_connections(verbose=0):
     '''
@@ -512,11 +534,16 @@ def serial_start_connections(verbose=0):
                 my_serials (dict):  A dictionary of the serial connections. KEYS: ["psu_serial", "pg_serial"]
     '''
     # FIND SERIAL PORTS OF THE DEVICES AND PUT IT INTO A LIST
+    
+    pac_serial=None
+    ports = serial.tools.list_ports.comports()
+    for p in ports:
+        if p.manufacturer is not None and "Silicon" in p.manufacturer:  # "Silicon" is in the name of the ESP32 manufacturer
+            pac_serial = p.device
+    
     psu_serial = find_serial_port(SERIAL_VENDOR_ID, SERIAL_PSU_PRODUCT_ID)
     pg_serial = find_serial_port(SERIAL_VENDOR_ID, SERIAL_PG_PRODUCT_ID)
-    pac_serial = None                                                       # TODO: Needs to be implemented
-    #tempsens_serial = find_serial_port(SERIAL_TEMPSENS_VENDOR_ID, SERIAL_TEMPSENS_PRODUCT_ID)
-
+    
     com_list = [psu_serial, pg_serial, pac_serial]
     if verbose: print(com_list)
 
@@ -526,13 +553,18 @@ def serial_start_connections(verbose=0):
         return False
 
     temperature_port = find_serial_port(SERIAL_TEMPSENS_VENDOR_ID, SERIAL_TEMPSENS_PRODUCT_ID)
-    temp_sensor = minimalmodbus.Instrument(temperature_port, 1) 
-    temp_sensor.serial.baudrate = 9600
-    temp_sensor.serial.bytesize = 8
-    temp_sensor.serial.parity = serial.PARITY_NONE
-    temp_sensor.serial.stopbits = 1
-    temp_sensor.serial.timeout = 0.1
-    temp_sensor.mode = minimalmodbus.MODE_RTU
+    if not temperature_port:
+        temperature_port=None
+    
+    temp_sensor=None
+    if temperature_port is not None:
+        temp_sensor = minimalmodbus.Instrument(temperature_port, 1) 
+        temp_sensor.serial.baudrate = 9600
+        temp_sensor.serial.bytesize = 8
+        temp_sensor.serial.parity = serial.PARITY_NONE
+        temp_sensor.serial.stopbits = 1
+        temp_sensor.serial.timeout = 0.1
+        temp_sensor.mode = minimalmodbus.MODE_RTU
 
     my_serials.append(temp_sensor)
     
@@ -542,7 +574,7 @@ def serial_start_connections(verbose=0):
         for connection in com_list:
             print(connection)
         print("---------------------------------------------")
-    
+    print(my_serials)
     return my_serials
 
 # CLOSE THE CONNECTION TO THE PSU AND THE PG
@@ -566,6 +598,8 @@ def serial_close_connections(ser_list, verbose=0):
     
     return success
 
+#endregion
+
 # ==============================
 # .______     _______. __    __  
 # |   _  \   /       ||  |  |  | 
@@ -575,6 +609,9 @@ def serial_close_connections(ser_list, verbose=0):
 # | _|   |_______/     \______/  
 #                                 
 # ==============================
+
+#region
+
 # COMMUNICATION WITH THE POWER SUPPLY UNIT
 
 # START THE PSU
@@ -663,7 +700,7 @@ def read_PSU_data(ser, verbose=0):
 
     return psuData, crcStatus
 
-
+#endregion
 
 # ====================
 # .______     _______ 
@@ -674,6 +711,8 @@ def read_PSU_data(ser, verbose=0):
 # | _|       \______| 
 #                               
 # ====================
+
+#region
 
 # COMMUNICATION WITH THE PULSE GENERATOR
 # ENABLES THE PG AND READS THE NEXT RETURN VALUES TO GET "ZEROCURRENT" AND "ZEROVOLTAGE"
@@ -869,6 +908,8 @@ def read_next_PG_pulse(ser, timeout=0, verbose=0):
     return pulseData, pulseDataLength
 
 
+#endregion
+
 # =============================================================================================
 # .___________. _______ .___  ___. .______             _______. _______ .__   __.      _______.
 # |           ||   ____||   \/   | |   _  \           /       ||   ____||  \ |  |     /       |
@@ -885,10 +926,107 @@ def read_next_PG_pulse(ser, timeout=0, verbose=0):
 #==================================================================
 
 def read_temperature(ser):
+    if ser is None:
+        return None
+
     try:
         raw_temperature = ser.read_register(0x0E, functioncode=4, signed=True)
         temperature = raw_temperature / 10.0
         return temperature
     except IOError:
-        #print("Failed to read from temperature sensor, retrying...")
+        print("Failed to read from temperature sensor, retrying...")
         return None
+
+
+
+
+
+#=============================================================================================
+#____   .______      ___       ______ 
+#|___ \  |   _  \    /   \     /      |
+#  __) | |  |_)  |  /  ^  \   |  ,----'
+# |__ <  |   ___/  /  /_\  \  |  |     
+# ___) | |  |     /  _____  \ |  `----.
+#|____/  | _|    /__/     \__\ \______|
+#                                     
+#==============================================================================================
+
+
+#==================================================================
+#=============FETCH FLOWRATE DATA==================================
+#================================================================== 
+
+def read_flowrate(ser):
+    if ser.in_waiting > 0: # Check if there is data waiting in the buffer
+        line = ser.readline().decode('utf-8').strip() # Read line from serial port, decode, and strip whitespace
+        if line.startswith('rPF-'): # Check if the line starts with 'rAC-'
+            try:
+                # Extract the part of the line after 'rAC-', convert to float, and return
+                flow_rate = float(line[4:])
+                return flow_rate
+            except ValueError:
+                print("Error: Couldn't convert string to float.")
+    else:
+        return None
+    print(line)
+
+    
+#==================================================================
+#=============3PAC COMMANDS========================================
+#================================================================== 
+
+# HANDSHAKE FUNCTION
+def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_code="HANDSHAKE"):
+    """Make sure connection is established by sending and receiving stuff."""
+    
+    # Close and reopen, just to make sure. Had some troubles without it after uploading new firmware and without manual restart of the 3PAC board.
+    print("closing")
+    ser.close()
+    time.sleep(2)
+    print("opening")
+    ser.open()
+
+    # Chill out while everything gets set
+    time.sleep(15)
+
+    # Set a long timeout to complete handshake (and save original timeout in variable for later)
+    timeout = ser.timeout
+    ser.timeout = 2
+
+    # Read and discard everything that may be in the input buffer
+    _ = ser.read_all()
+
+    # Send request to Arduino & read in what Arduino sent
+    ser.write(handshake_code.encode())
+    handshake_message = ser.readline()
+    # Print the handshake message, if desired
+    if print_handshake_message:
+        print("Handshake message: " + handshake_message.decode())
+
+    # Send and receive request again
+    ser.write(handshake_code.encode())
+    handshake_message = ser.readline()
+    # Print the handshake message, if desired
+    if print_handshake_message:
+        print("Handshake message: " + handshake_message.decode())
+
+    # Reset the timeout
+    ser.timeout = timeout
+
+
+# CRAFT PACKAGE TO TURN ON PID MODE 
+def turnOnPumpPID(ser):
+    # Construct the message
+    msg = f'wPS-22'
+    # Write the message
+    ser.write(msg.encode())
+    
+    
+# CRAFT PACKAGE TO TURN ON PID MODE 
+def writePumpFlowRate(ser, val1=2.50, val2=0.00):
+    # Construct the message
+    msg = f'wPF-{val1:.2f}-{val2:.2f}'
+    # Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+    
+   

@@ -33,8 +33,8 @@ class QRoundProgressBar(QtWidgets.QWidget):
         self.outlinePenWidth = 2
         self.dataPenWidth = 2
         self.rebuildBrush = False
-        self.format = "%v ml/mn"  # Update the format to display values in ml
-        self.decimals = 0  # Update the number of decimals to 0
+        self.format = "%v"  # Update the format to display values in ml
+        self.decimals = 1  # Update the number of decimals to 0
         self.updateFlags = self.UF_VALUE
         self.gradientData = []
         self.donutThicknessRatio = 0.9
@@ -247,7 +247,7 @@ class QRoundProgressBar(QtWidgets.QWidget):
         text = self.valueToText(value)
 
         f = QFont("Archivo")  # Set font family to Archivo
-        f.setPixelSize(int(innerRadius * 0.25))  # Adjust font size to make it smaller
+        f.setPixelSize(int(innerRadius * 0.20))  # Adjust font size to make it smaller
         p.setFont(f)
 
         textRect = innerRect
@@ -330,6 +330,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.roundProgressBar2 = QRoundProgressBar()
         self.roundProgressBar2.setRange(0, 10)
         self.roundProgressBar2.setValue(0)
+        self.roundProgressBar2.setDecimals(1)
 
         # Create a line edit widget
         self.lineEdit = QtWidgets.QLineEdit()
@@ -357,11 +358,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def updateProgressBars(self):
         value = self.lineEdit.text()
         if value:
-            value = int(value)
+            value = float(value)  # Convert to float
             if value <= self.roundProgressBar1.max:
-                self.roundProgressBar1.setValue(value)
+                self.roundProgressBar1.setValue(value)  # Convert to int before setting value
             if value <= self.roundProgressBar2.max:
-                self.roundProgressBar2.setValue(value)
+                self.roundProgressBar2.setValue(value)  # Convert to int before setting value
         else:
             self.roundProgressBar1.setValue(0)
             self.roundProgressBar2.setValue(0)
