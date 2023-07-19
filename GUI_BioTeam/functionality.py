@@ -50,6 +50,37 @@ class TempWorker(QObject):
         self._is_running = False
         self._lock.unlock()
 
+class ReadSerialWorker(QObject):
+    update_data = pyqtSignal(float)
+
+    interval = 10  # customize the interval as you see fit
+
+    def __init__(self, device_serial):
+        super(ReadSerialWorker, self).__init__()
+        self.device_serial = device_serial
+        self._is_running = False
+        self._lock = QMutex()
+
+    @pyqtSlot()
+    def run(self):
+        self._is_running = True
+        while True:
+            self._lock.lock()
+            if not self._is_running:
+                self._lock.unlock()
+                break
+            self._lock.unlock()
+            
+            data = read_flowrate(self.device_serial[2])
+            if data is not None:
+                self.update_data.emit(data)
+            QThread.msleep(self.interval)
+
+    @pyqtSlot()
+    def stop(self):
+        self._lock.lock()
+        self._is_running = False
+        self._lock.unlock()
 
 
 #endregion 
@@ -72,29 +103,34 @@ class Functionality(QtWidgets.QMainWindow):
         
     # Sucrose frame functionality (with threads)
     
-        self.sucrose_is_pumping = False # sucrose pumping button state flag 
-        self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump)
-        self.sucroseTimer = None
-        self.read_sucrose_interval= 1000 #ms
-       
+        self.serialWorker = ReadSerialWorker(self.device_serials)
+        self.serialThread = QThread()
         
+        self.serialWorker.moveToThread(self.serialThread) 
+        self.serialWorker.update_data.connect(self.updateSucroseProgressBar) # connect the worker signal to your progress bar update function
+
+        self.sucrose_is_pumping = False # sucrose pumping button state flag 
+        self.serialThread.started.connect(self.serialWorker.run) # start the worker when the thread starts
+        self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump)
+        
+        #self.sucroseTimer = None
+        #self.read_sucrose_interval= 1000 #ms
+       
     # Temp plotting (with threads)
         
         self.tempWorker = TempWorker(self.device_serials)
         self.tempThread = QThread()
+        
         self.tempWorker.moveToThread(self.tempThread) 
         self.tempWorker.update_temp.connect(self.update_temp_plot)
-        self.tempThread.started.connect(self.tempWorker.run)
+        
         self.temp_is_plotting = False
-
+        self.tempThread.started.connect(self.tempWorker.run)
         self.ui.temp_button.pressed.connect(self.start_stop_temp_plotting)
                     
         self.xdata = np.linspace(0, 499, 500)  
         self.plotdata = np.zeros(500)
 
-
-
-        
     # Voltage plotting frame functionality
         self.voltage_is_plotting = False 
         self.ui.voltage_button.pressed.connect(self.start_voltage_plotting)
@@ -334,10 +370,9 @@ class Functionality(QtWidgets.QMainWindow):
             print("MESSAGE: Send Flow Rates")
             writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
             time.sleep(.25)
-
-            
-            if self.sucroseTimer is None: #If the time is none we can be sure that we were in a state of not reading flow rate but now we should go into a state of reading flow rate
-                self.sucroseTimer = self.start_sucrose_timer() #we get into a state of reading flow rate by starting the timer for the surcrose reading function
+            self.serialThread.start()  # Start the existing thread
+            #if self.sucroseTimer is None: #If the time is none we can be sure that we were in a state of not reading flow rate but now we should go into a state of reading flow rate
+                #self.sucroseTimer = self.start_sucrose_timer() #we get into a state of reading flow rate by starting the timer for the surcrose reading function
         else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
             # Change button color back to original
             self.ui.button_sucrose.setStyleSheet("""
@@ -366,17 +401,20 @@ class Functionality(QtWidgets.QMainWindow):
             p1fr=0.00
             p2fr=0.00
             writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
-            if self.sucroseTimer:                #If the temp plot timer is true it means we were indeed in a state of reading flow rate and can therefore be sure that we need to stop reading flow rate
-                self.sucroseTimer.stop()         #to stop reading the flow rate simply stop the timer
-                self.sucroseTimer = None         #but remember to set the timer to none so that we can start the timer the next time we click the button
-                self.ui.progress_bar_sucrose.setValue(0)
+            self.serialWorker.stop()  # Ask the worker to stop
+            self.serialThread.quit()  # Ask the thread to stop
+            self.serialThread.wait()  # Wait for the thread to stop
+            #if self.sucroseTimer:                #If the temp plot timer is true it means we were indeed in a state of reading flow rate and can therefore be sure that we need to stop reading flow rate
+                #self.sucroseTimer.stop()         #to stop reading the flow rate simply stop the timer
+                #self.sucroseTimer = None         #but remember to set the timer to none so that we can start the timer the next time we click the button
+                #self.ui.progress_bar_sucrose.setValue(0)
                 
-    def start_sucrose_timer(self):
-        sucroseTimer = QtCore.QTimer()
-        sucroseTimer.setInterval(self.read_sucrose_interval)
-        sucroseTimer.timeout.connect(self.updateSucroseProgressBar) #add the reading function later
-        sucroseTimer.start()
-        return sucroseTimer
+    #def start_sucrose_timer(self):
+        #sucroseTimer = QtCore.QTimer()
+        #sucroseTimer.setInterval(self.read_sucrose_interval)
+        #sucroseTimer.timeout.connect(self.updateSucroseProgressBar) #add the reading function later
+        #sucroseTimer.start()
+        #return sucroseTimer
     
 #endregion
 
@@ -401,18 +439,19 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion 
 
 # region : ROUND PROGRESS BAR FUNCTIONS 
-    def updateSucroseProgressBar(self):
+    def updateSucroseProgressBar(self, value):
         
-        value = read_flowrate(self.device_serials[2])
+        #value = read_flowrate(self.device_serials[2])
         
-        line_edit_value = self.ui.line_edit_sucrose.text()
-        line_edit_value=float(line_edit_value)
+        #line_edit_value = self.ui.line_edit_sucrose.text()
+        #line_edit_value=float(line_edit_value)
         if value:
             value = float(value)
             if value <= self.ui.progress_bar_sucrose.max:
                 self.ui.progress_bar_sucrose.setValue(value)
         else:
-            self.ui.progress_bar_sucrose.setValue(line_edit_value)
+            self.ui.progress_bar_sucrose.setValue(2)
+        print(value)
             
     def updateEthanolProgressBar(self):
         value = self.ui.line_edit_ethanol.text()
@@ -422,6 +461,7 @@ class Functionality(QtWidgets.QMainWindow):
                 self.ui.progress_bar_ethanol.setValue(value)
         else:
             self.ui.progress_bar_ethanol.setValue(0)
+        
 #endregion 
 
 # region : CLOSE EVENT FUNCTION
