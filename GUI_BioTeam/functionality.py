@@ -245,13 +245,14 @@ class Functionality(QtWidgets.QMainWindow):
 
     def start_voltage_timer(self):
         voltageTimer = QtCore.QTimer()
-        voltageTimer.setInterval(self.interval)
+        voltageTimer.setInterval(self.voltage_plot_interval)
         voltageTimer.timeout.connect(self.update_voltage_plot)
         voltageTimer.start()
         return voltageTimer
 
     def update_voltage_plot(self):
         
+    
         self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1])  # READ NEXT PULSE
         
         self.voltage_y[:, 0] -= self.zerodata[0]        # ZERO THE VOLTAGE DATA
@@ -304,23 +305,26 @@ class Functionality(QtWidgets.QMainWindow):
             """)
 
             print("MESSAGE: " + VALVE_ON)
-            self.device_serials[2].write(VALVE_ON.encode())
-            msg = self.device_serials[2].readline()
-            print("RESPONSE: " + msg.decode())
-            time.sleep(0.25)
             
-            p1fr=1.00
-            p2fr=0.00
+            self.device_serials[2].write(VALVE_ON.encode())
+            msg = self.device_serials[2].readline().decode().strip()
 
-            print("MESSAGE: PID On")
-            turnOnPumpPID(self.device_serials[2])
-            msg = self.device_serials[2].readline()
-            print("RESPONSE: " + msg.decode())
-            time.sleep(.25)
+            if msg == 'rAC-wVS':
+                print("RESPONSE: " + msg)
+                p1fr=1.00
+                p2fr=0.00
 
-            print("MESSAGE: Send Flow Rates")
-            writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
-            time.sleep(.25)
+                print("MESSAGE: PID On")
+                turnOnPumpPID(self.device_serials[2])
+                msg = self.device_serials[2].readline().decode().strip()
+                
+                if msg == 'rAC-wPS':
+                    print("RESPONSE: " + msg)
+
+                    print("MESSAGE: Send Flow Rates")
+                    writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
+            else:
+                print("Unexpected response: " + msg)
 
             
             if self.sucroseTimer is None: #If the time is none we can be sure that we were in a state of not reading flow rate but now we should go into a state of reading flow rate
@@ -440,6 +444,7 @@ class Functionality(QtWidgets.QMainWindow):
             """)
             self.signal_is_enabled = True
             send_PSU_enable(self.device_serials[0], 1)
+            send_PG_pulsetimes(self.device_serials[1], 0)
             self.zerodata = send_PG_enable(self.device_serials[1], 1)
             # CHECK IF DATA WAS SENT SUCESSFULLY
             if self.zerodata:                                         
