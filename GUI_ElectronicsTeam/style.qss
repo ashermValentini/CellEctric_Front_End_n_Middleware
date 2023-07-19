@@ -1,15 +1,18 @@
 /* MAIN WINDOW */
 QWidget#MainWindow {
-    background-color: #011D28;
+    /*background-color: #011D28;*/
+    background-color: #000000;
 }
 
 
 /* SIDEBAR */
 QWidget#SidebarIconOnlyWidget {
-    background-color: #03394F;
+    /*background-color: #03394F;*/
+    background-color: #222222;
 }
 QPushButton#menu_dashboard_button_1, #menu_graphs_button_1, #menu_control_button_1, #menu_settings_button_1 {
-    background-color: #03394F;
+    /*background-color: #03394F;*/
+    background-color: #222222;
 }
 
 
@@ -33,7 +36,7 @@ QWidget#Window_DeviceControl {
 
 /* WIDGET BACKGROUNDS */
 QWidget#Window_Voltage, #Window_Status, #Window_PulseShape, #Window_LiveData, #Window_Fluidics, #Window_Graphs, #Window_DeviceToggle {
-    background-color: #03394F;
+    background-color: #222222;
     border-radius: 10px;
     padding: 5px;
     margin: 2px; 
@@ -42,7 +45,7 @@ QWidget#Window_Voltage, #Window_Status, #Window_PulseShape, #Window_LiveData, #W
 
 /* USER INPUTS */
 QLineEdit {
-    background-color: #03394F;
+    background-color: #222222;
     height: 30px;
     border-radius: 16px;
     border: 2px solid #e0e4e7;
@@ -62,7 +65,8 @@ QPushButton#button_toggle_psu_enable, #button_toggle_pg_enable, #button_toggle_3
     font-size: 20px; 
 }
 QPushButton#button_toggle_psu_enable:checked, #button_toggle_pg_enable:checked, #button_toggle_3pac_enable:checked {
-    background-color: #8AC926;
+    /*background-color: #8AC926;*/
+    background-color: #0796FF;
 }
 QPushButton#button_toggle_psu_enable:hover, #button_toggle_pg_enable:hover, #button_toggle_3pac_enable:hover {
     background-color: #e0e4e7;
@@ -72,7 +76,8 @@ QPushButton#button_toggle_psu_enable:hover, #button_toggle_pg_enable:hover, #but
 
 /* BUTTONS VALVE STATE TOGGLE */
 QPushButton#button_valvestate_sucrose, #button_valvestate_ethanol, #button_valvestate_cleaning {
-    background-color: #03394F;
+    /*background-color: #03394F;*/
+    background-color: #222222;
     height: 30px;
     border-radius: 12px;
     border: 2px solid #e0e4e7;
@@ -81,17 +86,20 @@ QPushButton#button_valvestate_sucrose, #button_valvestate_ethanol, #button_valve
     font-size: 20px; 
 }
 QPushButton#button_valvestate_sucrose:checked, #button_valvestate_ethanol:checked, #button_valvestate_cleaning:checked {
-    background-color: #8AC926;
+    /*background-color: #8AC926;*/
+    background-color: #0796FF;
 }
 QPushButton#button_valvestate_sucrose:hover, #button_valvestate_ethanol:hover, #button_valvestate_cleaning:hover {
     background-color: #e0e4e7;
-    color: #03394F;
+    /*color: #03394F;*/
+    color: #222222;
 }
 
 
 /* BUTTONS INDIVIDUAL VALVES */
 QPushButton#button_toggle_valve1, #button_toggle_valve2, #button_toggle_valve3 {
-    background-color: #03394F;
+    /*background-color: #03394F;*/
+    background-color: #222222;
     height: 22px;
     border-radius: 10px;
     border: 2px solid #e0e4e7;
@@ -99,15 +107,18 @@ QPushButton#button_toggle_valve1, #button_toggle_valve2, #button_toggle_valve3 {
     margin: 5px;
 }
 QPushButton#button_toggle_valve1:checked, #button_toggle_valve2:checked, #button_toggle_valve3:checked {
-    background-color: #8AC926;
+    /*background-color: #8AC926;*/
+    background-color: #0796FF;
 }
 QPushButton#button_toggle_valve1:hover, #button_toggle_valve2:hover, #button_toggle_valve3:hover {
     background-color: #e0e4e7;
-    color: #03394F;
+    /*color: #03394F;*/
+    color: #222222;
 }
 QPushButton#button_toggle_valve1:disabled, #button_toggle_valve2:disabled, #button_toggle_valve3:disabled {
     background-color: grey;
-    color: #03394F;
+    /*color: #03394F;*/
+    color: #222222;
     border-width: 0px;
 }
 
@@ -115,7 +126,8 @@ QPushButton#button_toggle_valve1:disabled, #button_toggle_valve2:disabled, #butt
 
 /* BUTTONS UPDATE FLOWRATES */
 QPushButton#button_update_sucethflow, #button_update_bloodflow {
-    background-color: #03394F;
+    /*background-color: #03394F;*/
+    background-color: #222222;
     height: 22px;
     border-radius: 12px;
     border: 2px solid #e0e4e7;
@@ -124,7 +136,8 @@ QPushButton#button_update_sucethflow, #button_update_bloodflow {
 }
 QPushButton#button_update_sucethflow:hover, #button_update_bloodflow:hover {
     background-color: #e0e4e7;
-    color: #03394F;
+    /*color: #03394F;*/
+    color: #222222;
 }
 
 
@@ -139,11 +152,13 @@ QPushButton#button_toggle_sucethflow, #button_toggle_bloodflow {
     font-size: 20px;
 }
 QPushButton#button_toggle_sucethflow:checked, #button_toggle_bloodflow:checked {
-    background-color: #8AC926;
+    /*background-color: #8AC926;*/
+    background-color: #0796FF;
 }
 QPushButton#button_toggle_sucethflow:hover, #button_toggle_bloodflow:hover {
     background-color: #e0e4e7;
-    color: #03394F;
+    /*color: #03394F;*/
+    color: #222222;
 }
 
 /* BUTTONS LOGGING */
@@ -156,11 +171,13 @@ QPushButton#button_toggle_logging {
     margin: 5px;
 }
 QPushButton#button_toggle_logging:checked {
-    background-color: #8AC926;
+    /*background-color: #8AC926;*/
+    background-color: #0796FF;
 }
 QPushButton#button_toggle_logging:hover {
     background-color: #e0e4e7;
-    color: #03394F;
+    /*color: #03394F;*/
+    color: #222222;
 }
 
 
