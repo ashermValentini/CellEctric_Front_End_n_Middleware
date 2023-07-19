@@ -304,27 +304,36 @@ class Functionality(QtWidgets.QMainWindow):
                 }
             """)
 
-            print("MESSAGE: " + VALVE_ON)
-            
-            self.device_serials[2].write(VALVE_ON.encode())
-            msg = self.device_serials[2].readline().decode().strip()
-
-            if msg == 'rAC-wVS':
-                print("RESPONSE: " + msg)
-                p1fr=1.00
-                p2fr=0.00
-
-                print("MESSAGE: PID On")
-                turnOnPumpPID(self.device_serials[2])
-                msg = self.device_serials[2].readline().decode().strip()
+            flowRate1 = self.ui.line_edit_sucrose.text()
+            if flowRate1: 
+                flowRate1 = float(flowRate1)
+            else: 
+                flowRate1=0.00
+    
+            flowRate2 = self.ui.line_edit_ethanol.text()
+            if flowRate2: 
+                flowRate2 = float(flowRate2)
+            else: 
+                flowRate2=0.00
                 
-                if msg == 'rAC-wPS':
-                    print("RESPONSE: " + msg)
+            print("MESSAGE: " + VALVE_ON)
+            self.device_serials[2].write(VALVE_ON.encode())
+            msg = self.device_serials[2].readline()
+            print("RESPONSE: " + msg.decode())
+            time.sleep(0.25)
+            
+            p1fr=1.00
+            p2fr=0.00
 
-                    print("MESSAGE: Send Flow Rates")
-                    writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
-            else:
-                print("Unexpected response: " + msg)
+            print("MESSAGE: PID On")
+            turnOnPumpPID(self.device_serials[2])
+            msg = self.device_serials[2].readline()
+            print("RESPONSE: " + msg.decode())
+            time.sleep(.25)
+
+            print("MESSAGE: Send Flow Rates")
+            writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
+            time.sleep(.25)
 
             
             if self.sucroseTimer is None: #If the time is none we can be sure that we were in a state of not reading flow rate but now we should go into a state of reading flow rate
