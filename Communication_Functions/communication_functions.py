@@ -927,14 +927,15 @@ def read_next_PG_pulse(ser, timeout=0, verbose=0):
 
 def read_temperature(ser):
     if ser is None:
-        return None
+        return -1
 
     try:
         raw_temperature = ser.read_register(0x0E, functioncode=4, signed=True)
         temperature = raw_temperature / 10.0
         return temperature
-    except IOError:
+    except IOError as e:
         print("Failed to read from temperature sensor, retrying...")
+        print(f"IOError: {str(e)}")
         return None
 
 

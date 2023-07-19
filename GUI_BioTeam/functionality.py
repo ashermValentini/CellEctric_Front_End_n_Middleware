@@ -17,10 +17,12 @@ VALVE_ON = "wVS-000"
 PELTIER_ON = "wCS-1"
 PELTIER_OFF = "wCS-0"
 
+#region : Thread Worker Classes 
+
 class TempWorker(QObject):
     update_temp = pyqtSignal(float)
     interval = 10
-
+    
     def __init__(self, device_serials):
         super(TempWorker, self).__init__()
         self.device_serials = device_serials
@@ -49,6 +51,9 @@ class TempWorker(QObject):
         self._lock.unlock()
 
 
+#endregion 
+
+#region : Main functionality
 
 class Functionality(QtWidgets.QMainWindow):
     def __init__(self):
@@ -365,9 +370,9 @@ class Functionality(QtWidgets.QMainWindow):
     def check_coms(self):
 
         #temperature = find_serial_port(SERIAL_TEMPSENS_VENDOR_ID, SERIAL_TEMPSENS_PRODUCT_ID)
-        temperature = read_temperature(self.device_serials[3])
+        temp_serial = read_temperature(self.device_serials[3])
         esp = find_esp()
-        if temperature is not None:
+        if temp_serial is not -1:
             # Change circle color to green
             self.ui.circles["Temperature Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
         else:
@@ -475,4 +480,6 @@ class Functionality(QtWidgets.QMainWindow):
         # This is the slot that gets called when the button is clicked
         self.ui.stack.setCurrentIndex(1)
         
+#endregion 
+
 #endregion 
