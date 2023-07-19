@@ -1,11 +1,13 @@
 import time
 import sys
 import os
+import serial
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Communication_Functions.communication_functions import *
 
-from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex
+from PyQt5 import QtWidgets, QtCore, QtGui 
+from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTimer
 from layout import Ui_MainWindow
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -16,8 +18,10 @@ VALVE_OFF = "wVS-010"
 VALVE_ON = "wVS-000"
 PELTIER_ON = "wCS-1"
 PELTIER_OFF = "wCS-0"
+PID_ON = "wPS-22"
+PID_OFF = "wPS-00"
 
-#region : Thread Worker Classes 
+#region : The matrix begins here -Thread Worker Classes 
 
 class TempWorker(QObject):
     update_temp = pyqtSignal(float)
@@ -50,6 +54,7 @@ class TempWorker(QObject):
         self._is_running = False
         self._lock.unlock()
 
+#poooooorly named must change - still getting used to threads - this is the thread that handles flow rate data and links it to the progress bar for feedback
 class ReadSerialWorker(QObject):
     update_data = pyqtSignal(float)
 
@@ -70,7 +75,6 @@ class ReadSerialWorker(QObject):
                 self._lock.unlock()
                 break
             self._lock.unlock()
-            
             data = read_flowrate(self.device_serial[2])
             if data is not None:
                 self.update_data.emit(data)
@@ -81,6 +85,9 @@ class ReadSerialWorker(QObject):
         self._lock.lock()
         self._is_running = False
         self._lock.unlock()
+
+
+#thread to read serial messages from the ESP32
 
 
 #endregion 
@@ -113,9 +120,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.serialThread.started.connect(self.serialWorker.run) # start the worker when the thread starts
         self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump)
         
-        #self.sucroseTimer = None
-        #self.read_sucrose_interval= 1000 #ms
-       
+
     # Temp plotting (with threads)
         
         self.tempWorker = TempWorker(self.device_serials)
@@ -156,13 +161,11 @@ class Functionality(QtWidgets.QMainWindow):
         self.coms_timer.start()
     
     #Voltage Signal Frame Functionality
+    
         self.signal_is_enabled=False 
         self.ui.psu_button.pressed.connect(self.start_psu_pg)
         
-
-
     # flow rate frames functionality 
-        #self.ui.line_edit_sucrose.returnPressed.connect(self.updateSucroseProgressBar)
         self.ui.line_edit_ethanol.returnPressed.connect(self.updateEthanolProgressBar)
 
 #region : PLOTTING FUNCTIONS  
@@ -339,40 +342,35 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
                 }
             """)
-
-            flowRate1 = self.ui.line_edit_sucrose.text()
-            if flowRate1: 
-                flowRate1 = float(flowRate1)
-            else: 
-                flowRate1=0.00
-    
-            flowRate2 = self.ui.line_edit_ethanol.text()
-            if flowRate2: 
-                flowRate2 = float(flowRate2)
-            else: 
-                flowRate2=0.00
-                
+            
             print("MESSAGE: " + VALVE_ON)
             self.device_serials[2].write(VALVE_ON.encode())
-            msg = self.device_serials[2].readline()
-            print("RESPONSE: " + msg.decode())
-            time.sleep(0.25)
+            msg = self.device_serials[2].readline().decode().strip()
+
+            if msg == "rAC-wVS":
+                print("RESPONSE: " + msg)
+
+                p1fr=1.00
+                p2fr=0.00
+                
+                print("MESSAGE: Send Flow Rates")
+                writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
+                msg = self.device_serials[2].readline().decode().strip()
+                if msg == "rAC-wPF":
+                    print("RESPONSE: " + msg)
+                    print("MESSAGE: Enable PID mode")
+                    turnOnPumpPID(self.device_serials[2])
+                    msg = self.device_serials[2].readline().decode().strip()
+                    if msg == "rAC-wPS":
+                        print("RESPONSE: " + msg)
+                        self.serialThread.start() 
+                    else:
+                        print("Unexpected response to PID On command: " + msg)
+                else:
+                    print("Unexpected response to Send Flow Rates command: " + msg)
+            else:
+                print("Unexpected response to Valve On command: " + msg)
             
-            p1fr=1.00
-            p2fr=0.00
-
-            print("MESSAGE: PID On")
-            turnOnPumpPID(self.device_serials[2])
-            msg = self.device_serials[2].readline()
-            print("RESPONSE: " + msg.decode())
-            time.sleep(.25)
-
-            print("MESSAGE: Send Flow Rates")
-            writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
-            time.sleep(.25)
-            self.serialThread.start()  # Start the existing thread
-            #if self.sucroseTimer is None: #If the time is none we can be sure that we were in a state of not reading flow rate but now we should go into a state of reading flow rate
-                #self.sucroseTimer = self.start_sucrose_timer() #we get into a state of reading flow rate by starting the timer for the surcrose reading function
         else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
             # Change button color back to original
             self.ui.button_sucrose.setStyleSheet("""
@@ -396,26 +394,40 @@ class Functionality(QtWidgets.QMainWindow):
             #Change the status of temp_is_plotting from true to False because we are about to stop plotting
             self.sucrose_is_pumping = False 
             
-            self.device_serials[2].write(VALVE_OFF.encode())
-            time.sleep(.25)
-            p1fr=0.00
-            p2fr=0.00
-            writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
-            self.serialWorker.stop()  # Ask the worker to stop
-            self.serialThread.quit()  # Ask the thread to stop
-            self.serialThread.wait()  # Wait for the thread to stop
-            #if self.sucroseTimer:                #If the temp plot timer is true it means we were indeed in a state of reading flow rate and can therefore be sure that we need to stop reading flow rate
-                #self.sucroseTimer.stop()         #to stop reading the flow rate simply stop the timer
-                #self.sucroseTimer = None         #but remember to set the timer to none so that we can start the timer the next time we click the button
-                #self.ui.progress_bar_sucrose.setValue(0)
+            self.device_serials[2].write(PID_OFF.encode())
+            msg = self.device_serials[2].readline().decode().strip()
+            print("RESPONSE: " + msg)
+
+            if msg == "rAC-wPS": 
+
+                self.device_serials[2].reset_input_buffer()  
                 
-    #def start_sucrose_timer(self):
-        #sucroseTimer = QtCore.QTimer()
-        #sucroseTimer.setInterval(self.read_sucrose_interval)
-        #sucroseTimer.timeout.connect(self.updateSucroseProgressBar) #add the reading function later
-        #sucroseTimer.start()
-        #return sucroseTimer
-    
+                # Then send the Valve Off command
+                self.device_serials[2].write(VALVE_OFF.encode())
+                msg = self.device_serials[2].readline().decode().strip()
+                print("RESPONSE: " + msg)
+
+                if msg == "rAC-wVS":  # Replace "rAC-wVS" with the expected response to VALVE_OFF
+                    # Then set the flow rates
+                    p1fr=0.00
+                    p2fr=0.00
+                    writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
+                    msg = self.device_serials[2].readline().decode().strip()
+                    print("RESPONSE: " + msg)
+
+                    if msg == "rAC-wPF":  # Replace "rAC-wPF" with the expected response to changing the flow rate
+                        self.serialWorker.stop()  # Ask the worker to stop
+                        self.serialThread.quit()  # Ask the thread to stop
+                        self.serialThread.wait()  # Wait for the thread to stop
+
+                    else:
+                        print("Unexpected response to Set Flow Rate command: " + msg)
+                else:
+                    print("Unexpected response to Valve Off command: " + msg)
+            else:
+                print("Unexpected response to PID Off command: " + msg)
+
+
 #endregion
 
 # region : CONNECTION CIRCLE FUNCTION           
@@ -441,17 +453,13 @@ class Functionality(QtWidgets.QMainWindow):
 # region : ROUND PROGRESS BAR FUNCTIONS 
     def updateSucroseProgressBar(self, value):
         
-        #value = read_flowrate(self.device_serials[2])
-        
-        #line_edit_value = self.ui.line_edit_sucrose.text()
-        #line_edit_value=float(line_edit_value)
         if value:
             value = float(value)
             if value <= self.ui.progress_bar_sucrose.max:
                 self.ui.progress_bar_sucrose.setValue(value)
         else:
-            self.ui.progress_bar_sucrose.setValue(2)
-        print(value)
+            self.ui.progress_bar_sucrose.setValue(0)
+        #print(value)
             
     def updateEthanolProgressBar(self):
         value = self.ui.line_edit_ethanol.text()

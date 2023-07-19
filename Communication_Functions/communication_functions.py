@@ -969,7 +969,6 @@ def read_flowrate(ser):
                 print("Error: Couldn't convert string to float.")
     else:
         return None
-    print(line)
 
     
 #==================================================================
@@ -1027,7 +1026,7 @@ def turnOnPumpPID(ser):
 def writePumpFlowRate(ser, val1=2.50, val2=0.00):
     # Construct the message
     msg = f'wPF-{val1:.2f}-{val2:.2f}'
-    # Write the message
+    #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
    
