@@ -51,6 +51,7 @@ class TempWorker(QObject):
         self._lock.unlock()
 
 
+
 #endregion 
 
 #region : Main functionality
@@ -69,7 +70,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
          
         
-    # Sucrose frame functionality
+    # Sucrose frame functionality (with threads)
+    
         self.sucrose_is_pumping = False # sucrose pumping button state flag 
         self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump)
         self.sucroseTimer = None
@@ -284,6 +286,7 @@ class Functionality(QtWidgets.QMainWindow):
 #region : SUCROSE PUMPING 
     def start_sucrose_pump(self):
         if not self.sucrose_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
+            self.sucrose_is_pumping = True  
             # Change button color to blue
             self.ui.button_sucrose.setStyleSheet("""
                 QPushButton {
@@ -299,8 +302,6 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
                 }
             """)
-            self.sucrose_is_pumping = True  
-            
 
             print("MESSAGE: " + VALVE_ON)
             self.device_serials[2].write(VALVE_ON.encode())
