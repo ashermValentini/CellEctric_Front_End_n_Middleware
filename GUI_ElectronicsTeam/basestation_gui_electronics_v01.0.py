@@ -271,6 +271,7 @@ class MainWindow(QMainWindow):
         # Plotting variables
         self.interval = 500  # ms
         self.tempplotdata = np.zeros(500)   # initialize Temperature values with 0
+        self.temp_y = self.tempplotdata
         self.voltageplotdata = np.zeros(500)   # initialize Temperature values with 0
 
         # TIMER
@@ -283,6 +284,7 @@ class MainWindow(QMainWindow):
 
     def update_plot(self):
         temperature = read_temperature(self.device_serials[3])
+
         if temperature is not None:
             self.tempplotdata = np.roll(self.tempplotdata, -1)
             self.tempplotdata[-1:] = temperature
@@ -291,7 +293,6 @@ class MainWindow(QMainWindow):
             self.temp_x = np.roll(self.temp_x, -1)
             self.temp_x[-1] = self.temp_x[-2] + 1  # This will keep increasing the count on the x-axis
 
-        
         self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1])  # READ NEXT PULSE
 
         self.voltage_y[:, 0] -= self.zerodata[0]        # ZERO THE VOLTAGE DATA
@@ -334,6 +335,8 @@ class MainWindow(QMainWindow):
         #self.ui.MplWidget.canvas.axes1.set_title("Voltage")
         self.ui.MplWidget.canvas.axes1.set_ylabel("Voltage [V]")
         self.ui.MplWidget.canvas.axes1.set_ylim(self.minval_pulse-10, self.maxval_pulse+10)
+        self.ui.MplWidget.canvas.axes1.set_ylim(self.minval_pulse-10, self.maxval_pulse+10)
+
         #self.ui.MplWidget.canvas.axes2.set_title("Current")
         self.ui.MplWidget.canvas.axes2.set_ylabel("Current [A]")
         #self.ui.MplWidget.canvas.axes3.set_title("Temperature")
@@ -387,6 +390,7 @@ class MainWindow(QMainWindow):
                 self.ui.display_system_log.append("ERROR: Could not switch PG OFF")     # LOG TO GUI
                 self.ui.button_toggle_pg_enable.setChecked(True)                       # SET THE BUTTON TO "ON" AGAIN
         else:
+            send_PG_pulsetimes(self.device_serials[1])
             self.zerodata = send_PG_enable(self.device_serials[1], 1)
               
 

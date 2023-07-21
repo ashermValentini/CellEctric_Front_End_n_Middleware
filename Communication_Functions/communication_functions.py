@@ -847,7 +847,7 @@ def read_PG_data(ser, verbose=0):
         if verbose: print('Invalid status value: {}'.format(datatype))
 
     # CREATE THE ARRAY (UINT8/16/32 DEPENDING ON THE SIZE)
-    pgData = np.array(struct.unpack(data_fmt, serData[4:]), dtype=np.uint32 if datatype == 0x1000 else np.uint16)
+    pgData = np.array(struct.unpack(data_fmt, serData[4:]), dtype=np.uint32 if datatype == PG_TYPE_DATASTART else np.uint16)
 
     # RESHAPE IT TO [[VOLTAGE, CURRENT],[VOLTAGE, CURRENT]...] (2 COLUMNS, x ROWS)
     if datatype == PG_TYPE_PULSEDATA:
