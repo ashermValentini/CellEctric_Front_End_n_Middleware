@@ -1023,9 +1023,16 @@ def turnOnPumpPID(ser):
     
     
 # CRAFT PACKAGE TO TURN ON PID MODE 
-def writePumpFlowRate(ser, val1=2.50, val2=0.00):
+def writeSucrosePumpFlowRate(ser, val1=2.50, val2=0.00):
     # Construct the message
-    msg = f'wPF-{val1:.2f}-{val2:.2f}'
+    msg = f'wPS-{val1:.2f}-{val2:.2f}'
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+    
+# CRAFT PACKAGE TO TURN ON PID MODE 
+def writeEthanolPumpFlowRate(ser, val1=2.50, val2=0.00):
+    # Construct the message
+    msg = f'wPE-{val1:.2f}-{val2:.2f}'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     

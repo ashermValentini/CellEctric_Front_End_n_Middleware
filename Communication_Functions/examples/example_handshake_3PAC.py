@@ -3,7 +3,7 @@ import serial.tools.list_ports
 import time
 
 HANDSHAKE = "HANDSHAKE"
-VALVE_ON = "wVS-010"
+VALVE_ON = "wVS-001"
 VALVE_OFF = "wVS-000"
 PELTIER_ON = "wCS-1"
 PELTIER_OFF = "wCS-0"
@@ -120,19 +120,19 @@ print("MESSAGE: " + VALVE_ON)
 ser_3PAC.write(VALVE_ON.encode())
 msg = ser_3PAC.readline()
 print("RESPONSE: " + msg.decode())
-time.sleep(0.25)
+time.sleep(1)
 
 print("MESSAGE: " + PELTIER_ON)
 ser_3PAC.write(PELTIER_ON.encode())
 msg = ser_3PAC.readline()
 print("RESPONSE: " + msg.decode())
-time.sleep(0.25)
+time.sleep(1)
 
 print("MESSAGE: " + VALVE_OFF)
 ser_3PAC.write(VALVE_OFF.encode())
 msg = ser_3PAC.readline()
 print("RESPONSE: " + msg.decode())
-time.sleep(0.25)
+time.sleep(1)
 
 print("MESSAGE: " + PELTIER_OFF)
 ser_3PAC.write(PELTIER_OFF.encode())

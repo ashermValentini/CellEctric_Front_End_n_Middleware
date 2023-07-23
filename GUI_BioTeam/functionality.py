@@ -14,12 +14,13 @@ from matplotlib.figure import Figure
 import matplotlib.ticker as ticker
 import numpy as np
 
-VALVE_OFF = "wVS-010"
-VALVE_ON = "wVS-000"
+VALVE1_OFF = "wVS-001"
+VALVE1_ON = "wVS-000"
+
 PELTIER_ON = "wCS-1"
 PELTIER_OFF = "wCS-0"
-PID_ON = "wPS-22"
-PID_OFF = "wPS-00"
+
+PUMPS_OFF ="wPO"
 
 #region : The matrix begins here -Thread Worker Classes 
 
@@ -29,7 +30,7 @@ class TempWorker(QObject):
     
     def __init__(self, device_serials):
         super(TempWorker, self).__init__()
-        self.device_serials = device_serials
+        self.device_serials = device_serials[3]
         self._is_running = False
         self._lock = QMutex()
 
@@ -43,7 +44,7 @@ class TempWorker(QObject):
                 break
             self._lock.unlock()
             
-            temperature = read_temperature(self.device_serials[3])
+            temperature = read_temperature(self.device_serials)
             if temperature is not None:
                 self.update_temp.emit(temperature)
             QThread.msleep(self.interval)
@@ -54,15 +55,13 @@ class TempWorker(QObject):
         self._is_running = False
         self._lock.unlock()
 
-#poooooorly named must change - still getting used to threads - this is the thread that handles flow rate data and links it to the progress bar for feedback
 class ReadSerialWorker(QObject):
     update_data = pyqtSignal(float)
+    interval = 250  # customize the interval to the nyquist criteria (half the sending rate from the esp32 so that we dont miss data)
 
-    interval = 10  # customize the interval as you see fit
-
-    def __init__(self, device_serial):
+    def __init__(self, device_serials):
         super(ReadSerialWorker, self).__init__()
-        self.device_serial = device_serial
+        self.device_serials = device_serials[2]
         self._is_running = False
         self._lock = QMutex()
 
@@ -75,7 +74,7 @@ class ReadSerialWorker(QObject):
                 self._lock.unlock()
                 break
             self._lock.unlock()
-            data = read_flowrate(self.device_serial[2])
+            data = read_flowrate(self.device_serials)
             if data is not None:
                 self.update_data.emit(data)
             QThread.msleep(self.interval)
@@ -85,10 +84,6 @@ class ReadSerialWorker(QObject):
         self._lock.lock()
         self._is_running = False
         self._lock.unlock()
-
-
-#thread to read serial messages from the ESP32
-
 
 #endregion 
 
@@ -108,19 +103,27 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
          
         
-    # Sucrose frame functionality (with threads)
+    # Sucrose and Ethanol frame functionalities (with reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread for now)
     
         self.serialWorker = ReadSerialWorker(self.device_serials)
         self.serialThread = QThread()
-        
         self.serialWorker.moveToThread(self.serialThread) 
+        
+        self.serialWorker.update_data.connect(self.updateEthanolProgressBar) # connect the worker signal to your progress bar update function
         self.serialWorker.update_data.connect(self.updateSucroseProgressBar) # connect the worker signal to your progress bar update function
 
-        self.sucrose_is_pumping = False # sucrose pumping button state flag 
-        self.serialThread.started.connect(self.serialWorker.run) # start the worker when the thread starts
+        self.serialThread.started.connect(self.serialWorker.run) # start the workers run function when the thread starts
+        self.serialThread.start() #start the thread so that the dashboard always reads incoming serial data from the esp32 
+
+        self.sucrose_is_pumping = False # sucrose pumping button state flag (starts unclicked)
+        self.ethanol_is_pumping = False # ethanol pumping button state flag (starts unclicked)
+        
+ 
         self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump)
         
 
+        self.ui.button_ethanol.pressed.connect(self.start_ethanol_pump)
+            
     # Temp plotting (with threads)
         
         self.tempWorker = TempWorker(self.device_serials)
@@ -165,8 +168,6 @@ class Functionality(QtWidgets.QMainWindow):
         self.signal_is_enabled=False 
         self.ui.psu_button.pressed.connect(self.start_psu_pg)
         
-    # flow rate frames functionality 
-        self.ui.line_edit_ethanol.returnPressed.connect(self.updateEthanolProgressBar)
 
 #region : PLOTTING FUNCTIONS  
 
@@ -325,110 +326,120 @@ class Functionality(QtWidgets.QMainWindow):
 
 #region : SUCROSE PUMPING 
     def start_sucrose_pump(self):
-        if not self.sucrose_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
-            self.sucrose_is_pumping = True  
-            # Change button color to blue
-            self.ui.button_sucrose.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #0796FF;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 15px;
-                }
+        if not self.ethanol_is_pumping:
+            if not self.sucrose_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
+                self.sucrose_is_pumping = True  
+                # Change button color to blue
+                self.ui.button_sucrose.setStyleSheet("""
+                    QPushButton {
+                        border: 2px solid white;
+                        border-radius: 10px;
+                        background-color: #0796FF;
+                        color: #FFFFFF;
+                        font-family: Archivo;
+                        font-size: 15px;
+                    }
 
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-            """)
+                    QPushButton:hover {
+                        background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                    }
+                """)
             
-            print("MESSAGE: " + VALVE_ON)
-            self.device_serials[2].write(VALVE_ON.encode())
-            msg = self.device_serials[2].readline().decode().strip()
-
-            if msg == "rAC-wVS":
-                print("RESPONSE: " + msg)
-
-                p1fr=1.00
+                p1fr=2.50
                 p2fr=0.00
                 
-                print("MESSAGE: Send Flow Rates")
-                writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
-                msg = self.device_serials[2].readline().decode().strip()
-                if msg == "rAC-wPF":
-                    print("RESPONSE: " + msg)
-                    print("MESSAGE: Enable PID mode")
-                    turnOnPumpPID(self.device_serials[2])
-                    msg = self.device_serials[2].readline().decode().strip()
-                    if msg == "rAC-wPS":
-                        print("RESPONSE: " + msg)
-                        self.serialThread.start() 
-                    else:
-                        print("Unexpected response to PID On command: " + msg)
-                else:
-                    print("Unexpected response to Send Flow Rates command: " + msg)
-            else:
-                print("Unexpected response to Valve On command: " + msg)
-            
-        else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
-            # Change button color back to original
-            self.ui.button_sucrose.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #222222;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 15px;
-                }
+                print("MESSAGE: Start Sucrose")
+                writeSucrosePumpFlowRate(self.device_serials[2], p1fr, p2fr)
+                msg = self.device_serials[2].readline()
+                print("RESPONSE: " + msg.decode())
 
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-
-                QPushButton:pressed {
-                    background-color: #0796FF;
-                }
-            """)
-            #Change the status of temp_is_plotting from true to False because we are about to stop plotting
-            self.sucrose_is_pumping = False 
-            
-            self.device_serials[2].write(PID_OFF.encode())
-            msg = self.device_serials[2].readline().decode().strip()
-            print("RESPONSE: " + msg)
-
-            if msg == "rAC-wPS": 
-
-                self.device_serials[2].reset_input_buffer()  
                 
-                # Then send the Valve Off command
-                self.device_serials[2].write(VALVE_OFF.encode())
-                msg = self.device_serials[2].readline().decode().strip()
-                print("RESPONSE: " + msg)
+            else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
+                # Change button color back to original
+                self.ui.button_sucrose.setStyleSheet("""
+                    QPushButton {
+                        border: 2px solid white;
+                        border-radius: 10px;
+                        background-color: #222222;
+                        color: #FFFFFF;
+                        font-family: Archivo;
+                        font-size: 15px;
+                    }
 
-                if msg == "rAC-wVS":  # Replace "rAC-wVS" with the expected response to VALVE_OFF
-                    # Then set the flow rates
-                    p1fr=0.00
-                    p2fr=0.00
-                    writePumpFlowRate(self.device_serials[2], p1fr, p2fr)
-                    msg = self.device_serials[2].readline().decode().strip()
-                    print("RESPONSE: " + msg)
+                    QPushButton:hover {
+                        background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                    }
 
-                    if msg == "rAC-wPF":  # Replace "rAC-wPF" with the expected response to changing the flow rate
-                        self.serialWorker.stop()  # Ask the worker to stop
-                        self.serialThread.quit()  # Ask the thread to stop
-                        self.serialThread.wait()  # Wait for the thread to stop
-
-                    else:
-                        print("Unexpected response to Set Flow Rate command: " + msg)
-                else:
-                    print("Unexpected response to Valve Off command: " + msg)
-            else:
-                print("Unexpected response to PID Off command: " + msg)
-
+                    QPushButton:pressed {
+                        background-color: #0796FF;
+                    }
+                """)
+                #Change the status of temp_is_plotting from true to False because we are about to stop plotting
+                self.sucrose_is_pumping = False 
+        
+                print("MESSAGE: Stop Sucrose")
+                self.device_serials[2].write(PUMPS_OFF.encode())
+                msg = self.device_serials[2].readline()
+                print("RESPONSE: " + msg.decode())     
+            
 
 #endregion
+
+#region : ETHANOL PUMPING 
+
+    def start_ethanol_pump(self):
+        if not self.sucrose_is_pumping:
+            if not self.ethanol_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
+                self.ethanol_is_pumping = True  
+                self.ui.button_ethanol.setStyleSheet("""
+                    QPushButton {
+                        border: 2px solid white;
+                        border-radius: 10px;
+                        background-color: #0796FF;
+                        color: #FFFFFF;
+                        font-family: Archivo;
+                        font-size: 15px;
+                    }
+
+                    QPushButton:hover {
+                        background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                    }
+                """)
+                p1fr=2.50
+                p2fr=0.00
+                
+                print("MESSAGE: Start Ethanol")
+                writeEthanolPumpFlowRate(self.device_serials[2], p1fr, p2fr)
+                msg = self.device_serials[2].readline()
+                print("RESPONSE: " + msg.decode())
+                
+            else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
+                self.ethanol_is_pumping = False 
+                self.ui.button_ethanol.setStyleSheet("""
+                    QPushButton {
+                        border: 2px solid white;
+                        border-radius: 10px;
+                        background-color: #222222;
+                        color: #FFFFFF;
+                        font-family: Archivo;
+                        font-size: 15px;
+                    }
+
+                    QPushButton:hover {
+                        background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                    }
+
+                    QPushButton:pressed {
+                        background-color: #0796FF;
+                    }
+                """)
+                
+                print("MESSAGE: Stop Ethanol")
+                self.device_serials[2].write(PUMPS_OFF.encode())
+                msg = self.device_serials[2].readline()
+                print("RESPONSE: " + msg.decode()) 
+
+#endregion 
 
 # region : CONNECTION CIRCLE FUNCTION           
     def check_coms(self):
@@ -453,22 +464,26 @@ class Functionality(QtWidgets.QMainWindow):
 # region : ROUND PROGRESS BAR FUNCTIONS 
     def updateSucroseProgressBar(self, value):
         
-        if value:
-            value = float(value)
-            if value <= self.ui.progress_bar_sucrose.max:
-                self.ui.progress_bar_sucrose.setValue(value)
-        else:
-            self.ui.progress_bar_sucrose.setValue(0)
-        #print(value)
-            
-    def updateEthanolProgressBar(self):
-        value = self.ui.line_edit_ethanol.text()
-        if value:
-            value = int(value)
-            if value <= self.ui.progress_bar_ethanol.max:
-                self.ui.progress_bar_ethanol.setValue(value)
-        else:
-            self.ui.progress_bar_ethanol.setValue(0)
+        if self.sucrose_is_pumping:
+            if value:
+                value = float(value)
+                if value <= self.ui.progress_bar_sucrose.max:
+                    self.ui.progress_bar_sucrose.setValue(value)
+            else:
+                self.ui.progress_bar_sucrose.setValue(0)
+        else: self.ui.progress_bar_sucrose.setValue(0)
+   
+               
+    def updateEthanolProgressBar(self, value):
+        
+        if self.ethanol_is_pumping:
+            if value:
+                value = float(value)
+                if value <= self.ui.progress_bar_ethanol.max:
+                    self.ui.progress_bar_ethanol.setValue(value)
+            else:
+                self.ui.progress_bar_ethanol.setValue(0)
+        else: self.ui.progress_bar_ethanol.setValue(0)
         
 #endregion 
 
