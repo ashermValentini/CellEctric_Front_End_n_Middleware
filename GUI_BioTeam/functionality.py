@@ -345,7 +345,7 @@ class Functionality(QtWidgets.QMainWindow):
                     }
                 """)
             
-                p1fr=2.50
+                p1fr=2.00
                 p2fr=0.00
                 
                 print("MESSAGE: Start Sucrose")
@@ -405,7 +405,7 @@ class Functionality(QtWidgets.QMainWindow):
                         background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
                     }
                 """)
-                p1fr=2.50
+                p1fr=2.00
                 p2fr=0.00
                 
                 print("MESSAGE: Start Ethanol")

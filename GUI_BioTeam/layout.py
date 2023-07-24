@@ -304,6 +304,7 @@ class Ui_MainWindow(object):
         # Create the QLineEdit for the value
         self.line_edit_blood = QtWidgets.QLineEdit()
         self.line_edit_blood.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_blood.setText("NF")
 
         # Add the line edit and label to the group box layout
         group_box_layout_blood.addWidget(self.line_edit_blood)
