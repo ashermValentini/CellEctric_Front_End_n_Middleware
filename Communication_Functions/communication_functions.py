@@ -957,9 +957,16 @@ def read_temperature(ser):
 #================================================================== 
 
 def read_flowrate(ser):
-    if ser.in_waiting > 0: # Check if there is data waiting in the buffer
-        line = ser.readline().decode('utf-8').strip() # Read line from serial port, decode, and strip whitespace
-        if line.startswith('rPF-'): # Check if the line starts with 'rAC-'
+    line = ''
+    if ser.in_waiting: # Check if there is data waiting in the buffer
+        print(ser.in_waiting)
+
+        while ser.in_waiting:
+            line = ser.readline().decode('utf-8')
+            if '\n' in line:
+                received_line = line.strip()
+
+        if received_line.startswith('rPF-'): # Check if the line starts with 'rAC-'
             try:
                 # Extract the part of the line after 'rAC-', convert to float, and return
                 flow_rate = float(line[4:])
@@ -968,7 +975,6 @@ def read_flowrate(ser):
                 print("Error: Couldn't convert string to float.")
     else:
         return None
-    print(line)
 
     
 #==================================================================
