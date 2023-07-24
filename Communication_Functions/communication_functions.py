@@ -1018,18 +1018,11 @@ def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_c
 
     # Reset the timeout
     ser.timeout = timeout
-
-
-# CRAFT PACKAGE TO TURN ON PID MODE 
-def turnOnPumpPID(ser):
-    # Construct the message
-    msg = f'wPS-22'
-    # Write the message
-    ser.write(msg.encode())
     
     
 # CRAFT PACKAGE TO TURN ON PID MODE 
 def writePumpFlowRate(ser, val1=2.50, val2=0.00):
+    ser.flush()
     # Construct the message
     msg = f'wPF-{val1:.2f}-{val2:.2f}'
     # Write the message

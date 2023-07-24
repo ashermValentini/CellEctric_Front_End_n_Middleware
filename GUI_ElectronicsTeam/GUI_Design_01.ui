@@ -1325,7 +1325,7 @@
                           </font>
                          </property>
                          <property name="text">
-                          <string>V1 - SUCROSE PATH</string>
+                          <string>V1 - CARTRIDGE PATH</string>
                          </property>
                          <property name="checkable">
                           <bool>true</bool>
@@ -1355,7 +1355,7 @@
                           </font>
                          </property>
                          <property name="text">
-                          <string>V3 - CARTRIDGE PATH</string>
+                          <string>V3 - SUCROSE PATH</string>
                          </property>
                          <property name="checkable">
                           <bool>true</bool>
@@ -1614,19 +1614,38 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QPushButton" name="button_toggle_sucethflow">
-                     <property name="font">
-                      <font>
-                       <pointsize>14</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>START / STOP</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
+                    <layout class="QHBoxLayout" name="horizontalLayout_7">
+                     <item>
+                      <widget class="QPushButton" name="button_toggle_sucflow">
+                       <property name="font">
+                        <font>
+                         <pointsize>14</pointsize>
+                        </font>
+                       </property>
+                       <property name="text">
+                        <string>SUC</string>
+                       </property>
+                       <property name="checkable">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QPushButton" name="button_toggle_ethflow">
+                       <property name="font">
+                        <font>
+                         <pointsize>14</pointsize>
+                        </font>
+                       </property>
+                       <property name="text">
+                        <string>ETH</string>
+                       </property>
+                       <property name="checkable">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
                    </item>
                   </layout>
                  </widget>

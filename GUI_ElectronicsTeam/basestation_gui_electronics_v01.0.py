@@ -36,7 +36,10 @@ class MainWindow(QMainWindow):
         self.flag_pg_on = False
         self.flag_3pac_on = False
 
-        self.flag_suceth_on = False
+        self.flag_suc_on = False
+        self.flag_eth_on = False
+        self.flag_suc_pid = False
+        self.flag_eth_pid = False
         self.flag_blood_on = False
 
         self.flag_valve1 = False
@@ -77,12 +80,18 @@ class MainWindow(QMainWindow):
         self.ui.button_toggle_psu_enable.clicked.connect(self.psu_button_toggle)
         self.ui.button_toggle_pg_enable.clicked.connect(self.pg_button_toggle)
 
-        self.ui.button_toggle_sucethflow.clicked.connect(self.toggle_flow_suceth)
+        self.ui.button_toggle_sucflow.clicked.connect(self.toggle_flow_suc)
+        self.ui.button_toggle_ethflow.clicked.connect(self.toggle_flow_eth)
         self.ui.button_toggle_bloodflow.clicked.connect(self.toggle_flow_blood)
 
         self.ui.button_valvestate_sucrose.clicked.connect(self.change_valve_state_sucrose)
         self.ui.button_valvestate_ethanol.clicked.connect(self.change_valve_state_ethanol)
         self.ui.button_valvestate_cleaning.clicked.connect(self.change_valve_state_cleaning)
+        self.ui.button_valvestate_off.clicked.connect(self.change_valve_state_off)
+
+        self.ui.button_toggle_valve1.clicked.connect(self.change_single_valve)
+        self.ui.button_toggle_valve2.clicked.connect(self.change_single_valve)
+        self.ui.button_toggle_valve3.clicked.connect(self.change_single_valve)
 
 
         # =================
@@ -131,20 +140,29 @@ class MainWindow(QMainWindow):
         self.maxval_pulse = 10  
         self.minval_pulse = -10
 
+
+        # INITIALIZE VALVE STATES (ALL CLOSED)
+        # Construct the message
+        msg = f'wVS-111'
+        # Write the message
+        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+        msg = self.device_serials[2].readline()
+        print("RESPONSE: " + msg.decode())
+        time.sleep(2)
+
         # =================
         # START TEMPERATURE PLOT
         # =================
         self.start_plotting()
 
-        p1fr=1.00
-        p2fr=0.00
-
+        # INITIALIZE PID STATES (ALL CLOSED)
         print("MESSAGE: PID On")
-        turnOnPumpPID(self.device_serials[2])
+        msg = "wPS-22"
+        self.device_serials[2].write(msg.encode())
         msg = self.device_serials[2].readline()
         print("RESPONSE: " + msg.decode())
-        time.sleep(5)
-        
+        time.sleep(2)
+        self.start_flowrate_suceth()
         
 
 
@@ -166,13 +184,16 @@ class MainWindow(QMainWindow):
         print("Flowrate: {}".format(flow_value_float))
 
         # UPDATE LABEL
-        if self.flag_suceth_on:
+        if self.flag_suc_on or self.flag_eth_on:
             self.ui.value_flowrate_suc_eth.setText(str(flow_value_float))
 
         # PROGRESS BAR VALUE
         # needs to be inverted: 1.0 is empty, 0.0 is full
         if flow_value_float is None or flow_value_float<0:
             flow_value_float = 0.0
+        
+        if flow_value_float > SUCROSE_FLOWRATE_MAX:
+            flow_value_float = SUCROSE_FLOWRATE_MAX
 
         progress_value = 1 - (flow_value_float / SUCROSE_FLOWRATE_MAX)  # SCALING AND INVERTING
         stop_1 = str(progress_value - 0.001)
@@ -213,17 +234,77 @@ class MainWindow(QMainWindow):
         self.ui.circularProgress_blood.setStyleSheet(style_sheet)
 
 
-    def toggle_flow_suceth(self):
-        if self.flag_suceth_on:
-            self.ui.value_flowrate_suc_eth.setText("OFF")
-            self.ui.display_system_log.append("SUC/ETH: OFF")
-            self.flag_suceth_on = False
+    def toggle_flow_suc(self):
+
+        # IF ETHANOL IS ON
+        if self.flag_eth_on:
+            self.ui.display_system_log.append("SWITCH OFF ETH BEFORE")
+            self.ui.button_toggle_sucflow.setChecked(False)
 
         else:
-            input_value_float, input_value_string = self.input_check_suceth()
-            self.start_flowrate_suceth()
-            self.ui.display_system_log.append("SUC/ETH: ON")
-            self.flag_suceth_on = True
+            # ALREADY ON --> SWITCH IT OFF
+            if self.flag_suc_on:
+                # Construct the message for PUMPS OFF
+                msg = f'wPS-00'
+                # Write the message
+                self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+                msg = self.device_serials[2].readline()
+                print("RESPONSE: " + msg.decode())
+
+                self.flag_suc_on = False
+                self.ui.value_flowrate_suc_eth.setText("OFF")
+
+            # OFF --> SWITCH IT ON
+            else:
+                self.ui.display_system_log.append("SWITCHED ON SUC")
+                input_value_float, input_value_string = self.input_check_suceth()
+
+                # Construct the message for PUMP1 IN PID MODE
+                msg = f'wPS-20'
+                # Write the message
+                self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+                msg = self.device_serials[2].readline()
+                print("RESPONSE: " + msg.decode())
+
+                writePumpFlowRate(self.device_serials[2], input_value_float, 0)
+
+                self.flag_suc_on = True
+
+
+    def toggle_flow_eth(self):
+        # IF SUCROSE IS ON
+        if self.flag_suc_on:
+            self.ui.display_system_log.append("SWITCH OFF SUC BEFORE")
+            self.ui.button_toggle_ethflow.setChecked(False)
+
+        else:
+            # ALREADY ON --> SWITCH IT OFF
+            if self.flag_eth_on:
+                # Construct the message for PUMPS OFF
+                msg = f'wPS-00'
+                # Write the message
+                self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+                msg = self.device_serials[2].readline()
+                print("RESPONSE: " + msg.decode())
+
+                self.flag_eth_on = False
+                self.ui.value_flowrate_suc_eth.setText("OFF")
+
+            # OFF --> SWITCH IT ON
+            else:
+                self.ui.display_system_log.append("SWITCHED ON ETH")
+                input_value_float, input_value_string = self.input_check_suceth()
+
+                # Construct the message for PUMP2 IN PID MODE
+                msg = f'wPS-02'
+                # Write the message
+                self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+                msg = self.device_serials[2].readline()
+                print("RESPONSE: " + msg.decode())
+
+                writePumpFlowRate(self.device_serials[2], 0, input_value_float)
+
+                self.flag_eth_on = True
 
 
     def toggle_flow_blood(self):
@@ -476,16 +557,84 @@ class MainWindow(QMainWindow):
             self.ui.button_toggle_pg_enable.setChecked(False)                       # SET THE BUTTON TO "ON" AGAIN
 
 
+    # =================================================
     # VALVE CONTROL
+    # =================================================
 
     def change_valve_state_sucrose(self):
         self.ui.display_system_log.append("VALVES: SUCROSE")
+        msg = f'wVS-010'
+        # Write the message
+        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+        msg = self.device_serials[2].readline()
+        print("RESPONSE: " + msg.decode())
+
+        # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
+        self.ui.button_toggle_valve1.setChecked(True)
+        self.ui.button_toggle_valve1.setChecked(False)
+        self.ui.button_toggle_valve1.setChecked(True)
+
 
     def change_valve_state_ethanol(self):
         self.ui.display_system_log.append("VALVES: ETHANOL")
+        msg = f'wVS-001'
+        # Write the message
+        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+        msg = self.device_serials[2].readline()
+        print("RESPONSE: " + msg.decode())
+
+        # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
+        self.ui.button_toggle_valve1.setChecked(True)
+        self.ui.button_toggle_valve1.setChecked(True)
+        self.ui.button_toggle_valve1.setChecked(False)
+
 
     def change_valve_state_cleaning(self):
         self.ui.display_system_log.append("VALVES: CLEANING")
+        msg = f'wVS-100'
+        # Write the message
+        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+        msg = self.device_serials[2].readline()
+        print("RESPONSE: " + msg.decode())
+
+        # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
+        self.ui.button_toggle_valve1.setChecked(False)
+        self.ui.button_toggle_valve1.setChecked(True)
+        self.ui.button_toggle_valve1.setChecked(True)
+
+
+    def change_valve_state_off(self):
+        self.ui.display_system_log.append("VALVES: OFF")
+        msg = f'wVS-111'
+        # Write the message
+        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+        msg = self.device_serials[2].readline()
+        print("RESPONSE: " + msg.decode())
+
+        # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
+        self.ui.button_toggle_valve1.setChecked(False)
+        self.ui.button_toggle_valve1.setChecked(False)
+        self.ui.button_toggle_valve1.setChecked(False)
+
+
+    def change_single_valve(self):
+
+        # CHECK VALVE BUTTON STATES TO CRAFT MESSAGE FOR BUTTONS
+        valvebutton_states = np.array([False, False, False])
+        valvebutton_states[0] = self.ui.button_toggle_valve1.isChecked()
+        valvebutton_states[1] = self.ui.button_toggle_valve2.isChecked()
+        valvebutton_states[2] = self.ui.button_toggle_valve3.isChecked()
+
+
+        # CONSTRUCT MESSAGE (INVERTING OF ARRAY NEEDED SINCE VALVES ARE NORMALLY OPEN)   
+        binary_string = ''.join('1' if val else '0' for val in np.invert(valvebutton_states))
+        decimal_value = int(binary_string, 2)
+        msg = f"wVS-{decimal_value}"
+            
+        # Write the message
+        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+        msg = self.device_serials[2].readline()
+        print("RESPONSE: " + msg.decode())
 
     
     # =================================================
