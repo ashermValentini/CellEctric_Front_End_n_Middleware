@@ -190,6 +190,7 @@ class Ui_MainWindow(object):
         self.progress_bar_sucrose.setValue(0)
         self.progress_bar_sucrose.setBarColor('#0796FF')
         self.progress_bar_sucrose.setDecimals(2)
+        self.progress_bar_sucrose.setDonutThicknessRatio(0.85)
         
         progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
         progress_button_layout.addWidget(self.progress_bar_sucrose)  # add progress bar to the layout
@@ -789,8 +790,6 @@ class Ui_MainWindow(object):
     #endregion
     
     # endregion : Main content 
-        
-        
         MainWindow.setCentralWidget(self.centralwidget)
         self.main_content.setStretchFactor(self.application_region, 50)
         self.main_content.setStretchFactor(self.plot_layout, 50)    
