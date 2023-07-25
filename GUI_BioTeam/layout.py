@@ -6,11 +6,12 @@ from matplotlib.patches import FancyBboxPatch
 from matplotlib.transforms import Bbox
 from roundprogressBar import QRoundProgressBar
 from roundprogressBar import MainWindow
+import resources_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         # Load custom font
-        QtGui.QFontDatabase.addApplicationFont(r"C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_Team_GUI\GUI_BioTeam\assets\fonts\static/Archivo-Regular.ttf")
+        QtGui.QFontDatabase.addApplicationFont(":/fonts/static/Archivo-Regular.ttf")
 
         # Set up styles for labels
         title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; font-weight: bold; }"
@@ -69,8 +70,7 @@ class Ui_MainWindow(object):
         self.sidebar_logo.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 2 * buffer,
                                       int(MainWindow.height() * 0.2))
 
-        logo_pixmap = QtGui.QPixmap(
-            r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_Team_GUI\GUI_BioTeam\assets\images\logo_small_white.png')
+        logo_pixmap = QtGui.QPixmap( ":/images/logo_small_white.png")
         self.sidebar_logo.setPixmap(logo_pixmap.scaled(self.sidebar_logo.width(), self.sidebar_logo.height(),
                                                        QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
     #endregion
@@ -111,7 +111,7 @@ class Ui_MainWindow(object):
         self.experiment_page_button = QtWidgets.QPushButton(self.frame_d_topbar)
         # load the image as an icon
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("C:/Users/offic/CellEctric Biosciences/Sepsis Project - Documents/Development/4 Automation and Control Systems/11_GUI/BIO_Team_GUI/GUI_BioTeam/assets/images/dark-on.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/images/dark-on.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         # set the icon to the button
         self.experiment_page_button.setIcon(icon)
         # adjust the size of the button's icon to fit properly
@@ -198,7 +198,7 @@ class Ui_MainWindow(object):
 
         self.button_sucrose = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_Team_GUI\GUI_BioTeam\assets\images\play_pause.png'), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/images/play_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_sucrose.setIcon(icon)
         self.button_sucrose.setIconSize(QtCore.QSize(24, 24))  # Adjust size as needed
         self.button_sucrose.setStyleSheet("""
@@ -353,7 +353,7 @@ class Ui_MainWindow(object):
 
         self.button_ethanol = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_Team_GUI\GUI_BioTeam\assets\images\play_pause.png'), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/images/play_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_ethanol.setIcon(icon)
         self.button_ethanol.setIconSize(QtCore.QSize(24, 24))  # Adjust size as needed
         self.button_ethanol.setStyleSheet("""
@@ -609,8 +609,7 @@ class Ui_MainWindow(object):
         # Add image to temperature frame
         self.temp_image = QtWidgets.QLabel()
         self.temp_image.setAlignment(QtCore.Qt.AlignCenter)
-        temp_image_pixmap = QtGui.QPixmap(
-            r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_Team_GUI\GUI_BioTeam\assets\images\boxplot_blue.png')
+        temp_image_pixmap = QtGui.QPixmap( ":/images/boxplot_blue.png")
         scaled_image = temp_image_pixmap.scaled(int(self.temp_image.width() * 0.30),
                                                 int(self.temp_image.height() * 0.30),
                                                 QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
@@ -727,7 +726,7 @@ class Ui_MainWindow(object):
         # PSU button creation
         self.psu_button = QtWidgets.QPushButton("", frame_d_signal)  # Set the text to empty since we are using an image
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_Team_GUI\GUI_BioTeam\assets\images\lightning_symbol.png'), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/images/lightning_symbol.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.psu_button.setIcon(icon)
         self.psu_button.setIconSize(QtCore.QSize(64, 64))  # Adjust size as needed
         self.psu_button.setStyleSheet("""

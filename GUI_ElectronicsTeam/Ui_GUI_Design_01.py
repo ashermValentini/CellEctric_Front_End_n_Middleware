@@ -43,6 +43,7 @@ class Ui_MainWindow(object):
         self.IconMenuSmall.setObjectName("IconMenuSmall")
         self.menu_dashboard_button_1 = QtWidgets.QPushButton(self.SidebarIconOnlyWidget)
         self.menu_dashboard_button_1.setText("")
+        
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/icons_bright/icon_dashboard_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.menu_dashboard_button_1.setIcon(icon)
