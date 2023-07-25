@@ -266,6 +266,8 @@ class MainWindow(QMainWindow):
                 msg = self.device_serials[2].readline()
                 print("RESPONSE: " + msg.decode())
 
+                time.sleep(1)
+                
                 writePumpFlowRate(self.device_serials[2], input_value_float, 0)
 
                 self.flag_suc_on = True
@@ -301,6 +303,8 @@ class MainWindow(QMainWindow):
                 self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
                 msg = self.device_serials[2].readline()
                 print("RESPONSE: " + msg.decode())
+
+                time.sleep(1)
 
                 writePumpFlowRate(self.device_serials[2], 0, input_value_float)
 
@@ -571,8 +575,8 @@ class MainWindow(QMainWindow):
 
         # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
         self.ui.button_toggle_valve1.setChecked(True)
-        self.ui.button_toggle_valve1.setChecked(False)
-        self.ui.button_toggle_valve1.setChecked(True)
+        self.ui.button_toggle_valve2.setChecked(False)
+        self.ui.button_toggle_valve3.setChecked(True)
 
 
     def change_valve_state_ethanol(self):
@@ -585,8 +589,8 @@ class MainWindow(QMainWindow):
 
         # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
         self.ui.button_toggle_valve1.setChecked(True)
-        self.ui.button_toggle_valve1.setChecked(True)
-        self.ui.button_toggle_valve1.setChecked(False)
+        self.ui.button_toggle_valve2.setChecked(True)
+        self.ui.button_toggle_valve3.setChecked(False)
 
 
     def change_valve_state_cleaning(self):
@@ -599,8 +603,8 @@ class MainWindow(QMainWindow):
 
         # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
         self.ui.button_toggle_valve1.setChecked(False)
-        self.ui.button_toggle_valve1.setChecked(True)
-        self.ui.button_toggle_valve1.setChecked(True)
+        self.ui.button_toggle_valve2.setChecked(True)
+        self.ui.button_toggle_valve3.setChecked(True)
 
 
     def change_valve_state_off(self):
@@ -613,8 +617,8 @@ class MainWindow(QMainWindow):
 
         # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
         self.ui.button_toggle_valve1.setChecked(False)
-        self.ui.button_toggle_valve1.setChecked(False)
-        self.ui.button_toggle_valve1.setChecked(False)
+        self.ui.button_toggle_valve2.setChecked(False)
+        self.ui.button_toggle_valve3.setChecked(False)
 
 
     def change_single_valve(self):
