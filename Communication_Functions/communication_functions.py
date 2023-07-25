@@ -927,14 +927,15 @@ def read_next_PG_pulse(ser, timeout=0, verbose=0):
 
 def read_temperature(ser):
     if ser is None:
-        return None
+        return -1
 
     try:
         raw_temperature = ser.read_register(0x0E, functioncode=4, signed=True)
         temperature = raw_temperature / 10.0
         return temperature
-    except IOError:
+    except IOError as e:
         print("Failed to read from temperature sensor, retrying...")
+        print(f"IOError: {str(e)}")
         return None
 
 
@@ -968,7 +969,6 @@ def read_flowrate(ser):
                 print("Error: Couldn't convert string to float.")
     else:
         return None
-    print(line)
 
     
 #==================================================================
@@ -1020,13 +1020,26 @@ def turnOnPumpPID(ser):
     msg = f'wPS-22'
     # Write the message
     ser.write(msg.encode())
+
+def writeFlowRate(ser, val1=2.50, val2=0.00):
+    # Construct the message
+    msg = f'wPF-{val1:.2f}-{val2:.2f}'
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
     
     
 # CRAFT PACKAGE TO TURN ON PID MODE 
-def writePumpFlowRate(ser, val1=2.50, val2=0.00):
+def writeSucrosePumpFlowRate(ser, val1=2.50, val2=0.00):
     # Construct the message
-    msg = f'wPF-{val1:.2f}-{val2:.2f}'
-    # Write the message
+    msg = f'wPS-{val1:.2f}-{val2:.2f}'
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+    
+# CRAFT PACKAGE TO TURN ON PID MODE 
+def writeEthanolPumpFlowRate(ser, val1=2.50, val2=0.00):
+    # Construct the message
+    msg = f'wPE-{val1:.2f}-{val2:.2f}'
+    #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
    

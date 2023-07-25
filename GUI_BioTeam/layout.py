@@ -190,6 +190,7 @@ class Ui_MainWindow(object):
         self.progress_bar_sucrose.setValue(0)
         self.progress_bar_sucrose.setBarColor('#0796FF')
         self.progress_bar_sucrose.setDecimals(2)
+        self.progress_bar_sucrose.setDonutThicknessRatio(0.85)
         
         progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
         progress_button_layout.addWidget(self.progress_bar_sucrose)  # add progress bar to the layout
@@ -235,7 +236,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_sucrose = QtWidgets.QLineEdit()
         self.line_edit_sucrose.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
-        self.line_edit_sucrose.setText("1.00")
+        self.line_edit_sucrose.setText("2.50")
 
         group_box_layout.addWidget(self.line_edit_sucrose)
         group_box_layout.addWidget(unit_label)
@@ -252,6 +253,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_sucrose_2 = QtWidgets.QLineEdit()
         self.line_edit_sucrose_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_sucrose_2.setText("NF")
 
         group_box_layout_2.addWidget(self.line_edit_sucrose_2)
         group_box_layout_2.addWidget(unit_label_2)
@@ -303,6 +305,7 @@ class Ui_MainWindow(object):
         # Create the QLineEdit for the value
         self.line_edit_blood = QtWidgets.QLineEdit()
         self.line_edit_blood.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_blood.setText("NF")
 
         # Add the line edit and label to the group box layout
         group_box_layout_blood.addWidget(self.line_edit_blood)
@@ -341,18 +344,19 @@ class Ui_MainWindow(object):
         self.progress_bar_ethanol.setFixedSize(65, 65)
         self.progress_bar_ethanol.setRange(0, 10)
         self.progress_bar_ethanol.setValue(0)
+        self.progress_bar_ethanol.setDecimals(2)
         self.progress_bar_ethanol.setBarColor('#0796FF')
         
         progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
         progress_button_layout.addWidget(self.progress_bar_ethanol)  # add progress bar to the layout
         progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
 
-        button_ethanol = QtWidgets.QPushButton()  # create button
+        self.button_ethanol = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_Team_GUI\GUI_BioTeam\assets\images\play_pause.png'), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        button_ethanol.setIcon(icon)
-        button_ethanol.setIconSize(QtCore.QSize(24, 24))  # Adjust size as needed
-        button_ethanol.setStyleSheet("""
+        self.button_ethanol.setIcon(icon)
+        self.button_ethanol.setIconSize(QtCore.QSize(24, 24))  # Adjust size as needed
+        self.button_ethanol.setStyleSheet("""
             QPushButton {
                 border: 2px solid #8f8f91;
                 border-radius: 6px;
@@ -368,7 +372,7 @@ class Ui_MainWindow(object):
             }
         """)
 
-        progress_button_layout.addWidget(button_ethanol)  # add button to the layout
+        progress_button_layout.addWidget(self.button_ethanol)  # add button to the layout
 
         layout_ethanol.addLayout(progress_button_layout)  # add layout for progress bar and button to main layout
         # endregion
@@ -387,7 +391,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_ethanol = QtWidgets.QLineEdit()
         self.line_edit_ethanol.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
-
+        self.line_edit_ethanol.setText("2.50")
         group_box_layout.addWidget(self.line_edit_ethanol)
         group_box_layout.addWidget(unit_label)
         # endregion
@@ -403,6 +407,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_ethanol_2 = QtWidgets.QLineEdit()
         self.line_edit_ethanol_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_ethanol_2.setText("NF")
 
         group_box_layout_2.addWidget(self.line_edit_ethanol_2)
         group_box_layout_2.addWidget(unit_label_2)
@@ -785,8 +790,6 @@ class Ui_MainWindow(object):
     #endregion
     
     # endregion : Main content 
-        
-        
         MainWindow.setCentralWidget(self.centralwidget)
         self.main_content.setStretchFactor(self.application_region, 50)
         self.main_content.setStretchFactor(self.plot_layout, 50)    
