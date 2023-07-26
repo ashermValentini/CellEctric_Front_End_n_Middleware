@@ -267,8 +267,8 @@ class MainWindow(QMainWindow):
                 print("RESPONSE: " + msg.decode())
 
                 time.sleep(1)
-                
-                writePumpFlowRate(self.device_serials[2], input_value_float, 0)
+
+                writePumpFlowRate(self.device_serials[2], input_value_float, input_value_float)
 
                 self.flag_suc_on = True
 
@@ -306,7 +306,7 @@ class MainWindow(QMainWindow):
 
                 time.sleep(1)
 
-                writePumpFlowRate(self.device_serials[2], 0, input_value_float)
+                writePumpFlowRate(self.device_serials[2], input_value_float, input_value_float)
 
                 self.flag_eth_on = True
 
