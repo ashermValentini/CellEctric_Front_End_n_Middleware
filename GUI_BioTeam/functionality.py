@@ -183,7 +183,7 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: #0796FF;
                     color: #FFFFFF;
                     font-family: Archivo;
-                    font-size: 15px;
+                    font-size: 30px;
                 }
 
                 QPushButton:hover {
@@ -203,7 +203,7 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: #222222;
                     color: #FFFFFF;
                     font-family: Archivo;
-                    font-size: 15px;
+                    font-size: 30px;
                 }
 
                 QPushButton:hover {
@@ -247,7 +247,7 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: #0796FF;
                     color: #FFFFFF;
                     font-family: Archivo;
-                    font-size: 15px;
+                    font-size: 30px;
                 }
 
                 QPushButton:hover {
@@ -266,7 +266,7 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: #222222;
                     color: #FFFFFF;
                     font-family: Archivo;
-                    font-size: 15px;
+                    font-size: 30px;
                 }
 
                 QPushButton:hover {
@@ -336,7 +336,7 @@ class Functionality(QtWidgets.QMainWindow):
                         background-color: #0796FF;
                         color: #FFFFFF;
                         font-family: Archivo;
-                        font-size: 15px;
+                        font-size: 30px;
                     }
 
                     QPushButton:hover {
@@ -362,7 +362,7 @@ class Functionality(QtWidgets.QMainWindow):
                         background-color: #222222;
                         color: #FFFFFF;
                         font-family: Archivo;
-                        font-size: 15px;
+                        font-size: 30px;
                     }
 
                     QPushButton:hover {
@@ -397,7 +397,7 @@ class Functionality(QtWidgets.QMainWindow):
                         background-color: #0796FF;
                         color: #FFFFFF;
                         font-family: Archivo;
-                        font-size: 15px;
+                        font-size: 30px;
                     }
 
                     QPushButton:hover {
@@ -421,7 +421,7 @@ class Functionality(QtWidgets.QMainWindow):
                         background-color: #222222;
                         color: #FFFFFF;
                         font-family: Archivo;
-                        font-size: 15px;
+                        font-size: 30px;
                     }
 
                     QPushButton:hover {

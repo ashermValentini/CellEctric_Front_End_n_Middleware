@@ -14,14 +14,14 @@ class Ui_MainWindow(object):
         QtGui.QFontDatabase.addApplicationFont(":/fonts/static/Archivo-Regular.ttf")
 
         # Set up styles for labels
-        title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; font-weight: bold; }"
-        text_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 15px;  font-weight: bold; }"
+        title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px; font-weight: bold; }"
+        text_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px; }"
         header_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 50px; font-weight: bold;  }"
-        input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; font-weight: bold; }"
+        input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 25px;  }"
         
         # Set up the main window 
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 1200)
+        MainWindow.resize(1280, 1920)
         MainWindow.setStyleSheet("background-color: #121212;")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -55,7 +55,7 @@ class Ui_MainWindow(object):
     # region : Sidebar
         self.frame_d_sidebar = QtWidgets.QFrame()
         self.frame_d_sidebar.setContentsMargins(0, 0, 0, 0)
-        self.frame_d_sidebar.setFixedWidth(int(MainWindow.height() * 0.05))
+        self.frame_d_sidebar.setFixedWidth(int(MainWindow.height() * 0.07))
         self.frame_d_sidebar.setStyleSheet("background-color: #222222;")
         self.frame_d_sidebar.setObjectName("frame_d_sidebar")
         
@@ -86,7 +86,7 @@ class Ui_MainWindow(object):
         
         self.frame_d_topbar = QtWidgets.QFrame()
         self.frame_d_topbar.setContentsMargins(0, 0, 0, 0)
-        self.frame_d_topbar.setFixedHeight(int(MainWindow.height() * 0.05))
+        self.frame_d_topbar.setFixedHeight(int(MainWindow.height() * 0.07))
         self.frame_d_topbar.setStyleSheet("background-color: #222222;")
         self.frame_d_topbar.setObjectName("frame_d_topbar")
         
@@ -146,6 +146,7 @@ class Ui_MainWindow(object):
 
         
         topbar_layout.addWidget(self.experiment_page_button)
+        topbar_layout.addSpacing(20)
 
     #endregion
     
@@ -185,8 +186,8 @@ class Ui_MainWindow(object):
         progress_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
 
         self.progress_bar_sucrose = QRoundProgressBar()  # create progress bar
-        self.progress_bar_sucrose.setFixedSize(100, 100)
-        self.progress_bar_sucrose.setRange(0, 5)
+        self.progress_bar_sucrose.setFixedSize(175, 175)
+        self.progress_bar_sucrose.setRange(0, 10)
         self.progress_bar_sucrose.setValue(0)
         self.progress_bar_sucrose.setBarColor('#0796FF')
         self.progress_bar_sucrose.setDecimals(2)
@@ -194,16 +195,16 @@ class Ui_MainWindow(object):
         
         progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
         progress_button_layout.addWidget(self.progress_bar_sucrose)  # add progress bar to the layout
-        progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
+        progress_button_layout.addSpacing(5)  # add fixed space of 20 pixels
 
         self.button_sucrose = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/play_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_sucrose.setIcon(icon)
-        self.button_sucrose.setIconSize(QtCore.QSize(24, 24))  # Adjust size as needed
+        self.button_sucrose.setIconSize(QtCore.QSize(50, 50))  # Adjust size as needed
         self.button_sucrose.setStyleSheet("""
             QPushButton {
-                border: 2px solid #8f8f91;
+                border: 2px solid white;
                 border-radius: 6px;
                 background-color: #222222;
             }
@@ -232,10 +233,10 @@ class Ui_MainWindow(object):
         group_box_sucrose.setLayout(group_box_layout)  # set layout to groupbox
 
         unit_label = QtWidgets.QLabel("ml/min")
-        unit_label.setStyleSheet("color: white;")
+        unit_label.setStyleSheet(input_style)
 
         self.line_edit_sucrose = QtWidgets.QLineEdit()
-        self.line_edit_sucrose.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_sucrose.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
         self.line_edit_sucrose.setText("2.50")
 
         group_box_layout.addWidget(self.line_edit_sucrose)
@@ -249,10 +250,10 @@ class Ui_MainWindow(object):
         group_box_sucrose_2.setLayout(group_box_layout_2)  # set layout to second groupbox
 
         unit_label_2 = QtWidgets.QLabel("s")  # unit for time variable
-        unit_label_2.setStyleSheet("color: white;")
+        unit_label_2.setStyleSheet(input_style)
 
         self.line_edit_sucrose_2 = QtWidgets.QLineEdit()
-        self.line_edit_sucrose_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_sucrose_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
         self.line_edit_sucrose_2.setText("NF")
 
         group_box_layout_2.addWidget(self.line_edit_sucrose_2)
@@ -300,11 +301,11 @@ class Ui_MainWindow(object):
 
         # Create the QLabel for the unit
         unit_label_blood = QtWidgets.QLabel("ml/min")
-        unit_label_blood.setStyleSheet("color: white;")
+        unit_label_blood.setStyleSheet(input_style)
 
         # Create the QLineEdit for the value
         self.line_edit_blood = QtWidgets.QLineEdit()
-        self.line_edit_blood.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_blood.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
         self.line_edit_blood.setText("NF")
 
         # Add the line edit and label to the group box layout
@@ -341,24 +342,25 @@ class Ui_MainWindow(object):
         progress_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
 
         self.progress_bar_ethanol = QRoundProgressBar()  # create progress bar
-        self.progress_bar_ethanol.setFixedSize(65, 65)
+        self.progress_bar_ethanol.setFixedSize(175, 175)
         self.progress_bar_ethanol.setRange(0, 10)
         self.progress_bar_ethanol.setValue(0)
         self.progress_bar_ethanol.setDecimals(2)
+        self.progress_bar_ethanol.setDonutThicknessRatio(0.85)
         self.progress_bar_ethanol.setBarColor('#0796FF')
         
         progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
         progress_button_layout.addWidget(self.progress_bar_ethanol)  # add progress bar to the layout
-        progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
+        progress_button_layout.addSpacing(5)  # add fixed space of 20 pixels
 
         self.button_ethanol = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/play_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_ethanol.setIcon(icon)
-        self.button_ethanol.setIconSize(QtCore.QSize(24, 24))  # Adjust size as needed
+        self.button_ethanol.setIconSize(QtCore.QSize(50, 50))  # Adjust size as needed
         self.button_ethanol.setStyleSheet("""
             QPushButton {
-                border: 2px solid #8f8f91;
+                border: 2px solid white;
                 border-radius: 6px;
                 background-color: #222222;
             }
@@ -387,10 +389,10 @@ class Ui_MainWindow(object):
         group_box_ethanol.setLayout(group_box_layout)  # set layout to groupbox
 
         unit_label = QtWidgets.QLabel("ml/min")
-        unit_label.setStyleSheet("color: white;")
+        unit_label.setStyleSheet(input_style)
 
         self.line_edit_ethanol = QtWidgets.QLineEdit()
-        self.line_edit_ethanol.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_ethanol.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
         self.line_edit_ethanol.setText("2.50")
         group_box_layout.addWidget(self.line_edit_ethanol)
         group_box_layout.addWidget(unit_label)
@@ -403,10 +405,10 @@ class Ui_MainWindow(object):
         group_box_ethanol_2.setLayout(group_box_layout_2)  # set layout to second groupbox
 
         unit_label_2 = QtWidgets.QLabel("s")  # unit for time variable
-        unit_label_2.setStyleSheet("color: white;")
+        unit_label_2.setStyleSheet(input_style)
 
         self.line_edit_ethanol_2 = QtWidgets.QLineEdit()
-        self.line_edit_ethanol_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_ethanol_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
         self.line_edit_ethanol_2.setText("NF")
 
         group_box_layout_2.addWidget(self.line_edit_ethanol_2)
@@ -441,15 +443,15 @@ class Ui_MainWindow(object):
 
         # Create the label and add it to the layout
         label = QtWidgets.QLabel()
-        title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px; font-weight: bold; }"  # Add font-weight: bold; to make the text bold
         label.setStyleSheet(title_style)
         label.setText("CONNECTIONS")
         label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(label)  # Add the label to the layout
 
         # Add a spacer for some vertical space
-        spacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)  # Adjust the second parameter for more or less space
+        spacer = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)  # Adjust the second parameter for more or less space
         layout.addItem(spacer)
+        
 
         # List of module names
         module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "3PAC", "Pressure Sensor"]
@@ -483,7 +485,7 @@ class Ui_MainWindow(object):
             # Add the module layout to the main layout
             layout.addLayout(module_layout)
 
-        layout.addStretch(1)
+        layout.addSpacing(75) 
 
         self.application_region_2_layout.addWidget(frame)
         #endregion 
@@ -502,7 +504,7 @@ class Ui_MainWindow(object):
         label.setText("PLOTS")
         label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(label)  
-        layout.addSpacing(20)    
+        layout.addSpacing(75)    
         
         # button creation
         self.temp_button = QtWidgets.QPushButton("Electrode Temperature")  # Set the text to empty since we are using an image
@@ -513,7 +515,7 @@ class Ui_MainWindow(object):
                 background-color: #222222;
                 color: #FFFFFF;
                 font-family: Archivo;
-                font-size: 15px;
+                font-size: 30px;
 
             }
 
@@ -534,7 +536,7 @@ class Ui_MainWindow(object):
                 background-color: #222222;
                 color: #FFFFFF;
                 font-family: Archivo;
-                font-size: 15px;
+                font-size: 30px;
             }
 
             QPushButton:hover {
@@ -554,7 +556,7 @@ class Ui_MainWindow(object):
                 background-color: #222222;
                 color: #FFFFFF;
                 font-family: Archivo;
-                font-size: 15px;
+                font-size: 30px;
             }
 
             QPushButton:hover {
@@ -610,8 +612,8 @@ class Ui_MainWindow(object):
         self.temp_image = QtWidgets.QLabel()
         self.temp_image.setAlignment(QtCore.Qt.AlignCenter)
         temp_image_pixmap = QtGui.QPixmap( ":/images/boxplot_blue.png")
-        scaled_image = temp_image_pixmap.scaled(int(self.temp_image.width() * 0.30),
-                                                int(self.temp_image.height() * 0.30),
+        scaled_image = temp_image_pixmap.scaled(int(self.temp_image.width() * 0.70),
+                                                int(self.temp_image.height() * 0.70),
                                                 QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.temp_image.setPixmap(scaled_image)
         temp_details_layout.addWidget(self.temp_image)
@@ -728,7 +730,7 @@ class Ui_MainWindow(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/lightning_symbol.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.psu_button.setIcon(icon)
-        self.psu_button.setIconSize(QtCore.QSize(64, 64))  # Adjust size as needed
+        self.psu_button.setIconSize(QtCore.QSize(64, 100))  # Adjust size as needed
         self.psu_button.setStyleSheet("""
             QPushButton {
                 border: 2px solid #8f8f91;
