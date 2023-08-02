@@ -21,7 +21,7 @@ class Ui_MainWindow(object):
         
         # Set up the main window 
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(900, 1920)
+        MainWindow.resize(800, 1200)
         MainWindow.setStyleSheet("background-color: #121212;")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -185,7 +185,7 @@ class Ui_MainWindow(object):
         progress_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
 
         self.progress_bar_sucrose = QRoundProgressBar()  # create progress bar
-        self.progress_bar_sucrose.setFixedSize(65, 65)
+        self.progress_bar_sucrose.setFixedSize(100, 100)
         self.progress_bar_sucrose.setRange(0, 5)
         self.progress_bar_sucrose.setValue(0)
         self.progress_bar_sucrose.setBarColor('#0796FF')
