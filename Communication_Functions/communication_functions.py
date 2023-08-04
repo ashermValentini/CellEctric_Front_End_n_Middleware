@@ -927,14 +927,15 @@ def read_next_PG_pulse(ser, timeout=0, verbose=0):
 
 def read_temperature(ser):
     if ser is None:
-        return None
+        return -1
 
     try:
         raw_temperature = ser.read_register(0x0E, functioncode=4, signed=True)
         temperature = raw_temperature / 10.0
         return temperature
-    except IOError:
+    except IOError as e:
         print("Failed to read from temperature sensor, retrying...")
+        print(f"IOError: {str(e)}")
         return None
 
 
@@ -993,7 +994,7 @@ def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_c
     ser.open()
 
     # Chill out while everything gets set
-    time.sleep(15)
+    time.sleep(10)
 
     # Set a long timeout to complete handshake (and save original timeout in variable for later)
     timeout = ser.timeout
@@ -1018,14 +1019,35 @@ def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_c
 
     # Reset the timeout
     ser.timeout = timeout
-    
-    
-# CRAFT PACKAGE TO TURN ON PID MODE 
+
+      
+
+
+def turnOnPumpPID(ser):
+    # Construct the message
+    msg = f'wPS-22'
+    # Write the message
+    ser.write(msg.encode())
+
 def writePumpFlowRate(ser, val1=2.50, val2=0.00):
     ser.flush()
     # Construct the message
     msg = f'wPF-{val1:.2f}-{val2:.2f}'
-    # Write the message
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+    
+ 
+def writeSucrosePumpFlowRate(ser, val1=2.50, val2=0.00):
+    # Construct the message
+    msg = f'wPS-{val1:.2f}-{val2:.2f}'
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+    
+
+def writeEthanolPumpFlowRate(ser, val1=2.50, val2=0.00):
+    # Construct the message
+    msg = f'wPE-{val1:.2f}-{val2:.2f}'
+    #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
    

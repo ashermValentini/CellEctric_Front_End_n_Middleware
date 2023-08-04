@@ -321,16 +321,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Create the first instance of QRoundProgressBar with maximum value of 50ml
         self.roundProgressBar1 = QRoundProgressBar()
-        self.roundProgressBar1.setRange(0, 50)
+        self.roundProgressBar1.setRange(0, 10)
         self.roundProgressBar1.setValue(0)
         self.roundProgressBar1.setBarColor('#0796FF')
-
+        self.roundProgressBar1.setDecimals(2)
+        
+        self.roundProgressBar1.setNullPosition(-120)
+        self.roundProgressBar1.setBarStyle(1)
+        #self.roundProgressBar1.setOutlinePenWidth(100) #does nothing 
+        self.roundProgressBar1.setDonutThicknessRatio(0.85)
 
         # Create the second instance of QRoundProgressBar with maximum value of 10ml
         self.roundProgressBar2 = QRoundProgressBar()
         self.roundProgressBar2.setRange(0, 10)
         self.roundProgressBar2.setValue(0)
-        self.roundProgressBar2.setDecimals(1)
+        self.roundProgressBar2.setDecimals(2)
 
         # Create a line edit widget
         self.lineEdit = QtWidgets.QLineEdit()
