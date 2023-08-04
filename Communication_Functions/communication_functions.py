@@ -960,8 +960,6 @@ def read_temperature(ser):
 def read_flowrate(ser):
     line = ''
     if ser.in_waiting: # Check if there is data waiting in the buffer
-        print(ser.in_waiting)
-
         while ser.in_waiting:
             line = ser.readline().decode('utf-8')
             if '\n' in line:

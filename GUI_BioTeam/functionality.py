@@ -26,7 +26,7 @@ PUMPS_OFF ="wPO"
 
 class TempWorker(QObject):
     update_temp = pyqtSignal(float)
-    interval = 10
+    interval = 100
     
     def __init__(self, device_serials):
         super(TempWorker, self).__init__()
@@ -229,9 +229,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
         self.ui.axes_voltage.set_ylim(min(self.ydata) - 1, max(self.ydata) + 10)  # dynamically update y range
 
-        self.ui.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF')
-        self.ui.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF')
-        self.ui.axes_voltage.set_title('My Title', color='#FFFFFF')
+        self.ui.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF',  fontsize=15)
+        self.ui.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF', fontsize=15)
+        self.ui.axes_voltage.set_title('My Title', color='#FFFFFF', fontsize=20, fontweight='bold')
 
         self.ui.canvas_voltage.draw()
     #endregion
@@ -313,9 +313,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.axes_voltage.plot(self.voltage_xdata,self.voltage_y[:, 0], color='#0796FF')
         self.ui.axes_voltage.set_ylim(self.minval_pulse-10, self.maxval_pulse+10)  
 
-        self.ui.axes_voltage.set_xlabel('Time (not scaled yet) (us)', color='#FFFFFF')
-        self.ui.axes_voltage.set_ylabel('Voltage (V)', color='#FFFFFF')
-        self.ui.axes_voltage.set_title('Voltage Signal', color='#FFFFFF')
+        self.ui.axes_voltage.set_xlabel('Time (not scaled yet) (us)', color='#FFFFFF',  fontsize=15)
+        self.ui.axes_voltage.set_ylabel('Voltage (V)', color='#FFFFFF',  fontsize=15)
+        self.ui.axes_voltage.set_title('Voltage Signal', color='#FFFFFF',fontsize=20, fontweight='bold')
         
         self.ui.canvas_voltage.draw()
    
@@ -347,10 +347,10 @@ class Functionality(QtWidgets.QMainWindow):
                 p1fr=2.50
                 p2fr=0.00
                 
-                print("MESSAGE: Start Sucrose")
+                #print("MESSAGE: Start Sucrose")
                 writeSucrosePumpFlowRate(self.device_serials[2], p1fr, p2fr)
-                msg = self.device_serials[2].readline()
-                print("RESPONSE: " + msg.decode())
+                #msg = self.device_serials[2].readline()
+                #print("RESPONSE: " + msg.decode())
 
                 
             else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
@@ -376,10 +376,10 @@ class Functionality(QtWidgets.QMainWindow):
                 #Change the status of temp_is_plotting from true to False because we are about to stop plotting
                 self.sucrose_is_pumping = False 
         
-                print("MESSAGE: Stop Sucrose")
+                #print("MESSAGE: Stop Sucrose")
                 self.device_serials[2].write(PUMPS_OFF.encode())
-                msg = self.device_serials[2].readline()
-                print("RESPONSE: " + msg.decode())     
+                #msg = self.device_serials[2].readline()
+                #print("RESPONSE: " + msg.decode())     
             
 
 #endregion
@@ -407,10 +407,10 @@ class Functionality(QtWidgets.QMainWindow):
                 p1fr=2.50
                 p2fr=0.00
                 
-                print("MESSAGE: Start Ethanol")
+                #print("MESSAGE: Start Ethanol")
                 writeEthanolPumpFlowRate(self.device_serials[2], p1fr, p2fr)
-                msg = self.device_serials[2].readline()
-                print("RESPONSE: " + msg.decode())
+                #msg = self.device_serials[2].readline()
+                #print("RESPONSE: " + msg.decode())
                 
             else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
                 self.ethanol_is_pumping = False 
@@ -433,10 +433,10 @@ class Functionality(QtWidgets.QMainWindow):
                     }
                 """)
                 
-                print("MESSAGE: Stop Ethanol")
+                #print("MESSAGE: Stop Ethanol")
                 self.device_serials[2].write(PUMPS_OFF.encode())
-                msg = self.device_serials[2].readline()
-                print("RESPONSE: " + msg.decode()) 
+                #msg = self.device_serials[2].readline()
+                #print("RESPONSE: " + msg.decode()) 
 
 #endregion 
 

@@ -18,7 +18,8 @@ class Ui_MainWindow(object):
         text_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px; }"
         header_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 50px; font-weight: bold;  }"
         input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 25px;  }"
-        
+        temperature_number_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 40px;  }"
+
         # Set up the main window 
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1280, 1920)
@@ -267,59 +268,114 @@ class Ui_MainWindow(object):
         # endregion
         
         # region : Blood
-        self.frame_blood = QtWidgets.QFrame()                                               # create blood frame 
-        self.frame_blood.setStyleSheet("background-color: #222222; border-radius: 15px;")   
+        self.frame_blood = QtWidgets.QFrame()  # create blood frame
+        self.frame_blood.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_blood.setObjectName("frame_d_bloodFlowrate")
-        
-        layout_blood = QtWidgets.QVBoxLayout(self.frame_blood)                              # create layout for blood frame 
-        self.frame_blood.setLayout(layout_blood)                                            # set layout to blood frame
+
+        layout_blood = QtWidgets.QVBoxLayout(self.frame_blood)  # create layout for ethanol frame
+        self.frame_blood.setLayout(layout_blood)  # set layout to blood frame
         layout_blood.setAlignment(QtCore.Qt.AlignCenter)
-        
-        #region : label
+
+        # region: label
         label_blood = QtWidgets.QLabel(self.frame_blood)
         label_blood.setStyleSheet(title_style)
         label_blood.setText("BLOOD")
         label_blood.setAlignment(QtCore.Qt.AlignCenter)
-        #endregion
-        
-        #region : group box
-        group_box_blood = QtWidgets.QGroupBox(self.frame_blood)
-        group_box_blood.setStyleSheet("""
-                                        QGroupBox {
-                                            border: 2px solid white;
-                                            border-radius: 10px;
-                                            background-color: #222222;
-                                        }
-                                        QGroupBox:hover {
-                                            background-color: rgba(255, 255, 255, 0.5);
-                                        }
-                                    """)
+        layout_blood.addWidget(label_blood)  # add label to layout
+        layout_blood.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        # endregion
+
+        # region: progress bar and button
+        progress_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
+
+        self.button_blood = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/play_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_blood.setIcon(icon)
+        self.button_blood.setIconSize(QtCore.QSize(50, 50))  # Adjust size as needed
+        self.button_blood.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        self.button_blood_fast = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/play_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_blood_fast.setIcon(icon)
+        self.button_blood_fast.setIconSize(QtCore.QSize(50, 50))  # Adjust size as needed
+        self.button_blood_fast.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        progress_button_layout.addWidget(self.button_blood)  # add button to the layout
+        progress_button_layout.addWidget(self.button_blood_fast)
+        layout_blood.addLayout(progress_button_layout)  # add layout for progress bar and button to main layout
+        # endregion
+       
+        # region : Inputs
+        group_boxes_layout = QtWidgets.QHBoxLayout()  # create layout for both group boxes
+        # region: Groupbox 1
+        group_box_blood = QtWidgets.QGroupBox(self.frame_blood)  # create groupbox
+        group_box_blood.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
         group_box_blood.setAlignment(QtCore.Qt.AlignCenter)
+        group_box_layout= QtWidgets.QHBoxLayout(group_box_blood)  # create layout for groupbox
+        group_box_blood.setLayout(group_box_layout)  # set layout to groupbox
 
-        # Create a QHBoxLayout for the group box
-        group_box_layout_blood = QtWidgets.QHBoxLayout(group_box_blood)
+        unit_label = QtWidgets.QLabel("ml/min")
+        unit_label.setStyleSheet(input_style)
 
-        # Create the QLabel for the unit
-        unit_label_blood = QtWidgets.QLabel("ml/min")
-        unit_label_blood.setStyleSheet(input_style)
-
-        # Create the QLineEdit for the value
         self.line_edit_blood = QtWidgets.QLineEdit()
-        self.line_edit_blood.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
-        self.line_edit_blood.setText("NF")
+        self.line_edit_blood.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
+        self.line_edit_blood.setText("2.50")
+        group_box_layout.addWidget(self.line_edit_blood)
+        group_box_layout.addWidget(unit_label)
+        # endregion
+        # region: Groupbox 2
+        group_box_blood_2 = QtWidgets.QGroupBox(self.frame_blood)  # create second groupbox
+        group_box_blood_2.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
+        group_box_blood_2.setAlignment(QtCore.Qt.AlignCenter)
+        group_box_layout_2 = QtWidgets.QHBoxLayout(group_box_blood_2)  # create layout for second groupbox
+        group_box_blood_2.setLayout(group_box_layout_2)  # set layout to second groupbox
 
-        # Add the line edit and label to the group box layout
-        group_box_layout_blood.addWidget(self.line_edit_blood)
-        group_box_layout_blood.addWidget(unit_label_blood)
+        unit_label_2 = QtWidgets.QLabel("s")  # unit for time variable
+        unit_label_2.setStyleSheet(input_style)
 
-        # Set the group box layout
-        group_box_blood.setLayout(group_box_layout_blood)        
-        #endregion 
-        
-        layout_blood.addWidget(label_blood)                                                 #add label to layout
-        layout_blood.addWidget(group_box_blood)                                             #add group box to layout 
+        self.line_edit_blood_2 = QtWidgets.QLineEdit()
+        self.line_edit_blood_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
+        self.line_edit_blood_2.setText("NF")
+
+        group_box_layout_2.addWidget(self.line_edit_blood_2)
+        group_box_layout_2.addWidget(unit_label_2)
+        # endregion
+        group_boxes_layout.addWidget(group_box_blood)
+        group_boxes_layout.addWidget(group_box_blood_2)
+        layout_blood.addLayout(group_boxes_layout)  # add layout for group boxes to main layout
         #endregion
-
+        #endregion
+        
         # region : Ethanol
         self.frame_ethanol = QtWidgets.QFrame()  # create ethanol frame
         self.frame_ethanol.setStyleSheet("background-color: #222222; border-radius: 15px;")
@@ -418,8 +474,7 @@ class Ui_MainWindow(object):
         group_boxes_layout.addWidget(group_box_ethanol_2)
         layout_ethanol.addLayout(group_boxes_layout)  # add layout for group boxes to main layout
         #endregion
-
-        # endregion
+        #endregion
         
         #adding each of the frames to the application region 1 and then adding application region 1 to application region
         self.application_region_1_layout.addWidget(self.frame_sucrose)
@@ -449,8 +504,9 @@ class Ui_MainWindow(object):
         layout.addWidget(label)  # Add the label to the layout
 
         # Add a spacer for some vertical space
-        spacer = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)  # Adjust the second parameter for more or less space
-        layout.addItem(spacer)
+        #spacer = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)  # Adjust the second parameter for more or less space
+        #layout.addItem(spacer)
+        layout.addSpacing(75)
         
 
         # List of module names
@@ -497,14 +553,16 @@ class Ui_MainWindow(object):
                 
         # Create a layout for the frame
         layout = QtWidgets.QVBoxLayout(plot_button_frame)
-        
+        layout.setAlignment(QtCore.Qt.AlignCenter)
+        plot_button_frame.setLayout(layout)
         # Label
         label = QtWidgets.QLabel()
         label.setStyleSheet(title_style)
         label.setText("PLOTS")
         label.setAlignment(QtCore.Qt.AlignCenter)
+
         layout.addWidget(label)  
-        layout.addSpacing(75)    
+        layout.addSpacing(75)   
         
         # button creation
         self.temp_button = QtWidgets.QPushButton("Electrode Temperature")  # Set the text to empty since we are using an image
@@ -572,7 +630,7 @@ class Ui_MainWindow(object):
         layout.addWidget(self.voltage_button) 
         layout.addWidget(self.current_button) 
       
-      
+        layout.addSpacing(75) 
         self.application_region_2_layout.addWidget(plot_button_frame)
         
         #endregion
@@ -624,15 +682,15 @@ class Ui_MainWindow(object):
 
         # Example temperature statistics
         max_temp_label = QtWidgets.QLabel("35°")
-        max_temp_label.setStyleSheet(input_style)
+        max_temp_label.setStyleSheet(temperature_number_style)
         temp_stats_layout.addWidget(max_temp_label, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
 
         avg_temp_label = QtWidgets.QLabel("25°")
-        avg_temp_label.setStyleSheet(input_style)
+        avg_temp_label.setStyleSheet(temperature_number_style)
         temp_stats_layout.addWidget(avg_temp_label, alignment=QtCore.Qt.AlignCenter)
 
         min_temp_label = QtWidgets.QLabel("15°")
-        min_temp_label.setStyleSheet(input_style)
+        min_temp_label.setStyleSheet(temperature_number_style)
         temp_stats_layout.addWidget(min_temp_label, alignment=QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
 
         # Add vertical spacer for equal spacing
@@ -730,10 +788,10 @@ class Ui_MainWindow(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/lightning_symbol.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.psu_button.setIcon(icon)
-        self.psu_button.setIconSize(QtCore.QSize(64, 100))  # Adjust size as needed
+        self.psu_button.setIconSize(QtCore.QSize(64, 110))  # Adjust size as needed
         self.psu_button.setStyleSheet("""
             QPushButton {
-                border: 2px solid #8f8f91;
+                border: 2px solid white;
                 border-radius: 6px;
                 background-color: #222222;
             }
@@ -776,16 +834,17 @@ class Ui_MainWindow(object):
         self.axes_voltage = self.canvas_voltage.figure.add_subplot(111)
         self.axes_voltage.grid(True, color='black', linestyle='--')
         self.axes_voltage.set_facecolor('#222222')
-        self.axes_voltage.spines['bottom'].set_color('#5C5C5D')
-        self.axes_voltage.spines['top'].set_color('#5C5C5D')
-        self.axes_voltage.spines['right'].set_color('#5C5C5D')
-        self.axes_voltage.spines['left'].set_color('#5C5C5D')
+        self.axes_voltage.spines['bottom'].set_color('#FFFFFF')
+        self.axes_voltage.spines['top'].set_color('#FFFFFF')
+        self.axes_voltage.spines['right'].set_color('#FFFFFF')
+        self.axes_voltage.spines['left'].set_color('#FFFFFF')
         self.axes_voltage.tick_params(colors='#FFFFFF')
         
         # Set static labels
-        self.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF')
-        self.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF')
-        self.axes_voltage.set_title('My Title', color='#FFFFFF')
+
+        self.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF', fontsize=15)
+        self.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF',  fontsize=15)
+        self.axes_voltage.set_title('My Title', color='#FFFFFF', fontsize=20, fontweight='bold')
         
 
     #endregion
