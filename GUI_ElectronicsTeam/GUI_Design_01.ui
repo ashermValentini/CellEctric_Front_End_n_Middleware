@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1109</width>
-    <height>770</height>
+    <width>1336</width>
+    <height>918</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -243,500 +243,7 @@
         <widget class="QStackedWidget" name="stackedWidget">
          <widget class="QWidget" name="Dashboard">
           <layout class="QGridLayout" name="gridLayout_6">
-           <item row="1" column="0">
-            <widget class="QWidget" name="Window_DeviceControl" native="true">
-             <property name="minimumSize">
-              <size>
-               <width>150</width>
-               <height>250</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>150</width>
-               <height>400</height>
-              </size>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_20">
-              <item>
-               <widget class="QWidget" name="Window_Voltage" native="true">
-                <layout class="QVBoxLayout" name="verticalLayout_6">
-                 <item>
-                  <layout class="QHBoxLayout" name="PosVoltInput">
-                   <item>
-                    <widget class="QLabel" name="ImagePlus">
-                     <property name="minimumSize">
-                      <size>
-                       <width>20</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>20</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="pixmap">
-                      <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_plus_w.png</pixmap>
-                     </property>
-                     <property name="scaledContents">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLineEdit" name="input_voltage_positive">
-                     <property name="font">
-                      <font>
-                       <pointsize>14</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>45</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="PosVolt_Unit">
-                     <property name="font">
-                      <font>
-                       <pointsize>14</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>V</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="NegVoltInput">
-                   <item>
-                    <widget class="QLabel" name="ImageMinus">
-                     <property name="minimumSize">
-                      <size>
-                       <width>20</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>20</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="pixmap">
-                      <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_minus_w.png</pixmap>
-                     </property>
-                     <property name="scaledContents">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLineEdit" name="input_voltage_negative">
-                     <property name="font">
-                      <font>
-                       <pointsize>14</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>45</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="NegVolt_Unit">
-                     <property name="font">
-                      <font>
-                       <pointsize>14</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>V</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <widget class="QCheckBox" name="checkbox_link_voltages">
-                   <property name="font">
-                    <font>
-                     <pointsize>10</pointsize>
-                    </font>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true"/>
-                   </property>
-                   <property name="text">
-                    <string>LINK VOLTAGES</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="BoxLabel_Voltage">
-                   <property name="font">
-                    <font>
-                     <pointsize>12</pointsize>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>VOLTAGE</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QWidget" name="Window_DeviceToggle" native="true">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <layout class="QVBoxLayout" name="verticalLayout_7">
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <property name="leftMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="topMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="rightMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>0</number>
-                 </property>
-                 <item>
-                  <widget class="QPushButton" name="button_toggle_psu_enable">
-                   <property name="font">
-                    <font>
-                     <pointsize>20</pointsize>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>PSU</string>
-                   </property>
-                   <property name="checkable">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="button_toggle_pg_enable">
-                   <property name="font">
-                    <font>
-                     <pointsize>20</pointsize>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>PG</string>
-                   </property>
-                   <property name="checkable">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="button_toggle_3pac_enable">
-                   <property name="font">
-                    <font>
-                     <pointsize>20</pointsize>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>3PAC</string>
-                   </property>
-                   <property name="checkable">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="BoxLabel_Status">
-                   <property name="font">
-                    <font>
-                     <pointsize>12</pointsize>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>DEVICE TOGGLE</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QWidget" name="Window_PulseShape" native="true">
-             <property name="minimumSize">
-              <size>
-               <width>275</width>
-               <height>225</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>300</width>
-               <height>400</height>
-              </size>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_7">
-              <item row="1" column="5">
-               <widget class="QLineEdit" name="input_repetition_rate">
-                <property name="maximumSize">
-                 <size>
-                  <width>100</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>14</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>200</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="placeholderText">
-                 <string>75</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="5">
-               <widget class="QLineEdit" name="value_on_time">
-                <property name="maximumSize">
-                 <size>
-                  <width>100</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>14</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>75</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="placeholderText">
-                 <string>75</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="6">
-               <widget class="QLabel" name="OnTime_Unit">
-                <property name="font">
-                 <font>
-                  <pointsize>14</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>μs</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="6">
-               <widget class="QLabel" name="LoggingFreq_Unit">
-                <property name="font">
-                 <font>
-                  <pointsize>14</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>s</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0" colspan="4">
-               <widget class="QLabel" name="Text_RepetitionRate">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>RepetitionRate</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0" colspan="3">
-               <widget class="QLabel" name="Text_LoggingFreq">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Logging Freq</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0" colspan="2">
-               <widget class="QLabel" name="Text_OnTime">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>OnTime</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0" colspan="3">
-               <widget class="QLabel" name="Text_PulseLength">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>PulseLength</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="5">
-               <widget class="QLineEdit" name="input_logging_freq">
-                <property name="maximumSize">
-                 <size>
-                  <width>100</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>14</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>15</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="placeholderText">
-                 <string>75</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="5">
-               <widget class="QLineEdit" name="value_pulse_length">
-                <property name="maximumSize">
-                 <size>
-                  <width>100</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>14</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>75</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-                <property name="placeholderText">
-                 <string>75</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="6">
-               <widget class="QLabel" name="RepetitionRate_Unit">
-                <property name="font">
-                 <font>
-                  <pointsize>14</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Hz</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="6">
-               <widget class="QLabel" name="PulseLength_Unit">
-                <property name="font">
-                 <font>
-                  <pointsize>14</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>μs</string>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="0" colspan="5">
-               <widget class="QLabel" name="BoxLabel_PulseShape">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>PULSE SHAPE</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="5">
-               <widget class="QPushButton" name="button_toggle_logging">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>LOGGING</string>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="2" column="2">
+           <item row="1" column="2">
             <widget class="QWidget" name="Window_Graphs" native="true">
              <property name="minimumSize">
               <size>
@@ -751,751 +258,11 @@
              </layout>
             </widget>
            </item>
-           <item row="1" column="2">
-            <widget class="QWidget" name="Window_Fluidics" native="true">
-             <property name="minimumSize">
-              <size>
-               <width>550</width>
-               <height>350</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>2000</width>
-               <height>400</height>
-              </size>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_12">
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout">
-                <item>
-                 <widget class="QFrame" name="WidgetValveStates">
-                  <property name="minimumSize">
-                   <size>
-                    <width>180</width>
-                    <height>250</height>
-                   </size>
-                  </property>
-                  <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QVBoxLayout" name="verticalLayout">
-                   <item>
-                    <widget class="QLabel" name="Heading_Valves">
-                     <property name="font">
-                      <font>
-                       <pointsize>16</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>VALVES</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignCenter</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="button_valvestate_sucrose">
-                     <property name="font">
-                      <font>
-                       <pointsize>20</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>SUCROSE</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                     <attribute name="buttonGroup">
-                      <string notr="true">btngroup_valve_states</string>
-                     </attribute>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="button_valvestate_ethanol">
-                     <property name="font">
-                      <font>
-                       <pointsize>20</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>ETHANOL</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                     <attribute name="buttonGroup">
-                      <string notr="true">btngroup_valve_states</string>
-                     </attribute>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="button_valvestate_cleaning">
-                     <property name="font">
-                      <font>
-                       <pointsize>20</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>CLEANING</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                     <attribute name="buttonGroup">
-                      <string notr="true">btngroup_valve_states</string>
-                     </attribute>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="checkbox_valvecontrol">
-                     <property name="font">
-                      <font>
-                       <pointsize>10</pointsize>
-                      </font>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true"/>
-                     </property>
-                     <property name="text">
-                      <string>INDIVIDUAL VALVE CONTROL</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="button_toggle_valve1">
-                     <property name="font">
-                      <font>
-                       <pointsize>8</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>V1 - SUCROSE PATH</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="button_toggle_valve2">
-                     <property name="font">
-                      <font>
-                       <pointsize>8</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>V2 - ETHANOL PATH</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="button_toggle_valve3">
-                     <property name="font">
-                      <font>
-                       <pointsize>8</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>V3 - CARTRIDGE PATH</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QFrame" name="WidgetCircularSucroseEthanol">
-                  <property name="minimumSize">
-                   <size>
-                    <width>170</width>
-                    <height>250</height>
-                   </size>
-                  </property>
-                  <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QVBoxLayout" name="verticalLayout_9">
-                   <property name="spacing">
-                    <number>0</number>
-                   </property>
-                   <property name="leftMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="topMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="rightMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="bottomMargin">
-                    <number>0</number>
-                   </property>
-                   <item>
-                    <widget class="QLabel" name="Heading_sucrose_ethanol">
-                     <property name="font">
-                      <font>
-                       <pointsize>16</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>SUC / ETH</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignCenter</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QFrame" name="CircularProgressBar_SucroseEthanol">
-                     <property name="minimumSize">
-                      <size>
-                       <width>170</width>
-                       <height>170</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>170</width>
-                       <height>170</height>
-                      </size>
-                     </property>
-                     <property name="frameShape">
-                      <enum>QFrame::NoFrame</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
-                     </property>
-                     <widget class="QFrame" name="circularProgress_suc_eth">
-                      <property name="geometry">
-                       <rect>
-                        <x>10</x>
-                        <y>10</y>
-                        <width>160</width>
-                        <height>160</height>
-                       </rect>
-                      </property>
-                      <property name="minimumSize">
-                       <size>
-                        <width>160</width>
-                        <height>160</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>160</width>
-                        <height>160</height>
-                       </size>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">QFrame{
-	border-radius: 80px;
-	background-color: qconicalgradient(cx:0.5, cy:0.5, angle:230, stop:0.299 rgba(255, 0, 255, 0), stop:0.30 rgba(48, 131, 220, 255));
-}</string>
-                      </property>
-                      <property name="frameShape">
-                       <enum>QFrame::NoFrame</enum>
-                      </property>
-                      <property name="frameShadow">
-                       <enum>QFrame::Raised</enum>
-                      </property>
-                     </widget>
-                     <widget class="QFrame" name="CircularProgressBar_Center_SucroseEthanol">
-                      <property name="geometry">
-                       <rect>
-                        <x>20</x>
-                        <y>20</y>
-                        <width>140</width>
-                        <height>140</height>
-                       </rect>
-                      </property>
-                      <property name="minimumSize">
-                       <size>
-                        <width>140</width>
-                        <height>140</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>140</width>
-                        <height>140</height>
-                       </size>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">QFrame{
-	border-radius: 70px;
-	background-color: rgb(1, 29, 40);
-}</string>
-                      </property>
-                      <property name="frameShape">
-                       <enum>QFrame::StyledPanel</enum>
-                      </property>
-                      <property name="frameShadow">
-                       <enum>QFrame::Raised</enum>
-                      </property>
-                      <widget class="QWidget" name="layoutWidget_3">
-                       <property name="geometry">
-                        <rect>
-                         <x>10</x>
-                         <y>10</y>
-                         <width>121</width>
-                         <height>121</height>
-                        </rect>
-                       </property>
-                       <layout class="QVBoxLayout" name="CPB_Text_SucroseEthanol">
-                        <property name="spacing">
-                         <number>0</number>
-                        </property>
-                        <item>
-                         <widget class="QLabel" name="text_flowrate_suc_eth">
-                          <property name="font">
-                           <font>
-                            <pointsize>10</pointsize>
-                            <weight>75</weight>
-                            <bold>true</bold>
-                           </font>
-                          </property>
-                          <property name="styleSheet">
-                           <string notr="true">QFrame{
-	background-color: none;
-	color: #ffffff;
-}</string>
-                          </property>
-                          <property name="text">
-                           <string>FLOW RATE</string>
-                          </property>
-                          <property name="alignment">
-                           <set>Qt::AlignCenter</set>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QLabel" name="value_flowrate_suc_eth">
-                          <property name="font">
-                           <font>
-                            <pointsize>24</pointsize>
-                            <weight>75</weight>
-                            <bold>true</bold>
-                           </font>
-                          </property>
-                          <property name="styleSheet">
-                           <string notr="true">QFrame{
-	background-color: none;
-	color: #ffffff;
-}</string>
-                          </property>
-                          <property name="text">
-                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;2.5&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                          </property>
-                          <property name="alignment">
-                           <set>Qt::AlignCenter</set>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QLabel" name="text_unit_suc_eth">
-                          <property name="font">
-                           <font>
-                            <pointsize>10</pointsize>
-                            <weight>75</weight>
-                            <bold>true</bold>
-                           </font>
-                          </property>
-                          <property name="styleSheet">
-                           <string notr="true">QFrame{
-	background-color: none;
-	color: #ffffff;
-}</string>
-                          </property>
-                          <property name="text">
-                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ml/min&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                          </property>
-                          <property name="alignment">
-                           <set>Qt::AlignCenter</set>
-                          </property>
-                         </widget>
-                        </item>
-                       </layout>
-                      </widget>
-                     </widget>
-                    </widget>
-                   </item>
-                   <item>
-                    <layout class="QHBoxLayout" name="FlowrateInput_Ethanol">
-                     <item>
-                      <widget class="QLineEdit" name="userInput_flowrate_suceth">
-                       <property name="font">
-                        <font>
-                         <pointsize>12</pointsize>
-                        </font>
-                       </property>
-                       <property name="alignment">
-                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="unitFlowrateSucroseEthanol">
-                       <property name="font">
-                        <font>
-                         <pointsize>12</pointsize>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>ml/min</string>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="button_update_sucethflow">
-                     <property name="text">
-                      <string>UPDATE FLOWRATE</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="button_toggle_sucethflow">
-                     <property name="font">
-                      <font>
-                       <pointsize>14</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>START / STOP</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QFrame" name="WidgetCircularBlood">
-                  <property name="minimumSize">
-                   <size>
-                    <width>170</width>
-                    <height>250</height>
-                   </size>
-                  </property>
-                  <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QVBoxLayout" name="verticalLayout_11">
-                   <property name="spacing">
-                    <number>0</number>
-                   </property>
-                   <property name="leftMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="topMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="rightMargin">
-                    <number>0</number>
-                   </property>
-                   <property name="bottomMargin">
-                    <number>0</number>
-                   </property>
-                   <item>
-                    <widget class="QLabel" name="Heading_Blood">
-                     <property name="font">
-                      <font>
-                       <pointsize>16</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>BLOOD</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignCenter</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QFrame" name="CircularProgressBar_Blood">
-                     <property name="minimumSize">
-                      <size>
-                       <width>170</width>
-                       <height>170</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>170</width>
-                       <height>170</height>
-                      </size>
-                     </property>
-                     <property name="frameShape">
-                      <enum>QFrame::NoFrame</enum>
-                     </property>
-                     <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
-                     </property>
-                     <widget class="QFrame" name="circularProgress_blood">
-                      <property name="geometry">
-                       <rect>
-                        <x>10</x>
-                        <y>10</y>
-                        <width>160</width>
-                        <height>160</height>
-                       </rect>
-                      </property>
-                      <property name="minimumSize">
-                       <size>
-                        <width>160</width>
-                        <height>160</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>160</width>
-                        <height>160</height>
-                       </size>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">QFrame{
-	border-radius: 80px;
-	background-color: qconicalgradient(cx:0.5, cy:0.5, angle:230, stop:0.299 rgba(255, 0, 255, 0), stop:0.30 rgba(48, 131, 220, 255));
-}</string>
-                      </property>
-                      <property name="frameShape">
-                       <enum>QFrame::NoFrame</enum>
-                      </property>
-                      <property name="frameShadow">
-                       <enum>QFrame::Raised</enum>
-                      </property>
-                     </widget>
-                     <widget class="QFrame" name="CircularProgressBar_Center_Blood">
-                      <property name="geometry">
-                       <rect>
-                        <x>20</x>
-                        <y>20</y>
-                        <width>140</width>
-                        <height>140</height>
-                       </rect>
-                      </property>
-                      <property name="minimumSize">
-                       <size>
-                        <width>140</width>
-                        <height>140</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>140</width>
-                        <height>140</height>
-                       </size>
-                      </property>
-                      <property name="styleSheet">
-                       <string notr="true">QFrame{
-	border-radius: 70px;
-	background-color: rgb(1, 29, 40);
-}</string>
-                      </property>
-                      <property name="frameShape">
-                       <enum>QFrame::StyledPanel</enum>
-                      </property>
-                      <property name="frameShadow">
-                       <enum>QFrame::Raised</enum>
-                      </property>
-                      <widget class="QWidget" name="layoutWidget_4">
-                       <property name="geometry">
-                        <rect>
-                         <x>10</x>
-                         <y>10</y>
-                         <width>121</width>
-                         <height>121</height>
-                        </rect>
-                       </property>
-                       <layout class="QVBoxLayout" name="verticalLayout_22">
-                        <property name="spacing">
-                         <number>0</number>
-                        </property>
-                        <item>
-                         <widget class="QLabel" name="text_flowrate_blood">
-                          <property name="font">
-                           <font>
-                            <pointsize>10</pointsize>
-                            <weight>75</weight>
-                            <bold>true</bold>
-                           </font>
-                          </property>
-                          <property name="styleSheet">
-                           <string notr="true">QFrame{
-	background-color: none;
-	color: #ffffff;
-}</string>
-                          </property>
-                          <property name="text">
-                           <string>FLOW RATE</string>
-                          </property>
-                          <property name="alignment">
-                           <set>Qt::AlignCenter</set>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QLabel" name="value_flowrate_blood">
-                          <property name="font">
-                           <font>
-                            <pointsize>24</pointsize>
-                            <weight>75</weight>
-                            <bold>true</bold>
-                           </font>
-                          </property>
-                          <property name="styleSheet">
-                           <string notr="true">QFrame{
-	background-color: none;
-	color: #ffffff;
-}</string>
-                          </property>
-                          <property name="text">
-                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;2.5&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                          </property>
-                          <property name="alignment">
-                           <set>Qt::AlignCenter</set>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QLabel" name="text_unit_blood">
-                          <property name="font">
-                           <font>
-                            <pointsize>10</pointsize>
-                            <weight>75</weight>
-                            <bold>true</bold>
-                           </font>
-                          </property>
-                          <property name="styleSheet">
-                           <string notr="true">QFrame{
-	background-color: none;
-	color: #ffffff;
-}</string>
-                          </property>
-                          <property name="text">
-                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ml/min&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                          </property>
-                          <property name="alignment">
-                           <set>Qt::AlignCenter</set>
-                          </property>
-                         </widget>
-                        </item>
-                       </layout>
-                      </widget>
-                     </widget>
-                    </widget>
-                   </item>
-                   <item>
-                    <layout class="QHBoxLayout" name="FlowrateInput_Blood">
-                     <item>
-                      <widget class="QLineEdit" name="userInput_flowrate_blood">
-                       <property name="font">
-                        <font>
-                         <pointsize>12</pointsize>
-                        </font>
-                       </property>
-                       <property name="alignment">
-                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="unitFlowrateBlood">
-                       <property name="font">
-                        <font>
-                         <pointsize>12</pointsize>
-                        </font>
-                       </property>
-                       <property name="text">
-                        <string>ml/min</string>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="button_update_bloodflow">
-                     <property name="text">
-                      <string>UPDATE FLOWRATE</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="button_toggle_bloodflow">
-                     <property name="font">
-                      <font>
-                       <pointsize>14</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>START / STOP</string>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <widget class="QLabel" name="BoxLabel_FlowRate">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>FLOW RATE</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="0" column="0" colspan="2">
-            <widget class="QLabel" name="PageHeader_Dashboard">
-             <property name="font">
-              <font>
-               <pointsize>16</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>DASHBOARD</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
+           <item row="1" column="1">
             <widget class="QWidget" name="Window_LiveData" native="true">
              <property name="minimumSize">
               <size>
-               <width>250</width>
+               <width>300</width>
                <height>250</height>
               </size>
              </property>
@@ -1507,19 +274,19 @@
              </property>
              <layout class="QGridLayout" name="gridLayout_3">
               <property name="leftMargin">
-               <number>0</number>
+               <number>11</number>
               </property>
               <property name="topMargin">
-               <number>0</number>
+               <number>11</number>
               </property>
               <property name="rightMargin">
-               <number>0</number>
+               <number>11</number>
               </property>
               <property name="bottomMargin">
-               <number>0</number>
+               <number>11</number>
               </property>
               <property name="spacing">
-               <number>0</number>
+               <number>7</number>
               </property>
               <item row="10" column="3" colspan="2">
                <layout class="QHBoxLayout" name="Image_Min_Pressure">
@@ -2408,11 +1175,735 @@
              </layout>
             </widget>
            </item>
-           <item row="2" column="0">
+           <item row="0" column="2">
+            <widget class="QWidget" name="Window_Fluidics" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>550</width>
+               <height>150</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>2000</width>
+               <height>400</height>
+              </size>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_12">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout">
+                <item>
+                 <widget class="QFrame" name="WidgetValveStates">
+                  <property name="minimumSize">
+                   <size>
+                    <width>400</width>
+                    <height>250</height>
+                   </size>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_11">
+                   <item>
+                    <widget class="QLabel" name="Heading_Valves">
+                     <property name="font">
+                      <font>
+                       <pointsize>16</pointsize>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>VALVES</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_6">
+                     <item>
+                      <layout class="QVBoxLayout" name="verticalLayout">
+                       <item>
+                        <widget class="QPushButton" name="button_valvestate_sucrose">
+                         <property name="font">
+                          <font>
+                           <pointsize>20</pointsize>
+                          </font>
+                         </property>
+                         <property name="text">
+                          <string>SUCROSE</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <attribute name="buttonGroup">
+                          <string notr="true">btngroup_valve_states</string>
+                         </attribute>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="button_valvestate_ethanol">
+                         <property name="font">
+                          <font>
+                           <pointsize>20</pointsize>
+                          </font>
+                         </property>
+                         <property name="text">
+                          <string>ETHANOL</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <attribute name="buttonGroup">
+                          <string notr="true">btngroup_valve_states</string>
+                         </attribute>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="button_valvestate_cleaning">
+                         <property name="font">
+                          <font>
+                           <pointsize>20</pointsize>
+                          </font>
+                         </property>
+                         <property name="text">
+                          <string>CLEANING</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <attribute name="buttonGroup">
+                          <string notr="true">btngroup_valve_states</string>
+                         </attribute>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="button_valvestate_off">
+                         <property name="font">
+                          <font>
+                           <pointsize>20</pointsize>
+                          </font>
+                         </property>
+                         <property name="text">
+                          <string>OFF</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                         <attribute name="buttonGroup">
+                          <string notr="true">btngroup_valve_states</string>
+                         </attribute>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                     <item>
+                      <layout class="QVBoxLayout" name="verticalLayout_9">
+                       <item>
+                        <widget class="QCheckBox" name="checkbox_valvecontrol">
+                         <property name="font">
+                          <font>
+                           <pointsize>10</pointsize>
+                          </font>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true"/>
+                         </property>
+                         <property name="text">
+                          <string>INDIVIDUAL VALVE CONTROL</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="button_toggle_valve1">
+                         <property name="font">
+                          <font>
+                           <pointsize>8</pointsize>
+                          </font>
+                         </property>
+                         <property name="text">
+                          <string>V1 - CARTRIDGE PATH</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="button_toggle_valve2">
+                         <property name="font">
+                          <font>
+                           <pointsize>8</pointsize>
+                          </font>
+                         </property>
+                         <property name="text">
+                          <string>V2 - ETHANOL PATH</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="button_toggle_valve3">
+                         <property name="font">
+                          <font>
+                           <pointsize>8</pointsize>
+                          </font>
+                         </property>
+                         <property name="text">
+                          <string>V3 - SUCROSE PATH</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <spacer name="verticalSpacer_7">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QFrame" name="WidgetCircularSucroseEthanol">
+                  <property name="minimumSize">
+                   <size>
+                    <width>170</width>
+                    <height>250</height>
+                   </size>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_7">
+                   <item>
+                    <widget class="QLabel" name="Heading_sucrose_ethanol">
+                     <property name="font">
+                      <font>
+                       <pointsize>16</pointsize>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>SUC / ETH</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_4">
+                     <item>
+                      <spacer name="horizontalSpacer_2">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                     <item>
+                      <widget class="QFrame" name="CircularProgressBar_SucroseEthanol">
+                       <property name="minimumSize">
+                        <size>
+                         <width>130</width>
+                         <height>130</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>130</width>
+                         <height>130</height>
+                        </size>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::NoFrame</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                       <widget class="QFrame" name="circularProgress_suc_eth">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>5</y>
+                          <width>120</width>
+                          <height>120</height>
+                         </rect>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>120</width>
+                          <height>120</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>120</width>
+                          <height>120</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">QFrame{
+	border-radius: 60px;
+	background-color: qconicalgradient(cx:0.5, cy:0.5, angle:230, stop:0.299 rgba(255, 0, 255, 0), stop:0.30 rgba(48, 131, 220, 255));
+}</string>
+                        </property>
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Raised</enum>
+                        </property>
+                       </widget>
+                       <widget class="QFrame" name="CircularProgressBar_Center_SucroseEthanol">
+                        <property name="geometry">
+                         <rect>
+                          <x>15</x>
+                          <y>15</y>
+                          <width>100</width>
+                          <height>100</height>
+                         </rect>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>100</width>
+                          <height>100</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>100</width>
+                          <height>100</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <family>Myanmar Text</family>
+                         </font>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">QFrame{
+	border-radius: 50px;
+	background-color: rgb(1, 29, 40);
+}</string>
+                        </property>
+                        <property name="frameShape">
+                         <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Raised</enum>
+                        </property>
+                        <widget class="QLabel" name="value_flowrate_suc_eth">
+                         <property name="geometry">
+                          <rect>
+                           <x>10</x>
+                           <y>10</y>
+                           <width>80</width>
+                           <height>80</height>
+                          </rect>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>80</width>
+                           <height>80</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>80</width>
+                           <height>80</height>
+                          </size>
+                         </property>
+                         <property name="font">
+                          <font>
+                           <pointsize>24</pointsize>
+                           <weight>75</weight>
+                           <bold>true</bold>
+                          </font>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QFrame{
+	background-color: none;
+	color: #ffffff;
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;2.5&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </widget>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="FlowrateInput_Ethanol">
+                     <item>
+                      <widget class="QLineEdit" name="userInput_flowrate_suceth">
+                       <property name="font">
+                        <font>
+                         <pointsize>12</pointsize>
+                        </font>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="unitFlowrateSucroseEthanol">
+                       <property name="font">
+                        <font>
+                         <pointsize>12</pointsize>
+                        </font>
+                       </property>
+                       <property name="text">
+                        <string>ml/min</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="button_update_sucethflow">
+                     <property name="text">
+                      <string>UPDATE FLOWRATE</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_7">
+                     <item>
+                      <widget class="QPushButton" name="button_toggle_sucflow">
+                       <property name="font">
+                        <font>
+                         <pointsize>14</pointsize>
+                        </font>
+                       </property>
+                       <property name="text">
+                        <string>SUC</string>
+                       </property>
+                       <property name="checkable">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QPushButton" name="button_toggle_ethflow">
+                       <property name="font">
+                        <font>
+                         <pointsize>14</pointsize>
+                        </font>
+                       </property>
+                       <property name="text">
+                        <string>ETH</string>
+                       </property>
+                       <property name="checkable">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QFrame" name="WidgetCircularBlood">
+                  <property name="minimumSize">
+                   <size>
+                    <width>170</width>
+                    <height>250</height>
+                   </size>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_8">
+                   <item>
+                    <widget class="QLabel" name="Heading_Blood">
+                     <property name="font">
+                      <font>
+                       <pointsize>16</pointsize>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>BLOOD</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="horizontalLayout_5">
+                     <item>
+                      <spacer name="horizontalSpacer_4">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                     <item>
+                      <widget class="QFrame" name="CircularProgressBar_Blood">
+                       <property name="minimumSize">
+                        <size>
+                         <width>130</width>
+                         <height>130</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>130</width>
+                         <height>130</height>
+                        </size>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::NoFrame</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                       <widget class="QFrame" name="circularProgress_blood">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>5</y>
+                          <width>120</width>
+                          <height>120</height>
+                         </rect>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>120</width>
+                          <height>120</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>120</width>
+                          <height>120</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">QFrame{
+	border-radius: 60px;
+	background-color: qconicalgradient(cx:0.5, cy:0.5, angle:230, stop:0.299 rgba(255, 0, 255, 0), stop:0.30 rgba(48, 131, 220, 255));
+}</string>
+                        </property>
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Raised</enum>
+                        </property>
+                       </widget>
+                       <widget class="QFrame" name="CircularProgressBar_Center_Blood">
+                        <property name="geometry">
+                         <rect>
+                          <x>15</x>
+                          <y>15</y>
+                          <width>100</width>
+                          <height>100</height>
+                         </rect>
+                        </property>
+                        <property name="minimumSize">
+                         <size>
+                          <width>100</width>
+                          <height>100</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>100</width>
+                          <height>100</height>
+                         </size>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">QFrame{
+	border-radius: 50px;
+	background-color: rgb(1, 29, 40);
+}</string>
+                        </property>
+                        <property name="frameShape">
+                         <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Raised</enum>
+                        </property>
+                        <widget class="QLabel" name="value_flowrate_blood">
+                         <property name="geometry">
+                          <rect>
+                           <x>10</x>
+                           <y>10</y>
+                           <width>80</width>
+                           <height>80</height>
+                          </rect>
+                         </property>
+                         <property name="minimumSize">
+                          <size>
+                           <width>80</width>
+                           <height>80</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>80</width>
+                           <height>80</height>
+                          </size>
+                         </property>
+                         <property name="font">
+                          <font>
+                           <pointsize>24</pointsize>
+                           <weight>75</weight>
+                           <bold>true</bold>
+                          </font>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">QFrame{
+	background-color: none;
+	color: #ffffff;
+}</string>
+                         </property>
+                         <property name="text">
+                          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;2.5&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </widget>
+                      </widget>
+                     </item>
+                     <item>
+                      <spacer name="horizontalSpacer_5">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QHBoxLayout" name="FlowrateInput_Blood">
+                     <item>
+                      <widget class="QLineEdit" name="userInput_flowrate_blood">
+                       <property name="font">
+                        <font>
+                         <pointsize>12</pointsize>
+                        </font>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="unitFlowrateBlood">
+                       <property name="font">
+                        <font>
+                         <pointsize>12</pointsize>
+                        </font>
+                       </property>
+                       <property name="text">
+                        <string>ml/min</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="button_update_bloodflow">
+                     <property name="text">
+                      <string>UPDATE FLOWRATE</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="button_toggle_bloodflow">
+                     <property name="font">
+                      <font>
+                       <pointsize>14</pointsize>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>START / STOP</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="1" column="0">
             <widget class="QWidget" name="Window_Status" native="true">
              <property name="minimumSize">
               <size>
-               <width>120</width>
+               <width>150</width>
                <height>0</height>
               </size>
              </property>
@@ -2422,156 +1913,653 @@
                <height>16777215</height>
               </size>
              </property>
-             <layout class="QGridLayout" name="gridLayout_8">
-              <item row="2" column="2">
-               <widget class="QFrame" name="indicator_connection_pg">
-                <property name="minimumSize">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QFrame{
+             <layout class="QVBoxLayout" name="verticalLayout_2">
+              <item>
+               <layout class="QGridLayout" name="gridLayout_8">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="Text_PSU">
+                  <property name="font">
+                   <font>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>PSU</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QFrame" name="indicator_connection_psu">
+                  <property name="minimumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QFrame{
 	background-color: grey;
 	border-radius: 10;
 }</string>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="QFrame" name="indicator_connection_psu">
-                <property name="minimumSize">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QFrame{
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="Text_PG">
+                  <property name="font">
+                   <font>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>PG</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QFrame" name="indicator_connection_pg">
+                  <property name="minimumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QFrame{
 	background-color: grey;
 	border-radius: 10;
 }</string>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="2">
-               <widget class="QFrame" name="indicator_connection_3pac">
-                <property name="minimumSize">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>20</width>
-                  <height>20</height>
-                 </size>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">QFrame{
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="Text_3PAC">
+                  <property name="font">
+                   <font>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>3PAC</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QFrame" name="indicator_connection_3pac">
+                  <property name="minimumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QFrame{
 	background-color: grey;
 	border-radius: 10;
 }</string>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-               </widget>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="Text_TEMP">
+                  <property name="font">
+                   <font>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>TEMP</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QFrame" name="indicator_connection_temp">
+                  <property name="minimumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QFrame{
+	background-color: grey;
+	border-radius: 10;
+}</string>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="Text_PSU">
+              <item>
+               <widget class="QTextBrowser" name="display_system_log"/>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QWidget" name="Window_PG" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>300</width>
+               <height>150</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>300</width>
+               <height>400</height>
+              </size>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_4">
+              <item>
+               <widget class="QPushButton" name="button_toggle_pg_enable">
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>PSU</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="Text_PG">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>20</pointsize>
                  </font>
                 </property>
                 <property name="text">
                  <string>PG</string>
                 </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="Text_3PAC">
+              <item>
+               <layout class="QGridLayout" name="gridLayout_7">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="Text_RepetitionRate">
+                  <property name="font">
+                   <font>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>RepetitionRate</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="input_repetition_rate">
+                  <property name="maximumSize">
+                   <size>
+                    <width>100</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>200</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="placeholderText">
+                   <string>75</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="RepetitionRate_Unit">
+                  <property name="maximumSize">
+                   <size>
+                    <width>40</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Hz</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="Text_PulseLength">
+                  <property name="font">
+                   <font>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>PulseLength</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="value_pulse_length">
+                  <property name="maximumSize">
+                   <size>
+                    <width>100</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>75</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="placeholderText">
+                   <string>75</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QLabel" name="PulseLength_Unit">
+                  <property name="maximumSize">
+                   <size>
+                    <width>40</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>μs</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="Text_OnTime">
+                  <property name="font">
+                   <font>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>OnTime</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QLineEdit" name="value_on_time">
+                  <property name="maximumSize">
+                   <size>
+                    <width>100</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>75</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="placeholderText">
+                   <string>75</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QLabel" name="OnTime_Unit">
+                  <property name="maximumSize">
+                   <size>
+                    <width>40</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>μs</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="Text_LoggingFreq">
+                  <property name="font">
+                   <font>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Logging Freq</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QLineEdit" name="input_logging_freq">
+                  <property name="maximumSize">
+                   <size>
+                    <width>100</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>15</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="placeholderText">
+                   <string>75</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QLabel" name="LoggingFreq_Unit">
+                  <property name="maximumSize">
+                   <size>
+                    <width>40</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>s</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_2">
+                <item>
+                 <widget class="QLabel" name="BoxLabel_PulseShape">
+                  <property name="font">
+                   <font>
+                    <pointsize>12</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>PULSE SHAPE</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="button_toggle_logging">
+                  <property name="font">
+                   <font>
+                    <pointsize>12</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>LOGGING</string>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_3">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QWidget" name="Window_PSU" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>150</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>150</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_6">
+              <item>
+               <widget class="QPushButton" name="button_toggle_psu_enable">
+                <property name="font">
+                 <font>
+                  <pointsize>20</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>PSU</string>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="PosVoltInput">
+                <item>
+                 <widget class="QLabel" name="ImagePlus">
+                  <property name="minimumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_plus_w.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="input_voltage_positive">
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>45</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="PosVolt_Unit">
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>V</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="NegVoltInput">
+                <item>
+                 <widget class="QLabel" name="ImageMinus">
+                  <property name="minimumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_minus_w.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="input_voltage_negative">
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>45</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="NegVolt_Unit">
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>V</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="checkbox_link_voltages">
                 <property name="font">
                  <font>
                   <pointsize>10</pointsize>
                  </font>
                 </property>
+                <property name="styleSheet">
+                 <string notr="true"/>
+                </property>
                 <property name="text">
-                 <string>3PAC</string>
+                 <string>LINK VOLTAGES</string>
                 </property>
                </widget>
               </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="Text_Error">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
+              <item>
+               <widget class="QPushButton" name="button_apply_voltages">
                 <property name="text">
-                 <string>ERROR</string>
+                 <string>APPLY VOLTAGE</string>
                 </property>
                </widget>
               </item>
-              <item row="5" column="1" colspan="2">
-               <widget class="QLabel" name="value_indicator_error">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
+              <item>
+               <spacer name="verticalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
                 </property>
-                <property name="text">
-                 <string>NONE</string>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
                 </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="0" colspan="3">
-               <widget class="QTextBrowser" name="display_system_log"/>
+               </spacer>
               </item>
              </layout>
             </widget>

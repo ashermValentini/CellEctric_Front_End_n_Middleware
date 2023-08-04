@@ -6,6 +6,7 @@ from Communication_Functions.communication_functions import *
 
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QLineEdit, QLabel, QButtonGroup, QVBoxLayout
 from PyQt5.QtCore import pyqtSlot, QFile, QTextStream, QTimer
+from PyQt5.QtGui import QColor
 from PyQt5.uic import loadUi
 from pathlib import Path
 
@@ -35,7 +36,10 @@ class MainWindow(QMainWindow):
         self.flag_pg_on = False
         self.flag_3pac_on = False
 
-        self.flag_suceth_on = False
+        self.flag_suc_on = False
+        self.flag_eth_on = False
+        self.flag_suc_pid = False
+        self.flag_eth_pid = False
         self.flag_blood_on = False
 
         self.flag_valve1 = False
@@ -55,8 +59,8 @@ class MainWindow(QMainWindow):
         # SET PROGRESS BARS TO ZERO & LABEL TO "OFF"
         style_sheets = """
             QFrame{
-                border-radius: 80px;
-                background-color: qconicalgradient(cx:0.5, cy:0.5, angle:230, stop:0.9 rgba(138, 201, 38, 0), stop:1.0 rgba(138, 201, 38, 255));
+                border-radius: 60px;
+                background-color: qconicalgradient(cx:0.5, cy:0.5, angle:230, stop:0.9 rgba(7, 150, 255, 0), stop:1.0 rgba(7, 150, 255, 255));
                 }"""
         self.ui.circularProgress_suc_eth.setStyleSheet(style_sheets)
         self.ui.circularProgress_blood.setStyleSheet(style_sheets)
@@ -75,66 +79,130 @@ class MainWindow(QMainWindow):
         # BUTTON CLICKS
         self.ui.button_toggle_psu_enable.clicked.connect(self.psu_button_toggle)
         self.ui.button_toggle_pg_enable.clicked.connect(self.pg_button_toggle)
-        self.ui.button_toggle_3pac_enable.clicked.connect(self.pac_button_toggle)
 
-        self.ui.button_toggle_sucethflow.clicked.connect(self.toggle_flow_suceth)
+        self.ui.button_toggle_sucflow.clicked.connect(self.toggle_flow_suc)
+        self.ui.button_toggle_ethflow.clicked.connect(self.toggle_flow_eth)
         self.ui.button_toggle_bloodflow.clicked.connect(self.toggle_flow_blood)
-
-        self.ui.button_update_sucethflow.clicked.connect(self.update_flowrate_suceth)
-        self.ui.button_update_bloodflow.clicked.connect(self.update_flowrate_blood)
 
         self.ui.button_valvestate_sucrose.clicked.connect(self.change_valve_state_sucrose)
         self.ui.button_valvestate_ethanol.clicked.connect(self.change_valve_state_ethanol)
         self.ui.button_valvestate_cleaning.clicked.connect(self.change_valve_state_cleaning)
+        self.ui.button_valvestate_off.clicked.connect(self.change_valve_state_off)
+
+        self.ui.button_toggle_valve1.clicked.connect(self.change_single_valve)
+        self.ui.button_toggle_valve2.clicked.connect(self.change_single_valve)
+        self.ui.button_toggle_valve3.clicked.connect(self.change_single_valve)
 
 
         # =================
         # START SERIAL CONNECTION TO DEVICES
         # =================
         self.device_serials = serial_start_connections()
+        handshake_3PAC(self.device_serials[2], print_handshake_message=True)
         self.ui.display_system_log.append("Connection to Devices established:")
-        #for device_serial in self.device_serials:
-        #    if device_serial.name is not None:
-        #        self.ui.display_system_log.append("Port: " + device_serial.name)
-        #    else:
-        #        self.ui.display_system_log.append("Port: None")
+
+        # CHECK PSU, PG, 3PAC CONNECTION
+        if self.device_serials[0].isOpen(): # PSU
+            self.ui.indicator_connection_psu.setStyleSheet("QFrame{background-color: #0796FF; border-radius: 10;}")
+            self.ui.display_system_log.append("PSU OPEN @ PORT " + self.device_serials[0].name)
+        else:
+            self.ui.indicator_connection_psu.setStyleSheet("QFrame{background-color: #808080; border-radius: 10;}")
+            self.ui.display_system_log.append("PSU NOT FOUND")
+
+
+        if self.device_serials[1].isOpen(): # PG
+            self.ui.indicator_connection_pg.setStyleSheet("QFrame{background-color: #0796FF; border-radius: 10;}")
+            self.ui.display_system_log.append("PG OPEN @ PORT " + self.device_serials[1].name)
+        else:
+            self.ui.indicator_connection_pg.setStyleSheet("QFrame{background-color: #808080; border-radius: 10;}")
+            self.ui.display_system_log.append("PG NOT FOUND")
+
+
+        if self.device_serials[2].isOpen(): # 3PAC
+            self.ui.indicator_connection_3pac.setStyleSheet("QFrame{background-color: #0796FF; border-radius: 10;}")
+            self.ui.display_system_log.append("3PAC OPEN @ PORT " + self.device_serials[2].name)
+        else:
+            self.ui.indicator_connection_3pac.setStyleSheet("QFrame{background-color: #808080; border-radius: 10;}")
+            self.ui.display_system_log.append("3PAC NOT FOUND")
+
+        if self.device_serials[3] is not None:
+            #self.ui.indicator_connection_3pac.setStyleSheet("QFrame{background-color: #0796FF; border-radius: 10;}")
+            self.ui.display_system_log.append("TEMP SENS OPENED")
+        else:
+            #self.ui.indicator_connection_3pac.setStyleSheet("QFrame{background-color: #808080; border-radius: 10;}")
+            self.ui.display_system_log.append("TEMP SENS NOT FOUND")
+
+
+        
 
         # INITIALIZE SCALING VALUES
         self.zerodata = [2000, 2000]
         self.maxval_pulse = 10  
         self.minval_pulse = -10
 
+
+        # INITIALIZE VALVE STATES (ALL CLOSED)
+        # Construct the message
+        msg = f'wVS-111'
+        # Write the message
+        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+        msg = self.device_serials[2].readline()
+        print("RESPONSE: " + msg.decode())
+        time.sleep(2)
+
         # =================
         # START TEMPERATURE PLOT
         # =================
-        self.start_temp_plotting()
+        self.start_plotting()
+
+        # INITIALIZE PID STATES (ALL CLOSED)
+        print("MESSAGE: PID On")
+        msg = "wPS-22"
+        self.device_serials[2].write(msg.encode())
+        msg = self.device_serials[2].readline()
+        print("RESPONSE: " + msg.decode())
+        time.sleep(2)
+        self.start_flowrate_suceth()
+        
 
 
     # =================================================
     # FLOW RATES - UPDATES & TOGGLES
     # =================================================
 
+    def start_flowrate_suceth(self):
+        # TIMER
+        self.flow_timer = QTimer()
+        self.flow_timer.setInterval(self.interval)
+        self.flow_timer.timeout.connect(self.update_flowrate_suceth)
+        self.flow_timer.start()
+
+
     def update_flowrate_suceth(self):
 
-        # READ AND CHECK INPUT
-        input_value_float, input_value_string = self.input_check_suceth()
-        if input_value_float == -1:
-            return
+        flow_value_float = read_flowrate(self.device_serials[2])
+        print("Flowrate: {}".format(flow_value_float))
 
         # UPDATE LABEL
-        if self.flag_suceth_on:
-            self.ui.value_flowrate_suc_eth.setText(input_value_string)
+        if self.flag_suc_on or self.flag_eth_on:
+            self.ui.value_flowrate_suc_eth.setText(str(flow_value_float))
 
         # PROGRESS BAR VALUE
         # needs to be inverted: 1.0 is empty, 0.0 is full
-        progress_value = 1 - (input_value_float / SUCROSE_FLOWRATE_MAX)  # SCALING AND INVERTING
+        if flow_value_float is None or flow_value_float<0:
+            flow_value_float = 0.0
+        
+        if flow_value_float > SUCROSE_FLOWRATE_MAX:
+            flow_value_float = SUCROSE_FLOWRATE_MAX
+
+        progress_value = 1 - (flow_value_float / SUCROSE_FLOWRATE_MAX)  # SCALING AND INVERTING
         stop_1 = str(progress_value - 0.001)
         stop_2 = str(progress_value)
 
         style_sheet = """
         QFrame{
-            border-radius: 80px;
-            background-color: qconicalgradient(cx:0.5, cy:0.5, angle:230, stop:{STOP_1} rgba(138, 201, 38, 0), stop:{STOP_2} rgba(138, 201, 38, 255));
+            border-radius: 60px;
+            background-color: qconicalgradient(cx:0.5, cy:0.5, angle:230, stop:{STOP_1} rgba(7, 150, 255, 0), stop:{STOP_2} rgba(7, 150, 255, 255));
             }""".replace("{STOP_1}", stop_1).replace("{STOP_2}", stop_2)
             
         self.ui.circularProgress_suc_eth.setStyleSheet(style_sheet)
@@ -159,24 +227,88 @@ class MainWindow(QMainWindow):
 
         style_sheet = """
         QFrame{
-            border-radius: 80px;
+            border-radius: 60px;
             background-color: qconicalgradient(cx:0.5, cy:0.5, angle:230, stop:{STOP_1} rgba(138, 201, 38, 0), stop:{STOP_2} rgba(138, 201, 38, 255));
             }""".replace("{STOP_1}", stop_1).replace("{STOP_2}", stop_2)
             
         self.ui.circularProgress_blood.setStyleSheet(style_sheet)
 
 
-    def toggle_flow_suceth(self):
-        if self.flag_suceth_on:
-            self.ui.value_flowrate_suc_eth.setText("OFF")
-            self.ui.display_system_log.append("SUC/ETH: OFF")
-            self.flag_suceth_on = False
+    def toggle_flow_suc(self):
+
+        # IF ETHANOL IS ON
+        if self.flag_eth_on:
+            self.ui.display_system_log.append("SWITCH OFF ETH BEFORE")
+            self.ui.button_toggle_sucflow.setChecked(False)
 
         else:
-            input_value_float, input_value_string = self.input_check_suceth()
-            self.ui.value_flowrate_suc_eth.setText(input_value_string)
-            self.ui.display_system_log.append("SUC/ETH: ON")
-            self.flag_suceth_on = True
+            # ALREADY ON --> SWITCH IT OFF
+            if self.flag_suc_on:
+                # Construct the message for PUMPS OFF
+                msg = f'wPS-00'
+                # Write the message
+                self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+                msg = self.device_serials[2].readline()
+                print("RESPONSE: " + msg.decode())
+
+                self.flag_suc_on = False
+                self.ui.value_flowrate_suc_eth.setText("OFF")
+
+            # OFF --> SWITCH IT ON
+            else:
+                self.ui.display_system_log.append("SWITCHED ON SUC")
+                input_value_float, input_value_string = self.input_check_suceth()
+
+                # Construct the message for PUMP1 IN PID MODE
+                msg = f'wPS-20'
+                # Write the message
+                self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+                msg = self.device_serials[2].readline()
+                print("RESPONSE: " + msg.decode())
+
+                time.sleep(1)
+
+                writePumpFlowRate(self.device_serials[2], input_value_float, input_value_float)
+
+                self.flag_suc_on = True
+
+
+    def toggle_flow_eth(self):
+        # IF SUCROSE IS ON
+        if self.flag_suc_on:
+            self.ui.display_system_log.append("SWITCH OFF SUC BEFORE")
+            self.ui.button_toggle_ethflow.setChecked(False)
+
+        else:
+            # ALREADY ON --> SWITCH IT OFF
+            if self.flag_eth_on:
+                # Construct the message for PUMPS OFF
+                msg = f'wPS-00'
+                # Write the message
+                self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+                msg = self.device_serials[2].readline()
+                print("RESPONSE: " + msg.decode())
+
+                self.flag_eth_on = False
+                self.ui.value_flowrate_suc_eth.setText("OFF")
+
+            # OFF --> SWITCH IT ON
+            else:
+                self.ui.display_system_log.append("SWITCHED ON ETH")
+                input_value_float, input_value_string = self.input_check_suceth()
+
+                # Construct the message for PUMP2 IN PID MODE
+                msg = f'wPS-02'
+                # Write the message
+                self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+                msg = self.device_serials[2].readline()
+                print("RESPONSE: " + msg.decode())
+
+                time.sleep(1)
+
+                writePumpFlowRate(self.device_serials[2], input_value_float, input_value_float)
+
+                self.flag_eth_on = True
 
 
     def toggle_flow_blood(self):
@@ -256,10 +388,10 @@ class MainWindow(QMainWindow):
         return input_value_float, input_value_string
 
     # =================================================
-    # PLOTTING - TEMPERATURE
+    # PLOTTING 
     # =================================================
 
-    def start_temp_plotting(self):
+    def start_plotting(self):
 
         #dynamic x axis 
         self.temp_x = np.linspace(0, 499, 500)  # This creates an array from 0 to 499 with 500 elements.
@@ -275,12 +407,10 @@ class MainWindow(QMainWindow):
         self.voltageplotdata = np.zeros(500)   # initialize Temperature values with 0
 
         # TIMER
-        self.timer = QTimer()
-        self.timer.setInterval(self.interval)
-        self.timer.timeout.connect(self.update_plot)
-        self.timer.start()
-
-
+        self.plot_timer = QTimer()
+        self.plot_timer.setInterval(self.interval)
+        self.plot_timer.timeout.connect(self.update_plot)
+        self.plot_timer.start()
 
     def update_plot(self):
         temperature = read_temperature(self.device_serials[3])
@@ -293,13 +423,25 @@ class MainWindow(QMainWindow):
             self.temp_x = np.roll(self.temp_x, -1)
             self.temp_x[-1] = self.temp_x[-2] + 1  # This will keep increasing the count on the x-axis
 
-        self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1])  # READ NEXT PULSE
+        if self.device_serials[1].isOpen():
+            self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1])  # READ NEXT PULSE
+        else:
+            self.voltage_y = np.zeros((1500,2))
 
-        self.voltage_y[:, 0] -= self.zerodata[0]        # ZERO THE VOLTAGE DATA
-        self.voltage_y[:, -1] -= self.zerodata[1]       # ZERO THE CURRENT DATA
+        # CUT THE LAST PART
+        new_length = round(self.voltage_y.shape[0]/2)
+        self.voltage_y = self.voltage_y[:new_length]
 
-        maxval_pulse_new = self.voltage_y.max(axis=0)[0]    # GET MAX VALUE FROM CURRENT PULSE
-        minval_pulse_new = self.voltage_y.min(axis=0)[0]    # GET MIN VALUE FROM CURRENT PULSE
+        self.voltage_y[:, 0] -= self.zerodata[0]    # ZERO THE VOLTAGE DATA
+        self.voltage_y[:, 1] -= self.zerodata[1]    # ZERO THE CURRENT DATA
+
+        self.voltage_y[:, 0] *= 0.15                # SCALE THE VOLTAGE DATA
+        self.voltage_y[:, 1] *= 0.15                # SCALE THE CURRENT DATA
+
+
+
+        maxval_pulse_new = self.voltage_y.max(axis=0)[0]    # GET MAX VALUE FROM VOLTAGE PULSE
+        minval_pulse_new = self.voltage_y.min(axis=0)[0]    # GET MIN VALUE FROM VOLTAGE PULSE
 
         if maxval_pulse_new > self.maxval_pulse:        # CHECK MAX VALUE OVER TIME
             self.maxval_pulse = maxval_pulse_new
@@ -312,11 +454,9 @@ class MainWindow(QMainWindow):
 
 
 
-        print("Data Length: {}".format(self.voltage_y.shape[0]))
-        print("MINVAL: {}".format(self.minval_pulse))
-        print("MAXVAL: {}".format(self.maxval_pulse))
-        print(self.voltage_y.shape)
-        #print(self.voltage_y)
+        #print("Data Length: {}".format(self.voltage_y.shape[0]))
+        #print("MINVAL: {}".format(self.minval_pulse))
+        #print("MAXVAL: {}".format(self.maxval_pulse))
 
         
         self.voltage_x = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0])
@@ -334,8 +474,8 @@ class MainWindow(QMainWindow):
 
         #self.ui.MplWidget.canvas.axes1.set_title("Voltage")
         self.ui.MplWidget.canvas.axes1.set_ylabel("Voltage [V]")
-        self.ui.MplWidget.canvas.axes1.set_ylim(self.minval_pulse-10, self.maxval_pulse+10)
-        self.ui.MplWidget.canvas.axes1.set_ylim(self.minval_pulse-10, self.maxval_pulse+10)
+        #self.ui.MplWidget.canvas.axes1.set_ylim(self.minval_pulse-10, self.maxval_pulse+10)
+        #self.ui.MplWidget.canvas.axes1.set_ylim(self.minval_pulse-10, self.maxval_pulse+10)
 
         #self.ui.MplWidget.canvas.axes2.set_title("Current")
         self.ui.MplWidget.canvas.axes2.set_ylabel("Current [A]")
@@ -348,88 +488,168 @@ class MainWindow(QMainWindow):
         self.ui.MplWidget.canvas.axes3.plot(self.temp_x, self.tempmax)
         self.ui.MplWidget.canvas.draw()
 
+
+
     # =================================================
     # DEVICE TOGGLES
     # =================================================
 
     def psu_button_toggle(self):
-        # PSU IS SWITCHING OFF
-        if self.flag_psu_on:
-            sucess = send_PSU_disable(self.device_serials[0], 1)
+        if self.device_serials[0].isOpen():
+            # PSU IS SWITCHING OFF
+            if self.flag_psu_on:
+                sucess = send_PSU_disable(self.device_serials[0], 1)
 
-            # CHECK IF DATA WAS SENT SUCESSFULLY
-            if sucess:                                          # SENDING SUCESSFUL
-                self.ui.display_system_log.append("PSU: OFF")   # LOG TO GUI
-                self.flag_psu_on = False                        # SET FLAG FOR PSU STATE
-            else:                                                                       # SENDING NOT POSSIBLE (5 tries)
-                self.ui.display_system_log.append("ERROR: Could not switch PSU OFF")    # LOG TO GUI
-                self.ui.button_toggle_psu_enable.setChecked(True)                       # SET THE BUTTON TO "ON" AGAIN
+                # CHECK IF DATA WAS SENT SUCESSFULLY
+                if sucess:                                          # SENDING SUCESSFUL
+                    self.ui.display_system_log.append("PSU: OFF")   # LOG TO GUI
+                    self.flag_psu_on = False                        # SET FLAG FOR PSU STATE
+                else:                                                                       # SENDING NOT POSSIBLE (5 tries)
+                    self.ui.display_system_log.append("ERROR: Could not switch PSU OFF")    # LOG TO GUI
+                    self.ui.button_toggle_psu_enable.setChecked(True)                       # SET THE BUTTON TO "ON" AGAIN
 
-        # PSU IS SWITCHING ON
+            # PSU IS SWITCHING ON
+            else:
+                sucess = send_PSU_enable(self.device_serials[0], 1)
+
+                # CHECK IF DATA WAS SENT SUCESSFULLY
+                if sucess:                                          # SENDING SUCESSFUL
+                    self.ui.display_system_log.append("PSU: ON")    # LOG TO GUI
+                    self.flag_psu_on = True                         # SET FLAG FOR PSU STATE
+                else:                                                                       # SENDING NOT POSSIBLE (5 tries)
+                    self.ui.display_system_log.append("ERROR: Could not switch PSU ON")     # LOG TO GUI
+                    self.ui.button_toggle_psu_enable.setChecked(False)                      # SET THE BUTTON TO "ON" AGAIN
+
         else:
-            sucess = send_PSU_enable(self.device_serials[0], 1)
-
-            # CHECK IF DATA WAS SENT SUCESSFULLY
-            if sucess:                                          # SENDING SUCESSFUL
-                self.ui.display_system_log.append("PSU: ON")    # LOG TO GUI
-                self.flag_psu_on = True                         # SET FLAG FOR PSU STATE
-            else:                                                                       # SENDING NOT POSSIBLE (5 tries)
-                self.ui.display_system_log.append("ERROR: Could not switch PSU ON")     # LOG TO GUI
-                self.ui.button_toggle_psu_enable.setChecked(False)                      # SET THE BUTTON TO "ON" AGAIN
+            self.ui.display_system_log.append("PSU IS NOT CONNECTED! COULD NOT SWITCH IT ON")     # LOG TO GUI
+            self.ui.button_toggle_psu_enable.setChecked(False)                      # SET THE BUTTON TO "ON" AGAIN
 
 
     def pg_button_toggle(self):
-        if self.flag_pg_on:
-            sucess = send_PG_disable(self.device_serials[1], 1)
+        if self.device_serials[1].isOpen():
+            if self.flag_pg_on:
+                sucess = send_PG_disable(self.device_serials[1], 1)
 
-            # CHECK IF DATA WAS SENT SUCESSFULLY
-            if sucess:                                          # SENDING SUCESSFUL
-                self.ui.display_system_log.append("PG: OFF")    # LOG TO GUI
-                self.flag_pg_on = False                        # SET FLAG FOR PG STATE
-            else:                                                                       # SENDING NOT POSSIBLE (5 tries)
-                self.ui.display_system_log.append("ERROR: Could not switch PG OFF")     # LOG TO GUI
-                self.ui.button_toggle_pg_enable.setChecked(True)                       # SET THE BUTTON TO "ON" AGAIN
+                # CHECK IF DATA WAS SENT SUCESSFULLY
+                if sucess:                                          # SENDING SUCESSFUL
+                    self.ui.display_system_log.append("PG: OFF")    # LOG TO GUI
+                    self.flag_pg_on = False                        # SET FLAG FOR PG STATE
+                else:                                                                       # SENDING NOT POSSIBLE (5 tries)
+                    self.ui.display_system_log.append("ERROR: Could not switch PG OFF")     # LOG TO GUI
+                    self.ui.button_toggle_pg_enable.setChecked(True)                       # SET THE BUTTON TO "ON" AGAIN
+            else:
+                send_PG_pulsetimes(self.device_serials[1])
+                self.zerodata = send_PG_enable(self.device_serials[1], 1)
+                
+
+                # CHECK IF DATA WAS SENT SUCESSFULLY
+                if self.zerodata:                                          # SENDING SUCESSFUL
+                    print("ZERO VOLTAGE: {}".format(self.zerodata[0]))      # JUST PRINT STUFF
+                    print("ZERO CURRENT: {}".format(self.zerodata[1]))
+
+                    self.maxval_pulse = 0   # RESET PLOT SCALE
+                    self.minval_pulse = 0
+
+                    self.ui.display_system_log.append("PG: ON")     # LOG TO GUI
+                    self.flag_pg_on = True                          # SET FLAG FOR PG STATE
+                else:                                                                       # SENDING NOT POSSIBLE (5 tries)
+                    self.ui.display_system_log.append("ERROR: Could not switch PG ON")      # LOG TO GUI
+                    self.ui.button_toggle_pg_enable.setChecked(False)                       # SET THE BUTTON TO "ON" AGAIN
+
         else:
-            send_PG_pulsetimes(self.device_serials[1])
-            self.zerodata = send_PG_enable(self.device_serials[1], 1)
-              
-
-            # CHECK IF DATA WAS SENT SUCESSFULLY
-            if self.zerodata:                                          # SENDING SUCESSFUL
-                print("ZERO VOLTAGE: {}".format(self.zerodata[0]))      # JUST PRINT STUFF
-                print("ZERO CURRENT: {}".format(self.zerodata[1]))
-
-                self.maxval_pulse = 0   # RESET PLOT SCALE
-                self.minval_pulse = 0
-
-                self.ui.display_system_log.append("PG: ON")     # LOG TO GUI
-                self.flag_pg_on = True                          # SET FLAG FOR PG STATE
-            else:                                                                       # SENDING NOT POSSIBLE (5 tries)
-                self.ui.display_system_log.append("ERROR: Could not switch PG ON")      # LOG TO GUI
-                self.ui.button_toggle_pg_enable.setChecked(False)                       # SET THE BUTTON TO "ON" AGAIN
+            self.ui.display_system_log.append("PG IS NOT CONNECTED! COULD NOT SWITCH IT ON")     # LOG TO GUI
+            self.ui.button_toggle_pg_enable.setChecked(False)                       # SET THE BUTTON TO "ON" AGAIN
 
 
-    def pac_button_toggle(self):
-        if self.flag_3pac_on:
-            self.ui.display_system_log.append("3PAC: OFF")
-            self.flag_3pac_on = False
-        else:
-            self.ui.display_system_log.append("3PAC: ON")
-            self.flag_3pac_on = True
-
+    # =================================================
     # VALVE CONTROL
+    # =================================================
 
     def change_valve_state_sucrose(self):
         self.ui.display_system_log.append("VALVES: SUCROSE")
+        msg = f'wVS-010'
+        # Write the message
+        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+        msg = self.device_serials[2].readline()
+        print("RESPONSE: " + msg.decode())
+
+        # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
+        self.ui.button_toggle_valve1.setChecked(True)
+        self.ui.button_toggle_valve2.setChecked(False)
+        self.ui.button_toggle_valve3.setChecked(True)
+
 
     def change_valve_state_ethanol(self):
         self.ui.display_system_log.append("VALVES: ETHANOL")
+        msg = f'wVS-001'
+        # Write the message
+        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+        msg = self.device_serials[2].readline()
+        print("RESPONSE: " + msg.decode())
+
+        # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
+        self.ui.button_toggle_valve1.setChecked(True)
+        self.ui.button_toggle_valve2.setChecked(True)
+        self.ui.button_toggle_valve3.setChecked(False)
+
 
     def change_valve_state_cleaning(self):
         self.ui.display_system_log.append("VALVES: CLEANING")
+        msg = f'wVS-100'
+        # Write the message
+        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+        msg = self.device_serials[2].readline()
+        print("RESPONSE: " + msg.decode())
+
+        # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
+        self.ui.button_toggle_valve1.setChecked(False)
+        self.ui.button_toggle_valve2.setChecked(True)
+        self.ui.button_toggle_valve3.setChecked(True)
+
+
+    def change_valve_state_off(self):
+        self.ui.display_system_log.append("VALVES: OFF")
+        msg = f'wVS-111'
+        # Write the message
+        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+        msg = self.device_serials[2].readline()
+        print("RESPONSE: " + msg.decode())
+
+        # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
+        self.ui.button_toggle_valve1.setChecked(False)
+        self.ui.button_toggle_valve2.setChecked(False)
+        self.ui.button_toggle_valve3.setChecked(False)
+
+
+    def change_single_valve(self):
+
+        # CHECK VALVE BUTTON STATES TO CRAFT MESSAGE FOR BUTTONS
+        valvebutton_states = np.array([False, False, False])
+        valvebutton_states[0] = self.ui.button_toggle_valve1.isChecked()
+        valvebutton_states[1] = self.ui.button_toggle_valve2.isChecked()
+        valvebutton_states[2] = self.ui.button_toggle_valve3.isChecked()
+
+
+        # CONSTRUCT MESSAGE (INVERTING OF ARRAY NEEDED SINCE VALVES ARE NORMALLY OPEN)   
+        binary_string = ''.join('1' if val else '0' for val in np.invert(valvebutton_states))
+        decimal_value = int(binary_string, 2)
+        msg = f"wVS-{decimal_value}"
+            
+        # Write the message
+        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+        msg = self.device_serials[2].readline()
+        print("RESPONSE: " + msg.decode())
 
     
+    # =================================================
+    # STYLE CHANGE FUNCTIONS
+    # =================================================
 
+    def set_background_color(self, widget, color):
+        # Helper function to set the background color of a widget
+        palette = widget.palette()
+        palette.setColor(widget.backgroundRole(), color)
+        widget.setPalette(palette)
 
 
 # =================================================

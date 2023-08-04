@@ -75,7 +75,7 @@ QPushButton#button_toggle_psu_enable:hover, #button_toggle_pg_enable:hover, #but
 
 
 /* BUTTONS VALVE STATE TOGGLE */
-QPushButton#button_valvestate_sucrose, #button_valvestate_ethanol, #button_valvestate_cleaning {
+QPushButton#button_valvestate_sucrose, #button_valvestate_ethanol, #button_valvestate_cleaning, button_valvestate_off {
     /*background-color: #03394F;*/
     background-color: #222222;
     height: 30px;
@@ -85,11 +85,11 @@ QPushButton#button_valvestate_sucrose, #button_valvestate_ethanol, #button_valve
     margin: 3px;
     font-size: 20px; 
 }
-QPushButton#button_valvestate_sucrose:checked, #button_valvestate_ethanol:checked, #button_valvestate_cleaning:checked {
+QPushButton#button_valvestate_sucrose:checked, #button_valvestate_ethanol:checked, #button_valvestate_cleaning:checked, button_valvestate_off:checked {
     /*background-color: #8AC926;*/
     background-color: #0796FF;
 }
-QPushButton#button_valvestate_sucrose:hover, #button_valvestate_ethanol:hover, #button_valvestate_cleaning:hover {
+QPushButton#button_valvestate_sucrose:hover, #button_valvestate_ethanol:hover, #button_valvestate_cleaning:hover, button_valvestate_off:hover {
     background-color: #e0e4e7;
     /*color: #03394F;*/
     color: #222222;
@@ -142,7 +142,7 @@ QPushButton#button_update_sucethflow:hover, #button_update_bloodflow:hover {
 
 
 /* BUTTONS TOGGLE PUMPS */
-QPushButton#button_toggle_sucethflow, #button_toggle_bloodflow {
+QPushButton#button_toggle_sucflow, #button_toggle_ethflow, #button_toggle_bloodflow {
     background-color: #FF595E;
     height: 30px;
     border-radius: 16px;
@@ -151,11 +151,11 @@ QPushButton#button_toggle_sucethflow, #button_toggle_bloodflow {
     margin: 3px;
     font-size: 20px;
 }
-QPushButton#button_toggle_sucethflow:checked, #button_toggle_bloodflow:checked {
+QPushButton#button_toggle_sucflow:checked, #button_toggle_ethflow:checked, #button_toggle_bloodflow:checked {
     /*background-color: #8AC926;*/
     background-color: #0796FF;
 }
-QPushButton#button_toggle_sucethflow:hover, #button_toggle_bloodflow:hover {
+QPushButton#button_toggle_sucflow:hover, #button_toggle_ethflow:hover, #button_toggle_bloodflow:hover {
     background-color: #e0e4e7;
     /*color: #03394F;*/
     color: #222222;

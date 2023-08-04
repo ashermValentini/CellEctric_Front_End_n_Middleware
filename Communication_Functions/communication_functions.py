@@ -958,9 +958,16 @@ def read_temperature(ser):
 #================================================================== 
 
 def read_flowrate(ser):
-    if ser.in_waiting > 0: # Check if there is data waiting in the buffer
-        line = ser.readline().decode('utf-8').strip() # Read line from serial port, decode, and strip whitespace
-        if line.startswith('rPF-'): # Check if the line starts with 'rAC-'
+    line = ''
+    if ser.in_waiting: # Check if there is data waiting in the buffer
+        print(ser.in_waiting)
+
+        while ser.in_waiting:
+            line = ser.readline().decode('utf-8')
+            if '\n' in line:
+                received_line = line.strip()
+
+        if received_line.startswith('rPF-'): # Check if the line starts with 'rAC-'
             try:
                 # Extract the part of the line after 'rAC-', convert to float, and return
                 flow_rate = float(line[4:])
@@ -1013,29 +1020,30 @@ def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_c
     # Reset the timeout
     ser.timeout = timeout
 
+      
 
-# CRAFT PACKAGE TO TURN ON PID MODE 
+
 def turnOnPumpPID(ser):
     # Construct the message
     msg = f'wPS-22'
     # Write the message
     ser.write(msg.encode())
 
-def writeFlowRate(ser, val1=2.50, val2=0.00):
+def writePumpFlowRate(ser, val1=2.50, val2=0.00):
+    ser.flush()
     # Construct the message
     msg = f'wPF-{val1:.2f}-{val2:.2f}'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
-    
-# CRAFT PACKAGE TO TURN ON PID MODE 
+ 
 def writeSucrosePumpFlowRate(ser, val1=2.50, val2=0.00):
     # Construct the message
     msg = f'wPS-{val1:.2f}-{val2:.2f}'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
-# CRAFT PACKAGE TO TURN ON PID MODE 
+
 def writeEthanolPumpFlowRate(ser, val1=2.50, val2=0.00):
     # Construct the message
     msg = f'wPE-{val1:.2f}-{val2:.2f}'
