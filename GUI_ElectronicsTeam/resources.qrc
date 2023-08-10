@@ -1,5 +1,23 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons_bright/flasks_w.png</file>
+    <file>icons_bright/left_fast_w.png</file>
+    <file>icons_bright/left_slow_w.png</file>
+    <file>icons_bright/leftmost_w.png</file>
+    <file>icons_bright/right_fast_w.png</file>
+    <file>icons_bright/right_slow_w.png</file>
+    <file>icons_bright/rightmost_w.png</file>
+    <file>icons_bright/cartridge_w.png</file>
+    <file>icons_bright/syringe_w.png</file>
+    <file>icons_bright/bottom_w.png</file>
+    <file>icons_bright/down_fast_w.png</file>
+    <file>icons_bright/down_slow_w.png</file>
+    <file>icons_bright/top_w.png</file>
+    <file>icons_bright/up_fast_w.png</file>
+    <file>icons_bright/up_slow_w.png</file>
+    <file>icons_bright/bottom_w.png</file>
+    <file>icons_bright/up_fast_w.png</file>
+    <file>icons_bright/up_slow_w.png</file>
     <file>icons/elastizitat.png</file>
     <file>icons_bright/CellEctric-Logo-wide.png</file>
     <file>icons_bright/dark blue cropped.PNG</file>

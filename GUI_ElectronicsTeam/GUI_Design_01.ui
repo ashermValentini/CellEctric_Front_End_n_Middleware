@@ -15,170 +15,6 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="QWidget" name="SidebarIconOnlyWidget" native="true">
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <item>
-        <layout class="QHBoxLayout" name="TopLogoSmall">
-         <item>
-          <widget class="QLabel" name="LogoSmall">
-           <property name="minimumSize">
-            <size>
-             <width>45</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>45</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>16</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="pixmap">
-            <pixmap>:/icons/icons/dark blue cropped.PNG</pixmap>
-           </property>
-           <property name="scaledContents">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="IconMenuSmall">
-         <item>
-          <widget class="QPushButton" name="menu_dashboard_button_1">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
-             <normaloff>:/icons/icons_bright/icon_dashboard_w.png</normaloff>:/icons/icons_bright/icon_dashboard_w.png</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>30</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-           <property name="autoExclusive">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="menu_graphs_button_1">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
-             <normaloff>:/icons/icons_bright/icon_graph_w.png</normaloff>:/icons/icons_bright/icon_graph_w.png</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>30</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-           <property name="autoExclusive">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="menu_control_button_1">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
-             <normaloff>:/icons/icons_bright/icon_control_w.png</normaloff>:/icons/icons_bright/icon_control_w.png</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>30</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-           <property name="autoExclusive">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>467</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="menu_settings_button_1">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
-           <normaloff>:/icons/icons_bright/icon_gear_w.png</normaloff>:/icons/icons_bright/icon_gear_w.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>30</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="autoExclusive">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
     <item row="0" column="1">
      <widget class="QWidget" name="MainWidgets" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -2583,17 +2419,2029 @@
           </layout>
          </widget>
          <widget class="QWidget" name="Control">
-          <layout class="QGridLayout" name="gridLayout_5">
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_5">
-             <property name="font">
-              <font>
-               <pointsize>24</pointsize>
-              </font>
+          <layout class="QHBoxLayout" name="horizontalLayout_11">
+           <item>
+            <widget class="QFrame" name="frame_movement_blood">
+             <property name="minimumSize">
+              <size>
+               <width>220</width>
+               <height>370</height>
+              </size>
              </property>
-             <property name="text">
-              <string>CONTROL</string>
+             <property name="maximumSize">
+              <size>
+               <width>310</width>
+               <height>16777215</height>
+              </size>
              </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_13">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_8">
+                <item>
+                 <widget class="QLabel" name="label">
+                  <property name="font">
+                   <font>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>BLOOD SYRINGE</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_2">
+                  <property name="minimumSize">
+                   <size>
+                    <width>40</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>40</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/syringe_w.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QWidget" name="Window_Movement_Blood" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>200</width>
+                  <height>350</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>300</width>
+                  <height>500</height>
+                 </size>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_5">
+                 <item row="9" column="3">
+                  <widget class="QPushButton" name="move_blood_down_10">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/down_slow_w.png</normaloff>:/icons/icons_bright/down_slow_w.png</iconset>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1" colspan="2">
+                  <spacer name="horizontalSpacer_6">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>57</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="4" column="1" colspan="2">
+                  <spacer name="horizontalSpacer_8">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>57</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="9" column="1" colspan="2">
+                  <spacer name="horizontalSpacer_11">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>57</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="2" column="1" colspan="2">
+                  <spacer name="horizontalSpacer_7">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>57</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="7" column="3">
+                  <widget class="QPushButton" name="move_blood_down_01">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/down_slow_w.png</normaloff>:/icons/icons_bright/down_slow_w.png</iconset>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="3">
+                  <widget class="QPushButton" name="move_blood_up_01">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/up_slow_w.png</normaloff>:/icons/icons_bright/up_slow_w.png</iconset>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="0">
+                  <widget class="QPushButton" name="move_blood_upslow">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/up_slow_w.png</normaloff>:/icons/icons_bright/up_slow_w.png</iconset>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="4">
+                  <widget class="QLabel" name="label_16">
+                   <property name="text">
+                    <string>1 mm</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="4">
+                  <widget class="QLabel" name="label_23">
+                   <property name="text">
+                    <string>10 mm</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="0" colspan="5">
+                  <widget class="Line" name="line">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="3">
+                  <widget class="QPushButton" name="move_blood_up_1">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/up_slow_w.png</normaloff>:/icons/icons_bright/up_slow_w.png</iconset>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="3">
+                  <widget class="QPushButton" name="move_blood_up_10">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/up_slow_w.png</normaloff>:/icons/icons_bright/up_slow_w.png</iconset>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QPushButton" name="move_blood_top">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="layoutDirection">
+                    <enum>Qt::LeftToRight</enum>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/top_w.png</normaloff>:/icons/icons_bright/top_w.png</iconset>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_13">
+                   <property name="text">
+                    <string>JOG</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3" colspan="2">
+                  <widget class="QLabel" name="label_14">
+                   <property name="text">
+                    <string>TRAVEL</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QPushButton" name="move_blood_upfast">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/up_fast_w.png</normaloff>:/icons/icons_bright/up_fast_w.png</iconset>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="1" colspan="2">
+                  <spacer name="horizontalSpacer_9">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>57</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="8" column="1" colspan="2">
+                  <spacer name="horizontalSpacer_10">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>57</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="7" column="0">
+                  <widget class="QPushButton" name="move_blood_downslow">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/down_slow_w.png</normaloff>:/icons/icons_bright/down_slow_w.png</iconset>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="11" column="0" colspan="5">
+                  <widget class="QPushButton" name="button_blood_setpos">
+                   <property name="text">
+                    <string>SET POSITION</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="3">
+                  <widget class="QPushButton" name="move_blood_down_1">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/down_slow_w.png</normaloff>:/icons/icons_bright/down_slow_w.png</iconset>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="4">
+                  <widget class="QLabel" name="label_22">
+                   <property name="text">
+                    <string>0.1 mm</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="0">
+                  <widget class="QPushButton" name="move_blood_bottom">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/bottom_w.png</normaloff>:/icons/icons_bright/bottom_w.png</iconset>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="4">
+                  <widget class="QLabel" name="label_20">
+                   <property name="text">
+                    <string>10 mm</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="10" column="2" colspan="3">
+                  <widget class="QLineEdit" name="input_blood_position"/>
+                 </item>
+                 <item row="10" column="0" colspan="2">
+                  <widget class="QLabel" name="label_blood_position">
+                   <property name="text">
+                    <string>POSITION:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="4">
+                  <widget class="QLabel" name="label_21">
+                   <property name="text">
+                    <string>1 mm</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="0">
+                  <widget class="QPushButton" name="move_blood_downfast">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/down_fast_w.png</normaloff>:/icons/icons_bright/down_fast_w.png</iconset>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="4">
+                  <widget class="QLabel" name="label_19">
+                   <property name="text">
+                    <string>0.1 mm</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_8">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QFrame" name="frame_movement_cartridge">
+             <property name="minimumSize">
+              <size>
+               <width>220</width>
+               <height>370</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_14">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_9">
+                <item>
+                 <widget class="QLabel" name="label_7">
+                  <property name="font">
+                   <font>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>CARTRIDGE CONNECTOR</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_8">
+                  <property name="minimumSize">
+                   <size>
+                    <width>40</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>40</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/cartridge_w.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QWidget" name="Window_Movement_Cartridge" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>200</width>
+                  <height>350</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>300</width>
+                  <height>500</height>
+                 </size>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_9">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_15">
+                   <property name="text">
+                    <string>JOG</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QPushButton" name="move_cartridge_top">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="layoutDirection">
+                    <enum>Qt::LeftToRight</enum>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/top_w.png</normaloff>:/icons/icons_bright/top_w.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="4">
+                  <widget class="QLabel" name="label_25">
+                   <property name="text">
+                    <string>10 mm</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3" colspan="2">
+                  <widget class="QLabel" name="label_24">
+                   <property name="text">
+                    <string>TRAVEL</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="3">
+                  <widget class="QPushButton" name="move_cartridge_up_10">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/up_slow_w.png</normaloff>:/icons/icons_bright/up_slow_w.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="3">
+                  <widget class="QPushButton" name="move_cartridge_up_1">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/up_slow_w.png</normaloff>:/icons/icons_bright/up_slow_w.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="3">
+                  <widget class="QPushButton" name="move_cartridge_up_01">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/up_slow_w.png</normaloff>:/icons/icons_bright/up_slow_w.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0">
+                  <widget class="QPushButton" name="move_cartridge_upslow">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/up_slow_w.png</normaloff>:/icons/icons_bright/up_slow_w.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QPushButton" name="move_cartridge_upfast">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/up_fast_w.png</normaloff>:/icons/icons_bright/up_fast_w.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="4">
+                  <widget class="QLabel" name="label_26">
+                   <property name="text">
+                    <string>1 mm</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="0">
+                  <widget class="QPushButton" name="move_cartridge_downslow">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/down_slow_w.png</normaloff>:/icons/icons_bright/down_slow_w.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="3">
+                  <widget class="QPushButton" name="move_cartridge_down_01">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/down_slow_w.png</normaloff>:/icons/icons_bright/down_slow_w.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="4">
+                  <widget class="QLabel" name="label_28">
+                   <property name="text">
+                    <string>0.1 mm</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="4">
+                  <widget class="QLabel" name="label_27">
+                   <property name="text">
+                    <string>0.1 mm</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="0">
+                  <widget class="QPushButton" name="move_cartridge_downfast">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/down_fast_w.png</normaloff>:/icons/icons_bright/down_fast_w.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="3">
+                  <widget class="QPushButton" name="move_cartridge_down_10">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/down_slow_w.png</normaloff>:/icons/icons_bright/down_slow_w.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="0">
+                  <widget class="QPushButton" name="move_cartridge_bottom">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/bottom_w.png</normaloff>:/icons/icons_bright/bottom_w.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="4">
+                  <widget class="QLabel" name="label_29">
+                   <property name="text">
+                    <string>1 mm</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="4">
+                  <widget class="QLabel" name="label_30">
+                   <property name="text">
+                    <string>10 mm</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="2" colspan="3">
+                  <widget class="QLineEdit" name="input_cartridge_position"/>
+                 </item>
+                 <item row="1" column="1" colspan="2">
+                  <spacer name="horizontalSpacer_12">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>57</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="8" column="0" colspan="2">
+                  <widget class="QLabel" name="label_cartridge_position">
+                   <property name="text">
+                    <string>POSITION:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="0" colspan="5">
+                  <widget class="QPushButton" name="button_cartridge_setpos">
+                   <property name="text">
+                    <string>SET POSITION</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="1" colspan="2">
+                  <spacer name="horizontalSpacer_15">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>57</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="3" column="1" colspan="2">
+                  <spacer name="horizontalSpacer_16">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>57</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="2" column="1" colspan="2">
+                  <spacer name="horizontalSpacer_17">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>57</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="6" column="1" colspan="2">
+                  <spacer name="horizontalSpacer_14">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>57</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="7" column="1" colspan="2">
+                  <spacer name="horizontalSpacer_13">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>57</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="6" column="3">
+                  <widget class="QPushButton" name="move_cartridge_down_1">
+                   <property name="minimumSize">
+                    <size>
+                     <width>55</width>
+                     <height>55</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                     <normaloff>:/icons/icons_bright/down_slow_w.png</normaloff>:/icons/icons_bright/down_slow_w.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="0" colspan="5">
+                  <widget class="Line" name="line_2">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_17">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QWidget" name="Window_PSU_5" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>580</width>
+               <height>600</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_15">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_10">
+                <item>
+                 <widget class="QLabel" name="label_3">
+                  <property name="font">
+                   <font>
+                    <pointsize>10</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>FLASKS</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_5">
+                  <property name="minimumSize">
+                   <size>
+                    <width>40</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>40</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/flasks_w.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QWidget" name="Window_PSU_4" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>560</width>
+                  <height>440</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>900</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_16">
+                 <item row="1" column="1" colspan="2">
+                  <widget class="QWidget" name="Window_Movement_Blood_4" native="true">
+                   <property name="minimumSize">
+                    <size>
+                     <width>190</width>
+                     <height>110</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>300</width>
+                     <height>200</height>
+                    </size>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout_14">
+                    <item row="2" column="3">
+                     <widget class="QPushButton" name="move_flasks_left_10">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/left_slow_w.png</normaloff>:/icons/icons_bright/left_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="4">
+                     <widget class="QLabel" name="label_64">
+                      <property name="text">
+                       <string>1 mm</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="5">
+                     <widget class="QLabel" name="label_52">
+                      <property name="text">
+                       <string>0.1 mm</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="4">
+                     <widget class="QPushButton" name="move_flasks_left_1">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/left_slow_w.png</normaloff>:/icons/icons_bright/left_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="3">
+                     <widget class="QLabel" name="label_63">
+                      <property name="text">
+                       <string>10 mm</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="5">
+                     <widget class="QPushButton" name="move_flasks_left_01">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/left_slow_w.png</normaloff>:/icons/icons_bright/left_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="1">
+                     <spacer name="horizontalSpacer_19">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="2" column="2">
+                     <widget class="QLabel" name="label_65">
+                      <property name="text">
+                       <string>TRAVEL</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="4">
+                     <widget class="QPushButton" name="move_flasks_leftfast">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/left_fast_w.png</normaloff>:/icons/icons_bright/left_fast_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="3">
+                     <spacer name="verticalSpacer_11">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="1" column="4">
+                     <spacer name="verticalSpacer_12">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>19</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="1" column="5">
+                     <spacer name="verticalSpacer_13">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>19</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="0" column="2">
+                     <widget class="QLabel" name="label_59">
+                      <property name="text">
+                       <string>JOG</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="3">
+                     <widget class="QPushButton" name="move_flasks_leftmost">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="layoutDirection">
+                       <enum>Qt::LeftToRight</enum>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/leftmost_w.png</normaloff>:/icons/icons_bright/leftmost_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="5">
+                     <widget class="QPushButton" name="move_flasks_leftslow">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/left_slow_w.png</normaloff>:/icons/icons_bright/left_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item row="0" column="3" colspan="2">
+                  <widget class="QWidget" name="Window_Movement_Blood_2" native="true">
+                   <property name="minimumSize">
+                    <size>
+                     <width>150</width>
+                     <height>150</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>200</width>
+                     <height>200</height>
+                    </size>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout_10">
+                    <item row="4" column="4">
+                     <widget class="QLabel" name="label_33">
+                      <property name="text">
+                       <string>0.1 mm</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="3">
+                     <widget class="QPushButton" name="move_flasks_up_01">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/up_slow_w.png</normaloff>:/icons/icons_bright/up_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="1" colspan="2">
+                     <spacer name="horizontalSpacer_18">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>57</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="3" column="1" colspan="2">
+                     <spacer name="horizontalSpacer_20">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>57</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="4" column="1" colspan="2">
+                     <spacer name="horizontalSpacer_21">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>57</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="3" column="0">
+                     <widget class="QPushButton" name="move_flasks_upfast">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/up_fast_w.png</normaloff>:/icons/icons_bright/up_fast_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="0">
+                     <widget class="QPushButton" name="move_flasks_upslow">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/up_slow_w.png</normaloff>:/icons/icons_bright/up_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QLabel" name="label_53">
+                      <property name="text">
+                       <string>JOG</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="3">
+                     <widget class="QPushButton" name="move_flasks_up_1">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/up_slow_w.png</normaloff>:/icons/icons_bright/up_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="4">
+                     <widget class="QLabel" name="label_55">
+                      <property name="text">
+                       <string>10 mm</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QPushButton" name="move_flasks_top">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="layoutDirection">
+                       <enum>Qt::LeftToRight</enum>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/top_w.png</normaloff>:/icons/icons_bright/top_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="3">
+                     <widget class="QPushButton" name="move_flasks_up_10">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/up_slow_w.png</normaloff>:/icons/icons_bright/up_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="4">
+                     <widget class="QLabel" name="label_56">
+                      <property name="text">
+                       <string>1 mm</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="0" colspan="2">
+                     <spacer name="verticalSpacer_9">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="1" column="3" colspan="2">
+                     <widget class="QLabel" name="label_54">
+                      <property name="text">
+                       <string>TRAVEL</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item row="2" column="3" colspan="2">
+                  <widget class="QWidget" name="Window_Movement_Blood_3" native="true">
+                   <property name="minimumSize">
+                    <size>
+                     <width>150</width>
+                     <height>150</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>200</width>
+                     <height>200</height>
+                    </size>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout_11">
+                    <item row="3" column="4">
+                     <widget class="QLabel" name="label_57">
+                      <property name="text">
+                       <string>0.1 mm</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="3">
+                     <widget class="QPushButton" name="move_flasks_down_1">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/down_slow_w.png</normaloff>:/icons/icons_bright/down_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="0">
+                     <widget class="QPushButton" name="move_flasks_downslow">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/down_slow_w.png</normaloff>:/icons/icons_bright/down_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="6" column="0">
+                     <widget class="QLabel" name="label_61">
+                      <property name="text">
+                       <string>JOG</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="3">
+                     <widget class="QPushButton" name="move_flasks_down_01">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/down_slow_w.png</normaloff>:/icons/icons_bright/down_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="0">
+                     <widget class="QPushButton" name="move_flasks_downfast">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/down_fast_w.png</normaloff>:/icons/icons_bright/down_fast_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="4">
+                     <widget class="QLabel" name="label_60">
+                      <property name="text">
+                       <string>1 mm</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="1" colspan="2">
+                     <spacer name="horizontalSpacer_25">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>57</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="5" column="3">
+                     <widget class="QPushButton" name="move_flasks_down_10">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/down_slow_w.png</normaloff>:/icons/icons_bright/down_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="1" colspan="2">
+                     <spacer name="horizontalSpacer_28">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>57</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="4" column="1" colspan="2">
+                     <spacer name="horizontalSpacer_29">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>57</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="6" column="3" colspan="2">
+                     <widget class="QLabel" name="label_62">
+                      <property name="text">
+                       <string>TRAVEL</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="4">
+                     <widget class="QLabel" name="label_58">
+                      <property name="text">
+                       <string>10 mm</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="0">
+                     <widget class="QPushButton" name="move_flasks_bottom">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/bottom_w.png</normaloff>:/icons/icons_bright/bottom_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="7" column="0" colspan="2">
+                     <spacer name="verticalSpacer_10">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item row="1" column="5">
+                  <widget class="QWidget" name="Window_Movement_Blood_5" native="true">
+                   <property name="minimumSize">
+                    <size>
+                     <width>190</width>
+                     <height>110</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>300</width>
+                     <height>200</height>
+                    </size>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout_15">
+                    <item row="1" column="3">
+                     <spacer name="verticalSpacer_15">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>37</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="0" column="2">
+                     <widget class="QPushButton" name="move_flasks_rightslow">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="layoutDirection">
+                       <enum>Qt::LeftToRight</enum>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/right_slow_w.png</normaloff>:/icons/icons_bright/right_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="3">
+                     <widget class="QPushButton" name="move_flasks_rightfast">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/right_fast_w.png</normaloff>:/icons/icons_bright/right_fast_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="2">
+                     <spacer name="verticalSpacer_14">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="2" column="2">
+                     <widget class="QPushButton" name="move_flasks_right_01">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/right_slow_w.png</normaloff>:/icons/icons_bright/right_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="3">
+                     <widget class="QPushButton" name="move_flasks_right_1">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/right_slow_w.png</normaloff>:/icons/icons_bright/right_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="4">
+                     <spacer name="verticalSpacer_16">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>37</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="2" column="4">
+                     <widget class="QPushButton" name="move_flasks_right_10">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/right_slow_w.png</normaloff>:/icons/icons_bright/right_slow_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="4">
+                     <widget class="QPushButton" name="move_flasks_rightmost">
+                      <property name="minimumSize">
+                       <size>
+                        <width>55</width>
+                        <height>55</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+                        <normaloff>:/icons/icons_bright/rightmost_w.png</normaloff>:/icons/icons_bright/rightmost_w.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="5">
+                     <widget class="QLabel" name="label_66">
+                      <property name="text">
+                       <string>JOG</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="5">
+                     <widget class="QLabel" name="label_70">
+                      <property name="text">
+                       <string>TRAVEL</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="6">
+                     <spacer name="horizontalSpacer_22">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="3" column="2">
+                     <widget class="QLabel" name="label_69">
+                      <property name="text">
+                       <string>0.1 mm</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="4">
+                     <widget class="QLabel" name="label_67">
+                      <property name="text">
+                       <string>10 mm</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="3">
+                     <widget class="QLabel" name="label_68">
+                      <property name="text">
+                       <string>1 mm</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item row="1" column="6">
+                  <spacer name="horizontalSpacer_34">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <layout class="QGridLayout" name="gridLayout_12">
+                <item row="3" column="0">
+                 <widget class="QPushButton" name="button_flaskpos_1">
+                  <property name="text">
+                   <string>FLASK 1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QPushButton" name="button_flaskpos_2">
+                  <property name="text">
+                   <string>FLASK 2</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QPushButton" name="button_flaskpos_3">
+                  <property name="text">
+                   <string>FLASK 3</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="3">
+                 <widget class="QPushButton" name="button_flaskpos_4">
+                  <property name="text">
+                   <string>FLASK 4</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0" colspan="2">
+                 <widget class="QLabel" name="label_32">
+                  <property name="font">
+                   <font>
+                    <pointsize>12</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>U/D POSITION:</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2" colspan="2">
+                 <widget class="QLabel" name="label_31">
+                  <property name="font">
+                   <font>
+                    <pointsize>12</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>L/R POSITION:</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0" colspan="2">
+                 <widget class="QLineEdit" name="line_flasks_pos_ud"/>
+                </item>
+                <item row="2" column="0" colspan="2">
+                 <widget class="QPushButton" name="button_set_flasks_pos_ud">
+                  <property name="text">
+                   <string>SET POSITION</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2" colspan="2">
+                 <widget class="QLineEdit" name="line_flasks_pos_lr"/>
+                </item>
+                <item row="2" column="2" colspan="2">
+                 <widget class="QPushButton" name="button_set_flasks_pos_lr">
+                  <property name="text">
+                   <string>SET POSITION</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>
@@ -2614,6 +4462,170 @@
            </item>
           </layout>
          </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QWidget" name="SidebarIconOnlyWidget" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <layout class="QHBoxLayout" name="TopLogoSmall">
+         <item>
+          <widget class="QLabel" name="LogoSmall">
+           <property name="minimumSize">
+            <size>
+             <width>45</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>45</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>16</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap>:/icons/icons/dark blue cropped.PNG</pixmap>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="IconMenuSmall">
+         <item>
+          <widget class="QPushButton" name="menu_dashboard_button_1">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+             <normaloff>:/icons/icons_bright/icon_dashboard_w.png</normaloff>:/icons/icons_bright/icon_dashboard_w.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>30</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="menu_graphs_button_1">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+             <normaloff>:/icons/icons_bright/icon_graph_w.png</normaloff>:/icons/icons_bright/icon_graph_w.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>30</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="menu_control_button_1">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+             <normaloff>:/icons/icons_bright/icon_control_w.png</normaloff>:/icons/icons_bright/icon_control_w.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>30</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>467</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="menu_settings_button_1">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">
+           <normaloff>:/icons/icons_bright/icon_gear_w.png</normaloff>:/icons/icons_bright/icon_gear_w.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="autoExclusive">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
       </layout>
@@ -2641,12 +4653,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>611</x>
-     <y>276</y>
+     <x>948</x>
+     <y>179</y>
     </hint>
     <hint type="destinationlabel">
-     <x>599</x>
-     <y>313</y>
+     <x>948</x>
+     <y>273</y>
     </hint>
    </hints>
   </connection>
@@ -2657,12 +4669,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>596</x>
-     <y>276</y>
+     <x>948</x>
+     <y>179</y>
     </hint>
     <hint type="destinationlabel">
-     <x>602</x>
-     <y>305</y>
+     <x>948</x>
+     <y>226</y>
     </hint>
    </hints>
   </connection>
@@ -2673,12 +4685,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>621</x>
-     <y>284</y>
+     <x>948</x>
+     <y>179</y>
     </hint>
     <hint type="destinationlabel">
-     <x>619</x>
-     <y>346</y>
+     <x>948</x>
+     <y>320</y>
     </hint>
    </hints>
   </connection>
