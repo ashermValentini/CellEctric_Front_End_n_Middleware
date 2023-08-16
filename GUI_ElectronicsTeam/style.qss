@@ -75,7 +75,7 @@ QPushButton#button_toggle_psu_enable:hover, #button_toggle_pg_enable:hover, #but
 
 
 /* BUTTONS VALVE STATE TOGGLE */
-QPushButton#button_valvestate_sucrose, #button_valvestate_ethanol, #button_valvestate_cleaning, button_valvestate_off {
+QPushButton#button_valvestate_sucrose, #button_valvestate_ethanol, #button_valvestate_cleaning, #button_valvestate_off {
     /*background-color: #03394F;*/
     background-color: #222222;
     height: 30px;
@@ -85,11 +85,11 @@ QPushButton#button_valvestate_sucrose, #button_valvestate_ethanol, #button_valve
     margin: 3px;
     font-size: 20px; 
 }
-QPushButton#button_valvestate_sucrose:checked, #button_valvestate_ethanol:checked, #button_valvestate_cleaning:checked, button_valvestate_off:checked {
+QPushButton#button_valvestate_sucrose:checked, #button_valvestate_ethanol:checked, #button_valvestate_cleaning:checked, #button_valvestate_off:checked {
     /*background-color: #8AC926;*/
     background-color: #0796FF;
 }
-QPushButton#button_valvestate_sucrose:hover, #button_valvestate_ethanol:hover, #button_valvestate_cleaning:hover, button_valvestate_off:hover {
+QPushButton#button_valvestate_sucrose:hover, #button_valvestate_ethanol:hover, #button_valvestate_cleaning:hover, #button_valvestate_off:hover {
     background-color: #e0e4e7;
     /*color: #03394F;*/
     color: #222222;
@@ -191,3 +191,22 @@ QCheckBox::indicator {
 }
 
 
+/* ===================
+        MOVEMENT 
+   ===================*/
+
+/* BUTTONS */
+QWidget#Control QPushButton{
+    /*background-color: #03394F;*/
+    background-color: #222222;
+    /*height: 30px;*/
+    border-radius: 10px;
+    border: 2px solid #e0e4e7;
+    color: #ffffff;
+    margin: 5px;
+}
+QWidget#Control QPushButton:hover{
+    background-color: #e0e4e7;
+    /*color: #03394F;*/
+    color: #222222;
+}

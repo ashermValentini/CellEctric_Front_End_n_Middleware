@@ -3,9 +3,8 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Communication_Functions.communication_functions import *
 
-
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QLineEdit, QLabel, QButtonGroup, QVBoxLayout
-from PyQt5.QtCore import pyqtSlot, QFile, QTextStream, QTimer
+from PyQt5.QtCore import Qt, pyqtSlot, QFile, QTextStream, QTimer
 from PyQt5.QtGui import QColor
 from PyQt5.uic import loadUi
 from pathlib import Path
@@ -18,13 +17,19 @@ import numpy as np
 
 from Ui_GUI_Design_01 import Ui_MainWindow
 
-
+# CONSTANTS
 SUCROSE_FLOWRATE_MAX = 10
 ETHANOL_FLOWRATE_MAX = 10
 BLOOD_FLOWRATE_MAX = 5
 
 
-
+# =================================================================
+#   __  __   _   ___ _  _  __      _____ _  _ ___   _____      __
+#  |  \/  | /_\ |_ _| \| | \ \    / /_ _| \| |   \ / _ \ \    / /
+#  | |\/| |/ _ \ | || .` |  \ \/\/ / | || .` | |) | (_) \ \/\/ / 
+#  |_|  |_/_/ \_\___|_|\_|   \_/\_/ |___|_|\_|___/ \___/ \_/\_/  
+#
+# =================================================================
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -32,6 +37,10 @@ class MainWindow(QMainWindow):
         # VARIABLES
 
         # FLAGS TEST
+        #                       [PSU  , PG   , 3PAC , TEMPSENS]
+        self.flag_connections = [False, False, False, False]
+
+
         self.flag_psu_on = False
         self.flag_pg_on = False
         self.flag_3pac_on = False
@@ -72,9 +81,18 @@ class MainWindow(QMainWindow):
         self.ui.button_toggle_valve1.setEnabled(False)
         self.ui.button_toggle_valve2.setEnabled(False)
         self.ui.button_toggle_valve3.setEnabled(False)
+        # SET VALVE BUTTON GROUP TO OFF
+        self.ui.button_valvestate_off.setChecked(True)
 
         # SETUP BUTTON GROUPS
         self.ui.btngroup_valve_states.setExclusive(True)
+
+
+        # MENU BUTTONS
+        self.ui.menu_dashboard_button_1.clicked.connect(self.menu_button_dashboard_click)
+        self.ui.menu_control_button_1.clicked.connect(self.menu_button_control_click)
+        self.ui.menu_graphs_button_1.clicked.connect(self.menu_button_graphs_click)
+        self.ui.menu_settings_button_1.clicked.connect(self.menu_button_settings_click)
 
         # BUTTON CLICKS
         self.ui.button_toggle_psu_enable.clicked.connect(self.psu_button_toggle)
@@ -94,89 +112,191 @@ class MainWindow(QMainWindow):
         self.ui.button_toggle_valve3.clicked.connect(self.change_single_valve)
 
 
+
+        # MOVEMENT BUTTONS
+        # JOGGING BLOOD
+        self.ui.move_blood_upfast.pressed.connect(lambda: self.movement_startjogging(1, -1, True))     #(self, motornumber, direction, fast)
+        self.ui.move_blood_upfast.released.connect(lambda: self.movement_stopjogging(1))               #(self, motornumber)
+
+        self.ui.move_blood_upslow.pressed.connect(lambda: self.movement_startjogging(1, -1, False))
+        self.ui.move_blood_upslow.released.connect(lambda: self.movement_stopjogging(1))
+
+        self.ui.move_blood_downfast.pressed.connect(lambda: self.movement_startjogging(1, 1, True))
+        self.ui.move_blood_downfast.released.connect(lambda: self.movement_stopjogging(1))
+
+        self.ui.move_blood_downslow.pressed.connect(lambda: self.movement_startjogging(1, 1, False))
+        self.ui.move_blood_downslow.released.connect(lambda: self.movement_stopjogging(1))
+
+        # JOGGING CARTRIDGE
+        self.ui.move_cartridge_upfast.pressed.connect(lambda: self.movement_startjogging(2, -1, True))     #(self, motornumber, direction, fast)
+        self.ui.move_cartridge_upfast.released.connect(lambda: self.movement_stopjogging(2))               #(self, motornumber)
+
+        self.ui.move_cartridge_upslow.pressed.connect(lambda: self.movement_startjogging(2, -1, False))
+        self.ui.move_cartridge_upslow.released.connect(lambda: self.movement_stopjogging(2))
+
+        self.ui.move_cartridge_downfast.pressed.connect(lambda: self.movement_startjogging(2, 1, True))
+        self.ui.move_cartridge_downfast.released.connect(lambda: self.movement_stopjogging(2))
+
+        self.ui.move_cartridge_downslow.pressed.connect(lambda: self.movement_startjogging(2, 1, False))
+        self.ui.move_cartridge_downslow.released.connect(lambda: self.movement_stopjogging(2))
+
+        # JOGGING FLASKS HORIZONTAL
+        self.ui.move_flasks_leftfast.pressed.connect(lambda: self.movement_startjogging(3, -1, True))     #(self, motornumber, direction, fast)
+        self.ui.move_flasks_leftfast.released.connect(lambda: self.movement_stopjogging(3))               #(self, motornumber)
+
+        self.ui.move_flasks_leftslow.pressed.connect(lambda: self.movement_startjogging(3, -1, False))
+        self.ui.move_flasks_leftslow.released.connect(lambda: self.movement_stopjogging(3))
+
+        self.ui.move_flasks_rightfast.pressed.connect(lambda: self.movement_startjogging(3, 1, True))
+        self.ui.move_flasks_rightfast.released.connect(lambda: self.movement_stopjogging(3))
+
+        self.ui.move_flasks_rightslow.pressed.connect(lambda: self.movement_startjogging(3, 1, False))
+        self.ui.move_flasks_rightslow.released.connect(lambda: self.movement_stopjogging(3))
+
+        # JOGGING FLASKS VERTICAL
+        self.ui.move_flasks_upfast.pressed.connect(lambda: self.movement_startjogging(4, -1, True))     #(self, motornumber, direction, fast)
+        self.ui.move_flasks_upfast.released.connect(lambda: self.movement_stopjogging(4))               #(self, motornumber)
+
+        self.ui.move_flasks_upslow.pressed.connect(lambda: self.movement_startjogging(4, -1, False))
+        self.ui.move_flasks_upslow.released.connect(lambda: self.movement_stopjogging(4))
+
+        self.ui.move_flasks_downfast.pressed.connect(lambda: self.movement_startjogging(4, 1, True))
+        self.ui.move_flasks_downfast.released.connect(lambda: self.movement_stopjogging(4))
+
+        self.ui.move_flasks_downslow.pressed.connect(lambda: self.movement_startjogging(4, 1, False))
+        self.ui.move_flasks_downslow.released.connect(lambda: self.movement_stopjogging(4))
+
+        # TRAVEL BLOOD
+        self.ui.move_blood_up_10.clicked.connect(lambda: self.movement_relative(1, -10))                 #(self, motornumber, distance)
+        self.ui.move_blood_up_1.clicked.connect(lambda: self.movement_relative(1, -1))
+        self.ui.move_blood_up_01.clicked.connect(lambda: self.movement_relative(1, -0.1))
+        self.ui.move_blood_down_10.clicked.connect(lambda: self.movement_relative(1, 10))
+        self.ui.move_blood_down_1.clicked.connect(lambda: self.movement_relative(1, 1))
+        self.ui.move_blood_down_01.clicked.connect(lambda: self.movement_relative(1, 0.1))
+
+        self.ui.move_blood_bottom.clicked.connect(lambda: self.movement_relative(1, 200))           # JUST MOVE VERY FAR (1m) AND REACH THE END
+        self.ui.move_blood_top.clicked.connect(lambda: self.movement_relative(1, -200))
+
+        # TRAVEL CARTRIDGE
+        self.ui.move_cartridge_up_10.clicked.connect(lambda: self.movement_relative(2, -10))                 #(self, motornumber, distance)
+        self.ui.move_cartridge_up_1.clicked.connect(lambda: self.movement_relative(2, -1))
+        self.ui.move_cartridge_up_01.clicked.connect(lambda: self.movement_relative(2, -0.1))
+        self.ui.move_cartridge_down_10.clicked.connect(lambda: self.movement_relative(2, 10))
+        self.ui.move_cartridge_down_1.clicked.connect(lambda: self.movement_relative(2, 1))
+        self.ui.move_cartridge_down_01.clicked.connect(lambda: self.movement_relative(2, 0.1))
+
+        self.ui.move_cartridge_bottom.clicked.connect(lambda: self.movement_relative(2, 200))           # JUST MOVE VERY FAR (1m) AND REACH THE END
+        self.ui.move_cartridge_top.clicked.connect(lambda: self.movement_relative(2, -200))
+
+        # TRAVEL FLASKS HORIZONTAL
+        self.ui.move_flasks_left_10.clicked.connect(lambda: self.movement_relative(3, -10))                 #(self, motornumber, distance)
+        self.ui.move_flasks_left_1.clicked.connect(lambda: self.movement_relative(3, -1))
+        self.ui.move_flasks_left_01.clicked.connect(lambda: self.movement_relative(3, -0.1))
+        self.ui.move_flasks_right_10.clicked.connect(lambda: self.movement_relative(3, 10))
+        self.ui.move_flasks_right_1.clicked.connect(lambda: self.movement_relative(3, 1))
+        self.ui.move_flasks_right_01.clicked.connect(lambda: self.movement_relative(3, 0.1))
+
+        self.ui.move_flasks_rightmost.clicked.connect(lambda: self.movement_relative(3, 200))           # JUST MOVE VERY FAR (1m) AND REACH THE END
+        self.ui.move_flasks_leftmost.clicked.connect(lambda: self.movement_relative(3, -200))
+
+        # TRAVEL FLASKS VERTICAL
+        self.ui.move_flasks_up_10.clicked.connect(lambda: self.movement_relative(3, -10))                 #(self, motornumber, distance)
+        self.ui.move_flasks_up_1.clicked.connect(lambda: self.movement_relative(3, -1))
+        self.ui.move_flasks_up_01.clicked.connect(lambda: self.movement_relative(3, -0.1))
+        self.ui.move_flasks_down_10.clicked.connect(lambda: self.movement_relative(3, 10))
+        self.ui.move_flasks_down_1.clicked.connect(lambda: self.movement_relative(3, 1))
+        self.ui.move_flasks_down_01.clicked.connect(lambda: self.movement_relative(3, 0.1))
+
+        self.ui.move_flasks_bottom.clicked.connect(lambda: self.movement_relative(3, 200))           # JUST MOVE VERY FAR (1m) AND REACH THE END
+        self.ui.move_flasks_top.clicked.connect(lambda: self.movement_relative(3, -200))
+
+
+        # TRAVEL TO POSITION
+        self.ui.button_blood_setpos.clicked.connect(self.movement_absoluteposition_blood)
+        self.ui.button_cartridge_setpos.clicked.connect(self.movement_absoluteposition_cartridge)
+        self.ui.button_set_flasks_pos_ud.clicked.connect(self.movement_absoluteposition_flasks_ud)
+        self.ui.button_set_flasks_pos_lr.clicked.connect(self.movement_absoluteposition_flasks_lr)
+
+
+
+
+
         # =================
         # START SERIAL CONNECTION TO DEVICES
         # =================
         self.device_serials = serial_start_connections()
-        handshake_3PAC(self.device_serials[2], print_handshake_message=True)
+
         self.ui.display_system_log.append("Connection to Devices established:")
 
-        # CHECK PSU, PG, 3PAC CONNECTION
-        if self.device_serials[0].isOpen(): # PSU
-            self.ui.indicator_connection_psu.setStyleSheet("QFrame{background-color: #0796FF; border-radius: 10;}")
+        # CHECK CONNECTION STATUS
+        if self.device_serials[0].isOpen():
             self.ui.display_system_log.append("PSU OPEN @ PORT " + self.device_serials[0].name)
-        else:
-            self.ui.indicator_connection_psu.setStyleSheet("QFrame{background-color: #808080; border-radius: 10;}")
-            self.ui.display_system_log.append("PSU NOT FOUND")
-
-
-        if self.device_serials[1].isOpen(): # PG
-            self.ui.indicator_connection_pg.setStyleSheet("QFrame{background-color: #0796FF; border-radius: 10;}")
+            self.flag_connections[0] = True
+        print("FLAG PSU: {}".format(self.flag_connections[0]))
+        if self.device_serials[1].isOpen():
             self.ui.display_system_log.append("PG OPEN @ PORT " + self.device_serials[1].name)
-        else:
-            self.ui.indicator_connection_pg.setStyleSheet("QFrame{background-color: #808080; border-radius: 10;}")
-            self.ui.display_system_log.append("PG NOT FOUND")
-
-
-        if self.device_serials[2].isOpen(): # 3PAC
-            self.ui.indicator_connection_3pac.setStyleSheet("QFrame{background-color: #0796FF; border-radius: 10;}")
+            self.flag_connections[1] = True
+        print("FLAG PG: {}".format(self.flag_connections[1]))
+        if self.device_serials[2].isOpen():
             self.ui.display_system_log.append("3PAC OPEN @ PORT " + self.device_serials[2].name)
-        else:
-            self.ui.indicator_connection_3pac.setStyleSheet("QFrame{background-color: #808080; border-radius: 10;}")
-            self.ui.display_system_log.append("3PAC NOT FOUND")
-
+            self.flag_connections[2] = True
+        print("FLAG 3PAC: {}".format(self.flag_connections[2]))
         if self.device_serials[3] is not None:
-            #self.ui.indicator_connection_3pac.setStyleSheet("QFrame{background-color: #0796FF; border-radius: 10;}")
             self.ui.display_system_log.append("TEMP SENS OPENED")
-        else:
-            #self.ui.indicator_connection_3pac.setStyleSheet("QFrame{background-color: #808080; border-radius: 10;}")
-            self.ui.display_system_log.append("TEMP SENS NOT FOUND")
+            self.flag_connections[3] = True
+        print("FLAG TEMPSENS: {}".format(self.flag_connections[3]))
+
+        # HANDSHAKES WITH DEVICES
+        if self.flag_connections[2]:
+            handshake_3PAC(self.device_serials[2], print_handshake_message=True)
+
+        self.set_connection_indicators(self.flag_connections)
 
 
-        
-
-        # INITIALIZE SCALING VALUES
+        # INITIALIZE SCALING VALUES FOR PLOTS
         self.zerodata = [2000, 2000]
         self.maxval_pulse = 10  
         self.minval_pulse = -10
 
 
-        # INITIALIZE VALVE STATES (ALL CLOSED)
-        # Construct the message
-        msg = f'wVS-111'
-        # Write the message
-        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
-        msg = self.device_serials[2].readline()
-        print("RESPONSE: " + msg.decode())
-        time.sleep(2)
+        #==============================================================
+        # INIT STATES
+        #==============================================================
 
-        # =================
-        # START TEMPERATURE PLOT
-        # =================
         self.start_plotting()
 
-        # INITIALIZE PID STATES (ALL CLOSED)
-        print("MESSAGE: PID On")
-        msg = "wPS-22"
-        self.device_serials[2].write(msg.encode())
-        msg = self.device_serials[2].readline()
-        print("RESPONSE: " + msg.decode())
-        time.sleep(2)
-        self.start_flowrate_suceth()
+        # INIT 3PAC
+        if self.flag_connections[2]:
+            # INITIALIZE VALVE STATES (ALL CLOSED)
+            # Construct the message
+            msg = f'wVS-111\n'
+            # Write the message
+            self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+            msg = self.device_serials[2].readline()
+            print("RESPONSE: " + msg.decode())
+            time.sleep(2)
+
+            # INITIALIZE PID STATES (ALL CLOSED)
+            #print("MESSAGE: PID On")
+            #msg = "wPS-22"
+            #self.device_serials[2].write(msg.encode())
+            #msg = self.device_serials[2].readline()
+            #print("RESPONSE: " + msg.decode())
+            #time.sleep(2)
+            #self.start_flowrate_suceth_update()
+
+        # =================
+        # START PLOT
+        # =================
+        
+
+        
         
 
 
     # =================================================
     # FLOW RATES - UPDATES & TOGGLES
     # =================================================
-
-    def start_flowrate_suceth(self):
-        # TIMER
-        self.flow_timer = QTimer()
-        self.flow_timer.setInterval(self.interval)
-        self.flow_timer.timeout.connect(self.update_flowrate_suceth)
-        self.flow_timer.start()
-
 
     def update_flowrate_suceth(self):
 
@@ -391,6 +511,14 @@ class MainWindow(QMainWindow):
     # PLOTTING 
     # =================================================
 
+    # START FLOWRATE UPDATE TIMER
+    def start_flowrate_suceth_update(self):
+        # TIMER
+        self.flow_timer = QTimer()
+        self.flow_timer.setInterval(self.interval)
+        self.flow_timer.timeout.connect(self.update_flowrate_suceth)
+        self.flow_timer.start()
+
     def start_plotting(self):
 
         #dynamic x axis 
@@ -401,7 +529,7 @@ class MainWindow(QMainWindow):
 
 
         # Plotting variables
-        self.interval = 500  # ms
+        self.interval = 2000  # ms
         self.tempplotdata = np.zeros(500)   # initialize Temperature values with 0
         self.temp_y = self.tempplotdata
         self.voltageplotdata = np.zeros(500)   # initialize Temperature values with 0
@@ -413,8 +541,13 @@ class MainWindow(QMainWindow):
         self.plot_timer.start()
 
     def update_plot(self):
-        temperature = read_temperature(self.device_serials[3])
+        # READ TEMPERATURE
+        if self.flag_connections[3]:
+            temperature = read_temperature(self.device_serials[3])
+        else:
+            temperature = 0
 
+        # UPDATE TEMP PLOT
         if temperature is not None:
             self.tempplotdata = np.roll(self.tempplotdata, -1)
             self.tempplotdata[-1:] = temperature
@@ -423,23 +556,25 @@ class MainWindow(QMainWindow):
             self.temp_x = np.roll(self.temp_x, -1)
             self.temp_x[-1] = self.temp_x[-2] + 1  # This will keep increasing the count on the x-axis
 
-        if self.device_serials[1].isOpen():
+        # READ PULSE
+        if self.flag_connections[1]:
             self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1])  # READ NEXT PULSE
         else:
             self.voltage_y = np.zeros((1500,2))
 
+        # PROCESS PULSE
         # CUT THE LAST PART
         new_length = round(self.voltage_y.shape[0]/2)
         self.voltage_y = self.voltage_y[:new_length]
-
+        # REMOVE OFFSET
         self.voltage_y[:, 0] -= self.zerodata[0]    # ZERO THE VOLTAGE DATA
         self.voltage_y[:, 1] -= self.zerodata[1]    # ZERO THE CURRENT DATA
-
+        # SCALING
         self.voltage_y[:, 0] *= 0.15                # SCALE THE VOLTAGE DATA
         self.voltage_y[:, 1] *= 0.15                # SCALE THE CURRENT DATA
 
 
-
+        # CALCULATE SOME VARIABLES TO DISPLAY
         maxval_pulse_new = self.voltage_y.max(axis=0)[0]    # GET MAX VALUE FROM VOLTAGE PULSE
         minval_pulse_new = self.voltage_y.min(axis=0)[0]    # GET MIN VALUE FROM VOLTAGE PULSE
 
@@ -453,21 +588,11 @@ class MainWindow(QMainWindow):
         self.ui.value_voltage_min.setText("{:.2f}".format(minval_pulse_new))    # SET GUI TEXT
 
 
-
-        #print("Data Length: {}".format(self.voltage_y.shape[0]))
-        #print("MINVAL: {}".format(self.minval_pulse))
-        #print("MAXVAL: {}".format(self.maxval_pulse))
-
         
         self.voltage_x = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0])
     
-
-
-
-        #self.ui.MplWidget.canvas.axes.clear()
-        #self.ui.MplWidget.canvas.axes.plot(self.xdata, self.ydata)
-        #self.ui.MplWidget.canvas.draw()
-
+        # UPDATE PLOT
+        # CLEAR PLOTS
         self.ui.MplWidget.canvas.axes1.clear()
         self.ui.MplWidget.canvas.axes2.clear()
         self.ui.MplWidget.canvas.axes3.clear()
@@ -491,11 +616,11 @@ class MainWindow(QMainWindow):
 
 
     # =================================================
-    # DEVICE TOGGLES
+    # DEVICE TOGGLES (ENABLE / DISABLE)
     # =================================================
 
     def psu_button_toggle(self):
-        if self.device_serials[0].isOpen():
+        if self.flag_connections[0]:
             # PSU IS SWITCHING OFF
             if self.flag_psu_on:
                 sucess = send_PSU_disable(self.device_serials[0], 1)
@@ -524,9 +649,8 @@ class MainWindow(QMainWindow):
             self.ui.display_system_log.append("PSU IS NOT CONNECTED! COULD NOT SWITCH IT ON")     # LOG TO GUI
             self.ui.button_toggle_psu_enable.setChecked(False)                      # SET THE BUTTON TO "ON" AGAIN
 
-
     def pg_button_toggle(self):
-        if self.device_serials[1].isOpen():
+        if self.flag_connections[1]:
             if self.flag_pg_on:
                 sucess = send_PG_disable(self.device_serials[1], 1)
 
@@ -566,80 +690,103 @@ class MainWindow(QMainWindow):
     # =================================================
 
     def change_valve_state_sucrose(self):
-        self.ui.display_system_log.append("VALVES: SUCROSE")
-        msg = f'wVS-010'
-        # Write the message
-        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
-        msg = self.device_serials[2].readline()
-        print("RESPONSE: " + msg.decode())
+        if self.flag_connections[2]:
+            self.ui.display_system_log.append("VALVES: SUCROSE")
+            msg = f'wVS-010'
+            # Write the message
+            self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+            msg = self.device_serials[2].readline()
+            print("RESPONSE: " + msg.decode())
 
-        # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
-        self.ui.button_toggle_valve1.setChecked(True)
-        self.ui.button_toggle_valve2.setChecked(False)
-        self.ui.button_toggle_valve3.setChecked(True)
+            # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
+            self.ui.button_toggle_valve1.setChecked(True)
+            self.ui.button_toggle_valve2.setChecked(False)
+            self.ui.button_toggle_valve3.setChecked(True)
+
+        else:
+            self.ui.display_system_log.append("COULD NOT CHANGE VALVE STATE. 3PAC IS NOT CONNECTED")
+            self.ui.button_valvestate_off.setChecked(True)
 
 
     def change_valve_state_ethanol(self):
-        self.ui.display_system_log.append("VALVES: ETHANOL")
-        msg = f'wVS-001'
-        # Write the message
-        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
-        msg = self.device_serials[2].readline()
-        print("RESPONSE: " + msg.decode())
+        if self.flag_connections[2]:
+            self.ui.display_system_log.append("VALVES: ETHANOL")
+            msg = f'wVS-001'
+            # Write the message
+            self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+            msg = self.device_serials[2].readline()
+            print("RESPONSE: " + msg.decode())
 
-        # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
-        self.ui.button_toggle_valve1.setChecked(True)
-        self.ui.button_toggle_valve2.setChecked(True)
-        self.ui.button_toggle_valve3.setChecked(False)
+            # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
+            self.ui.button_toggle_valve1.setChecked(True)
+            self.ui.button_toggle_valve2.setChecked(True)
+            self.ui.button_toggle_valve3.setChecked(False)
+
+        else:
+            self.ui.display_system_log.append("COULD NOT CHANGE VALVE STATE. 3PAC IS NOT CONNECTED")
+            self.ui.button_valvestate_off.setChecked(True)
 
 
     def change_valve_state_cleaning(self):
-        self.ui.display_system_log.append("VALVES: CLEANING")
-        msg = f'wVS-100'
-        # Write the message
-        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
-        msg = self.device_serials[2].readline()
-        print("RESPONSE: " + msg.decode())
+        if self.flag_connections[2]:
+            self.ui.display_system_log.append("VALVES: CLEANING")
+            msg = f'wVS-100'
+            # Write the message
+            self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+            msg = self.device_serials[2].readline()
+            print("RESPONSE: " + msg.decode())
 
-        # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
-        self.ui.button_toggle_valve1.setChecked(False)
-        self.ui.button_toggle_valve2.setChecked(True)
-        self.ui.button_toggle_valve3.setChecked(True)
+            # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
+            self.ui.button_toggle_valve1.setChecked(False)
+            self.ui.button_toggle_valve2.setChecked(True)
+            self.ui.button_toggle_valve3.setChecked(True)
+
+        else:
+            self.ui.display_system_log.append("COULD NOT CHANGE VALVE STATE. 3PAC IS NOT CONNECTED")
+            self.ui.button_valvestate_off.setChecked(True)
 
 
     def change_valve_state_off(self):
-        self.ui.display_system_log.append("VALVES: OFF")
-        msg = f'wVS-111'
-        # Write the message
-        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
-        msg = self.device_serials[2].readline()
-        print("RESPONSE: " + msg.decode())
+        if self.flag_connections[2]:
+            self.ui.display_system_log.append("VALVES: OFF")
+            msg = f'wVS-111'
+            # Write the message
+            self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+            msg = self.device_serials[2].readline()
+            print("RESPONSE: " + msg.decode())
 
-        # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
-        self.ui.button_toggle_valve1.setChecked(False)
-        self.ui.button_toggle_valve2.setChecked(False)
-        self.ui.button_toggle_valve3.setChecked(False)
+            # EXACTLY INVERTED BUTTONS, SINCE VALVES ARE NORMALLY OPEN
+            self.ui.button_toggle_valve1.setChecked(False)
+            self.ui.button_toggle_valve2.setChecked(False)
+            self.ui.button_toggle_valve3.setChecked(False)
+
+        else:
+            self.ui.display_system_log.append("COULD NOT CHANGE VALVE STATE. 3PAC IS NOT CONNECTED")
 
 
     def change_single_valve(self):
 
-        # CHECK VALVE BUTTON STATES TO CRAFT MESSAGE FOR BUTTONS
-        valvebutton_states = np.array([False, False, False])
-        valvebutton_states[0] = self.ui.button_toggle_valve1.isChecked()
-        valvebutton_states[1] = self.ui.button_toggle_valve2.isChecked()
-        valvebutton_states[2] = self.ui.button_toggle_valve3.isChecked()
+        if self.flag_connections[2]:
+
+            # CHECK VALVE BUTTON STATES TO CRAFT MESSAGE FOR BUTTONS
+            valvebutton_states = np.array([False, False, False])
+            valvebutton_states[0] = self.ui.button_toggle_valve1.isChecked()
+            valvebutton_states[1] = self.ui.button_toggle_valve2.isChecked()
+            valvebutton_states[2] = self.ui.button_toggle_valve3.isChecked()
 
 
-        # CONSTRUCT MESSAGE (INVERTING OF ARRAY NEEDED SINCE VALVES ARE NORMALLY OPEN)   
-        binary_string = ''.join('1' if val else '0' for val in np.invert(valvebutton_states))
-        decimal_value = int(binary_string, 2)
-        msg = f"wVS-{decimal_value}"
+            # CONSTRUCT MESSAGE (INVERTING OF ARRAY NEEDED SINCE VALVES ARE NORMALLY OPEN)   
+            binary_string = ''.join('1' if val else '0' for val in np.invert(valvebutton_states))
+            decimal_value = int(binary_string, 2)
+            msg = f"wVS-{decimal_value}"
             
-        # Write the message
-        self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
-        msg = self.device_serials[2].readline()
-        print("RESPONSE: " + msg.decode())
+            # Write the message
+            self.device_serials[2].write(msg.encode())  # encode the string to bytes before sending
+            msg = self.device_serials[2].readline()
+            print("RESPONSE: " + msg.decode())
 
+        else:
+            self.ui.display_system_log.append("COULD NOT CHANGE VALVE STATE. 3PAC IS NOT CONNECTED")
     
     # =================================================
     # STYLE CHANGE FUNCTIONS
@@ -651,6 +798,152 @@ class MainWindow(QMainWindow):
         palette.setColor(widget.backgroundRole(), color)
         widget.setPalette(palette)
 
+    def set_connection_indicators(self, connections):
+        if connections[0]:
+            self.ui.indicator_connection_psu.setStyleSheet("QFrame{background-color: #0796FF; border-radius: 10;}")
+        else:
+            self.ui.indicator_connection_psu.setStyleSheet("QFrame{background-color: #808080; border-radius: 10;}")
+
+        if connections[1]:
+            self.ui.indicator_connection_pg.setStyleSheet("QFrame{background-color: #0796FF; border-radius: 10;}")
+        else:
+            self.ui.indicator_connection_pg.setStyleSheet("QFrame{background-color: #808080; border-radius: 10;}")
+
+        if connections[2]:
+            self.ui.indicator_connection_3pac.setStyleSheet("QFrame{background-color: #0796FF; border-radius: 10;}")
+        else:
+            self.ui.indicator_connection_3pac.setStyleSheet("QFrame{background-color: #808080; border-radius: 10;}")
+
+        if connections[3]:
+            self.ui.indicator_connection_temp.setStyleSheet("QFrame{background-color: #0796FF; border-radius: 10;}")
+        else:
+            self.ui.indicator_connection_temp.setStyleSheet("QFrame{background-color: #808080; border-radius: 10;}")
+
+
+    # =================================================
+    # MENU CHANGE FUNCTIONS
+    # =================================================
+    def menu_button_dashboard_click(self):
+        self.ui.stackedWidget.setCurrentIndex(0)
+
+    def menu_button_graphs_click(self):
+        self.ui.stackedWidget.setCurrentIndex(1)
+
+    def menu_button_control_click(self):
+        self.ui.stackedWidget.setCurrentIndex(2)
+
+    def menu_button_settings_click(self):
+        self.ui.stackedWidget.setCurrentIndex(3)
+
+
+
+
+
+    # =================================================
+    # MOVEMENT FUNCTIONS
+    # =================================================
+    def movement_startjogging(self, motornumber, direction, fast):
+        if self.flag_connections[2]:
+            if direction < 0:
+                direction = 2
+            writeMotorJog(self.device_serials[2], motornumber, direction, fast)
+
+            print("TRYING TO START JOGGING: motor: {}; direction: {}; fast: {}".format(motornumber, direction, fast))
+
+
+    def movement_stopjogging(self, motornumber):
+        if self.flag_connections[2]:
+            writeMotorJog(self.device_serials[2], motornumber, 0, 0)
+
+        print("TRYING TO STOP JOGGING: motor: {}".format(motornumber))
+
+    def movement_relative(self, motornumber, distance):
+        if self.flag_connections[2]:
+            if distance < 0:
+                distance = -distance
+                direction = 2
+            elif distance > 0:
+                direction = 1
+            else:
+                direction = 0
+            writeMotorDistance(self.device_serials[2], motornumber, distance, direction)
+
+        
+        print("TRYING TO MOVE: motor: {}; distance: {}; direction: {}".format(motornumber, distance, direction))
+
+    def movement_absoluteposition_blood(self):
+        position = self.ui.input_blood_position.text()
+        try:
+            position_float = float(position)
+            print(type(position_float))
+            print(position_float)
+            writeMotorPosition(self.device_serials[2], 1, position_float)
+
+        except:
+            print("VALUE IS NOT A NUMBER") 
+
+    def movement_absoluteposition_cartridge(self):
+        position = self.ui.input_blood_position.text()
+        try:
+            position_float = float(position)
+            print(type(position_float))
+            print(position_float)
+            writeMotorPosition(self.device_serials[2], 2, position_float)
+
+        except:
+            print("VALUE IS NOT A NUMBER") 
+
+    def movement_absoluteposition_flasks_ud(self):
+        position = self.ui.input_blood_position.text()
+        try:
+            position_float = float(position)
+            print(type(position_float))
+            print(position_float)
+            writeMotorPosition(self.device_serials[2], 3, position_float)
+
+        except:
+            print("VALUE IS NOT A NUMBER") 
+
+    def movement_absoluteposition_flasks_lr(self):
+        position = self.ui.input_blood_position.text()
+        try:
+            position_float = float(position)
+            print(type(position_float))
+            print(position_float)
+            writeMotorPosition(self.device_serials[2], 4, position_float)
+
+        except:
+            print("VALUE IS NOT A NUMBER") 
+    
+    
+
+    # =================================================
+    # KEYPRESS EVENTS FUNCTIONS
+    # =================================================
+    def keyPressEvent(self, event):
+        print("KEY EVENT FIRED: PRESSED")
+        print(event.key())
+        print(event.type())
+        print("AUTO REPEAT: " + str(event.isAutoRepeat()))
+
+        if event.key() == Qt.Key_W and not event.isAutoRepeat():  # AT "UP ARROW" KEY-EVENT
+            self.movement_startjogging(1, -1, False)
+
+        if event.key() == Qt.Key_S and not event.isAutoRepeat():  # AT "DOWN ARROW" KEY-EVENT
+            self.movement_startjogging(1, 1, False)
+    
+    def keyReleaseEvent(self, event):
+        print("KEY EVENT FIRED: RELEASED")
+        print(event.key())
+        print(event.type())
+        print("AUTO REPEAT: " + str(event.isAutoRepeat()))
+
+        if event.key() == Qt.Key_W and not event.isAutoRepeat():  # AT "UP ARROW" KEY-EVENT
+            self.movement_stopjogging(1)
+
+        if event.key() == Qt.Key_S and not event.isAutoRepeat():  # AT "DOWN ARROW" KEY-EVENT
+            self.movement_stopjogging(1)
+    
 
 # =================================================
 # .___  ___.      ___       __  .__   __. 
