@@ -1076,4 +1076,26 @@ def writeMotorJog(ser, motor_nr, direction, fast):  # "direction": 1 = positive;
     msg = f'wMJ-{motor_nr}-{direction}-{speed}\n'   
     print(msg)
     #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sendingw
+
+def writeMotorHoming(ser, motor_nr):
+    # motor_nr = 0 --> ALL STEPPERS
+    # Construct the message
+    msg = f'wMH-{motor_nr}\n'
+    print(msg)
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
+def writeFlaskPosition(ser, flask_nr):
+    # flask_nr = 0 --> PARKING POSITION
+    msg = f'wMF-{flask_nr}\n'
+    print(msg)
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
+def writeBloodSyringe(ser, volume, speed):
+    # if volume == 0.00 --> STOP MOVEMENT
+    msg = f'wMB-{volume:04.2f}-{speed:04.2f}\n'
+    print(msg)
+    #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending

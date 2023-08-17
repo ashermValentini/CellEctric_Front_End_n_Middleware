@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1336</width>
-    <height>918</height>
+    <height>819</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -2419,8 +2419,8 @@
           </layout>
          </widget>
          <widget class="QWidget" name="Control">
-          <layout class="QHBoxLayout" name="horizontalLayout_11">
-           <item>
+          <layout class="QGridLayout" name="gridLayout_13">
+           <item row="0" column="0">
             <widget class="QFrame" name="frame_movement_blood">
              <property name="minimumSize">
               <size>
@@ -2802,7 +2802,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="11" column="0" colspan="5">
+                 <item row="12" column="0" colspan="5">
                   <widget class="QPushButton" name="button_blood_setpos">
                    <property name="text">
                     <string>SET POSITION</string>
@@ -2863,10 +2863,10 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="10" column="2" colspan="3">
+                 <item row="11" column="2" colspan="3">
                   <widget class="QLineEdit" name="input_blood_position"/>
                  </item>
-                 <item row="10" column="0" colspan="2">
+                 <item row="11" column="0" colspan="2">
                   <widget class="QLabel" name="label_blood_position">
                    <property name="text">
                     <string>POSITION:</string>
@@ -2907,6 +2907,13 @@
                    </property>
                   </widget>
                  </item>
+                 <item row="10" column="0" colspan="5">
+                  <widget class="Line" name="line_3">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </widget>
               </item>
@@ -2926,12 +2933,18 @@
              </layout>
             </widget>
            </item>
-           <item>
+           <item row="0" column="1">
             <widget class="QFrame" name="frame_movement_cartridge">
              <property name="minimumSize">
               <size>
                <width>220</width>
                <height>370</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>310</width>
+               <height>16777215</height>
               </size>
              </property>
              <property name="frameShape">
@@ -3252,7 +3265,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="8" column="2" colspan="3">
+                 <item row="9" column="2" colspan="3">
                   <widget class="QLineEdit" name="input_cartridge_position"/>
                  </item>
                  <item row="1" column="1" colspan="2">
@@ -3268,14 +3281,14 @@
                    </property>
                   </spacer>
                  </item>
-                 <item row="8" column="0" colspan="2">
+                 <item row="9" column="0" colspan="2">
                   <widget class="QLabel" name="label_cartridge_position">
                    <property name="text">
                     <string>POSITION:</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="9" column="0" colspan="5">
+                 <item row="10" column="0" colspan="5">
                   <widget class="QPushButton" name="button_cartridge_setpos">
                    <property name="text">
                     <string>SET POSITION</string>
@@ -3371,6 +3384,13 @@
                    </property>
                   </widget>
                  </item>
+                 <item row="8" column="0" colspan="5">
+                  <widget class="Line" name="line_4">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </widget>
               </item>
@@ -3390,8 +3410,8 @@
              </layout>
             </widget>
            </item>
-           <item>
-            <widget class="QWidget" name="Window_PSU_5" native="true">
+           <item row="0" column="2" rowspan="2">
+            <widget class="QWidget" name="frame_movement_flasks" native="true">
              <property name="minimumSize">
               <size>
                <width>580</width>
@@ -3621,7 +3641,7 @@
                       <property name="sizeHint" stdset="0">
                        <size>
                         <width>20</width>
-                        <height>19</height>
+                        <height>0</height>
                        </size>
                       </property>
                      </spacer>
@@ -3634,7 +3654,7 @@
                       <property name="sizeHint" stdset="0">
                        <size>
                         <width>20</width>
-                        <height>19</height>
+                        <height>0</height>
                        </size>
                       </property>
                      </spacer>
@@ -4356,6 +4376,25 @@
                    </property>
                   </spacer>
                  </item>
+                 <item row="1" column="3" colspan="2">
+                  <widget class="QLabel" name="label_10">
+                   <property name="frameShape">
+                    <enum>QFrame::NoFrame</enum>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="pixmap">
+                    <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_control_w.png</pixmap>
+                   </property>
+                   <property name="scaledContents">
+                    <bool>true</bool>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </widget>
               </item>
@@ -4436,6 +4475,81 @@
                  <widget class="QPushButton" name="button_set_flasks_pos_lr">
                   <property name="text">
                    <string>SET POSITION</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QFrame" name="frame_homing">
+             <property name="minimumSize">
+              <size>
+               <width>440</width>
+               <height>100</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>620</width>
+               <height>200</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_16">
+              <item>
+               <widget class="QLabel" name="label_9">
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>MOTOR HOMING</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_11">
+                <item>
+                 <widget class="QPushButton" name="button_homing_all">
+                  <property name="text">
+                   <string>HOME</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="button_homing_blood">
+                  <property name="text">
+                   <string>BLOOD</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="button_homing_cartridge">
+                  <property name="text">
+                   <string>CARTRIDGE</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="button_homing_flasks_ud">
+                  <property name="text">
+                   <string>FLASK U/D</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="button_homing_flasks_lr">
+                  <property name="text">
+                   <string>FLASK L/R</string>
                   </property>
                  </widget>
                 </item>
