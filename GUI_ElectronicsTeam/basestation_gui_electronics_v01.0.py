@@ -20,7 +20,17 @@ from Ui_GUI_Design_01 import Ui_MainWindow
 # CONSTANTS
 SUCROSE_FLOWRATE_MAX = 10
 ETHANOL_FLOWRATE_MAX = 10
-BLOOD_FLOWRATE_MAX = 5
+BLOOD_FLOWRATE_MAX = 2.5
+
+# DIRECTIONS
+DIR_M1_UP = -1
+DIR_M1_DOWN = 1
+DIR_M2_UP = 1
+DIR_M2_DOWN = -1
+DIR_M3_RIGHT = -1
+DIR_M3_LEFT = 1
+DIR_M4_UP = 1
+DIR_M4_DOWN = -1
 
 
 # =================================================================
@@ -40,7 +50,6 @@ class MainWindow(QMainWindow):
         #                       [PSU  , PG   , 3PAC , TEMPSENS]
         self.flag_connections = [False, False, False, False]
 
-
         self.flag_psu_on = False
         self.flag_pg_on = False
         self.flag_3pac_on = False
@@ -56,6 +65,18 @@ class MainWindow(QMainWindow):
         self.flag_valve1 = False
 
         self.flag_state = 0
+
+        # FLASK POSITIONS
+        self.POS_FLASK_PARK_X = 30
+        self.POS_FLASK_PARK_Z = 5
+        self.POS_FLASK1       = 0
+        self.POS_FLASK2       = 60
+        self.POS_FLASK3       = 120
+        self.POS_FLASK4       = 180
+
+        self.POS_FLASK_DOWN   = 0
+        self.POS_FLASK_UP     = 13
+
 
 
         # SETUP
@@ -114,101 +135,108 @@ class MainWindow(QMainWindow):
 
 
         # MOVEMENT BUTTONS
+        # HOMING
+        self.ui.button_homing_all.clicked.connect(lambda: self.movement_homing(0))
+        self.ui.button_homing_blood.clicked.connect(lambda: self.movement_homing(1))
+        self.ui.button_homing_cartridge.clicked.connect(lambda: self.movement_homing(2))
+        self.ui.button_homing_flasks_lr.clicked.connect(lambda: self.movement_homing(3))
+        self.ui.button_homing_flasks_ud.clicked.connect(lambda: self.movement_homing(4))
+
         # JOGGING BLOOD
-        self.ui.move_blood_upfast.pressed.connect(lambda: self.movement_startjogging(1, -1, True))     #(self, motornumber, direction, fast)
+        self.ui.move_blood_upfast.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, True))     #(self, motornumber, direction, fast)
         self.ui.move_blood_upfast.released.connect(lambda: self.movement_stopjogging(1))               #(self, motornumber)
 
-        self.ui.move_blood_upslow.pressed.connect(lambda: self.movement_startjogging(1, -1, False))
+        self.ui.move_blood_upslow.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, False))
         self.ui.move_blood_upslow.released.connect(lambda: self.movement_stopjogging(1))
 
-        self.ui.move_blood_downfast.pressed.connect(lambda: self.movement_startjogging(1, 1, True))
+        self.ui.move_blood_downfast.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, True))
         self.ui.move_blood_downfast.released.connect(lambda: self.movement_stopjogging(1))
 
-        self.ui.move_blood_downslow.pressed.connect(lambda: self.movement_startjogging(1, 1, False))
+        self.ui.move_blood_downslow.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, False))
         self.ui.move_blood_downslow.released.connect(lambda: self.movement_stopjogging(1))
 
         # JOGGING CARTRIDGE
-        self.ui.move_cartridge_upfast.pressed.connect(lambda: self.movement_startjogging(2, -1, True))     #(self, motornumber, direction, fast)
+        self.ui.move_cartridge_upfast.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_UP, True))     #(self, motornumber, direction, fast)
         self.ui.move_cartridge_upfast.released.connect(lambda: self.movement_stopjogging(2))               #(self, motornumber)
 
-        self.ui.move_cartridge_upslow.pressed.connect(lambda: self.movement_startjogging(2, -1, False))
+        self.ui.move_cartridge_upslow.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_UP, False))
         self.ui.move_cartridge_upslow.released.connect(lambda: self.movement_stopjogging(2))
 
-        self.ui.move_cartridge_downfast.pressed.connect(lambda: self.movement_startjogging(2, 1, True))
+        self.ui.move_cartridge_downfast.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, True))
         self.ui.move_cartridge_downfast.released.connect(lambda: self.movement_stopjogging(2))
 
-        self.ui.move_cartridge_downslow.pressed.connect(lambda: self.movement_startjogging(2, 1, False))
+        self.ui.move_cartridge_downslow.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, False))
         self.ui.move_cartridge_downslow.released.connect(lambda: self.movement_stopjogging(2))
 
         # JOGGING FLASKS HORIZONTAL
-        self.ui.move_flasks_leftfast.pressed.connect(lambda: self.movement_startjogging(3, -1, True))     #(self, motornumber, direction, fast)
+        self.ui.move_flasks_leftfast.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, True))     #(self, motornumber, direction, fast)
         self.ui.move_flasks_leftfast.released.connect(lambda: self.movement_stopjogging(3))               #(self, motornumber)
 
-        self.ui.move_flasks_leftslow.pressed.connect(lambda: self.movement_startjogging(3, -1, False))
+        self.ui.move_flasks_leftslow.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, False))
         self.ui.move_flasks_leftslow.released.connect(lambda: self.movement_stopjogging(3))
 
-        self.ui.move_flasks_rightfast.pressed.connect(lambda: self.movement_startjogging(3, 1, True))
+        self.ui.move_flasks_rightfast.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, True))
         self.ui.move_flasks_rightfast.released.connect(lambda: self.movement_stopjogging(3))
 
-        self.ui.move_flasks_rightslow.pressed.connect(lambda: self.movement_startjogging(3, 1, False))
+        self.ui.move_flasks_rightslow.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, False))
         self.ui.move_flasks_rightslow.released.connect(lambda: self.movement_stopjogging(3))
 
         # JOGGING FLASKS VERTICAL
-        self.ui.move_flasks_upfast.pressed.connect(lambda: self.movement_startjogging(4, -1, True))     #(self, motornumber, direction, fast)
+        self.ui.move_flasks_upfast.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, True))     #(self, motornumber, direction, fast)
         self.ui.move_flasks_upfast.released.connect(lambda: self.movement_stopjogging(4))               #(self, motornumber)
 
-        self.ui.move_flasks_upslow.pressed.connect(lambda: self.movement_startjogging(4, -1, False))
+        self.ui.move_flasks_upslow.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, False))
         self.ui.move_flasks_upslow.released.connect(lambda: self.movement_stopjogging(4))
 
-        self.ui.move_flasks_downfast.pressed.connect(lambda: self.movement_startjogging(4, 1, True))
+        self.ui.move_flasks_downfast.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, True))
         self.ui.move_flasks_downfast.released.connect(lambda: self.movement_stopjogging(4))
 
-        self.ui.move_flasks_downslow.pressed.connect(lambda: self.movement_startjogging(4, 1, False))
+        self.ui.move_flasks_downslow.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, False))
         self.ui.move_flasks_downslow.released.connect(lambda: self.movement_stopjogging(4))
 
         # TRAVEL BLOOD
-        self.ui.move_blood_up_10.clicked.connect(lambda: self.movement_relative(1, -10))                 #(self, motornumber, distance)
-        self.ui.move_blood_up_1.clicked.connect(lambda: self.movement_relative(1, -1))
-        self.ui.move_blood_up_01.clicked.connect(lambda: self.movement_relative(1, -0.1))
-        self.ui.move_blood_down_10.clicked.connect(lambda: self.movement_relative(1, 10))
-        self.ui.move_blood_down_1.clicked.connect(lambda: self.movement_relative(1, 1))
-        self.ui.move_blood_down_01.clicked.connect(lambda: self.movement_relative(1, 0.1))
+        self.ui.move_blood_up_10.clicked.connect(lambda: self.movement_relative(1, DIR_M1_UP*10))                 #(self, motornumber, distance)
+        self.ui.move_blood_up_1.clicked.connect(lambda: self.movement_relative(1, DIR_M1_UP*1))
+        self.ui.move_blood_up_01.clicked.connect(lambda: self.movement_relative(1, DIR_M1_UP*0.1))
+        self.ui.move_blood_down_10.clicked.connect(lambda: self.movement_relative(1, DIR_M1_DOWN*10))
+        self.ui.move_blood_down_1.clicked.connect(lambda: self.movement_relative(1, DIR_M1_DOWN*1))
+        self.ui.move_blood_down_01.clicked.connect(lambda: self.movement_relative(1, DIR_M1_DOWN*0.1))
 
-        self.ui.move_blood_bottom.clicked.connect(lambda: self.movement_relative(1, 200))           # JUST MOVE VERY FAR (1m) AND REACH THE END
-        self.ui.move_blood_top.clicked.connect(lambda: self.movement_relative(1, -200))
+        self.ui.move_blood_bottom.clicked.connect(lambda: self.movement_relative(1, DIR_M1_DOWN*200))           # JUST MOVE VERY FAR (1m) AND REACH THE END
+        self.ui.move_blood_top.clicked.connect(lambda: self.movement_relative(1, DIR_M1_UP*200))
 
         # TRAVEL CARTRIDGE
-        self.ui.move_cartridge_up_10.clicked.connect(lambda: self.movement_relative(2, -10))                 #(self, motornumber, distance)
-        self.ui.move_cartridge_up_1.clicked.connect(lambda: self.movement_relative(2, -1))
-        self.ui.move_cartridge_up_01.clicked.connect(lambda: self.movement_relative(2, -0.1))
-        self.ui.move_cartridge_down_10.clicked.connect(lambda: self.movement_relative(2, 10))
-        self.ui.move_cartridge_down_1.clicked.connect(lambda: self.movement_relative(2, 1))
-        self.ui.move_cartridge_down_01.clicked.connect(lambda: self.movement_relative(2, 0.1))
+        self.ui.move_cartridge_up_10.clicked.connect(lambda: self.movement_relative(2, DIR_M2_UP*10))                 #(self, motornumber, distance)
+        self.ui.move_cartridge_up_1.clicked.connect(lambda: self.movement_relative(2, DIR_M2_UP*1))
+        self.ui.move_cartridge_up_01.clicked.connect(lambda: self.movement_relative(2, DIR_M2_UP*0.1))
+        self.ui.move_cartridge_down_10.clicked.connect(lambda: self.movement_relative(2, DIR_M2_DOWN*10))
+        self.ui.move_cartridge_down_1.clicked.connect(lambda: self.movement_relative(2, DIR_M2_DOWN*1))
+        self.ui.move_cartridge_down_01.clicked.connect(lambda: self.movement_relative(2, DIR_M2_DOWN*0.1))
 
-        self.ui.move_cartridge_bottom.clicked.connect(lambda: self.movement_relative(2, 200))           # JUST MOVE VERY FAR (1m) AND REACH THE END
-        self.ui.move_cartridge_top.clicked.connect(lambda: self.movement_relative(2, -200))
+        self.ui.move_cartridge_bottom.clicked.connect(lambda: self.movement_relative(2, DIR_M2_DOWN*200))           # JUST MOVE VERY FAR (1m) AND REACH THE END
+        self.ui.move_cartridge_top.clicked.connect(lambda: self.movement_relative(2, DIR_M2_UP*200))
 
         # TRAVEL FLASKS HORIZONTAL
-        self.ui.move_flasks_left_10.clicked.connect(lambda: self.movement_relative(3, -10))                 #(self, motornumber, distance)
-        self.ui.move_flasks_left_1.clicked.connect(lambda: self.movement_relative(3, -1))
-        self.ui.move_flasks_left_01.clicked.connect(lambda: self.movement_relative(3, -0.1))
-        self.ui.move_flasks_right_10.clicked.connect(lambda: self.movement_relative(3, 10))
-        self.ui.move_flasks_right_1.clicked.connect(lambda: self.movement_relative(3, 1))
-        self.ui.move_flasks_right_01.clicked.connect(lambda: self.movement_relative(3, 0.1))
+        self.ui.move_flasks_left_10.clicked.connect(lambda: self.movement_relative(3, DIR_M3_LEFT*10))                 #(self, motornumber, distance)
+        self.ui.move_flasks_left_1.clicked.connect(lambda: self.movement_relative(3, DIR_M3_LEFT*1))
+        self.ui.move_flasks_left_01.clicked.connect(lambda: self.movement_relative(3, DIR_M3_LEFT*0.1))
+        self.ui.move_flasks_right_10.clicked.connect(lambda: self.movement_relative(3, DIR_M3_RIGHT*10))
+        self.ui.move_flasks_right_1.clicked.connect(lambda: self.movement_relative(3, DIR_M3_RIGHT*1))
+        self.ui.move_flasks_right_01.clicked.connect(lambda: self.movement_relative(3, DIR_M3_RIGHT*0.1))
 
-        self.ui.move_flasks_rightmost.clicked.connect(lambda: self.movement_relative(3, 200))           # JUST MOVE VERY FAR (1m) AND REACH THE END
-        self.ui.move_flasks_leftmost.clicked.connect(lambda: self.movement_relative(3, -200))
+        self.ui.move_flasks_rightmost.clicked.connect(lambda: self.movement_relative(3, DIR_M3_RIGHT*200))           # JUST MOVE VERY FAR (1m) AND REACH THE END
+        self.ui.move_flasks_leftmost.clicked.connect(lambda: self.movement_relative(3, DIR_M3_LEFT*200))
 
         # TRAVEL FLASKS VERTICAL
-        self.ui.move_flasks_up_10.clicked.connect(lambda: self.movement_relative(3, -10))                 #(self, motornumber, distance)
-        self.ui.move_flasks_up_1.clicked.connect(lambda: self.movement_relative(3, -1))
-        self.ui.move_flasks_up_01.clicked.connect(lambda: self.movement_relative(3, -0.1))
-        self.ui.move_flasks_down_10.clicked.connect(lambda: self.movement_relative(3, 10))
-        self.ui.move_flasks_down_1.clicked.connect(lambda: self.movement_relative(3, 1))
-        self.ui.move_flasks_down_01.clicked.connect(lambda: self.movement_relative(3, 0.1))
+        self.ui.move_flasks_up_10.clicked.connect(lambda: self.movement_relative(4, DIR_M4_UP*10))                 #(self, motornumber, distance)
+        self.ui.move_flasks_up_1.clicked.connect(lambda: self.movement_relative(4, DIR_M4_UP*1))
+        self.ui.move_flasks_up_01.clicked.connect(lambda: self.movement_relative(4, DIR_M4_UP*0.1))
+        self.ui.move_flasks_down_10.clicked.connect(lambda: self.movement_relative(4, DIR_M4_DOWN*10))
+        self.ui.move_flasks_down_1.clicked.connect(lambda: self.movement_relative(4, DIR_M4_DOWN*1))
+        self.ui.move_flasks_down_01.clicked.connect(lambda: self.movement_relative(4, DIR_M4_DOWN*0.1))
 
-        self.ui.move_flasks_bottom.clicked.connect(lambda: self.movement_relative(3, 200))           # JUST MOVE VERY FAR (1m) AND REACH THE END
-        self.ui.move_flasks_top.clicked.connect(lambda: self.movement_relative(3, -200))
+        self.ui.move_flasks_bottom.clicked.connect(lambda: self.movement_relative(4, DIR_M4_DOWN*200))           # JUST MOVE VERY FAR (1m) AND REACH THE END
+        self.ui.move_flasks_top.clicked.connect(lambda: self.movement_relative(4, DIR_M4_UP*200))
 
 
         # TRAVEL TO POSITION
@@ -217,7 +245,14 @@ class MainWindow(QMainWindow):
         self.ui.button_set_flasks_pos_ud.clicked.connect(self.movement_absoluteposition_flasks_ud)
         self.ui.button_set_flasks_pos_lr.clicked.connect(self.movement_absoluteposition_flasks_lr)
 
+        # TRAVEL TO FLASK NUMBER
+        self.ui.button_flaskpos_1.clicked.connect(lambda: self.movement_flasknumber(1))
+        self.ui.button_flaskpos_2.clicked.connect(lambda: self.movement_flasknumber(2))
+        self.ui.button_flaskpos_3.clicked.connect(lambda: self.movement_flasknumber(3))
+        self.ui.button_flaskpos_4.clicked.connect(lambda: self.movement_flasknumber(4))
 
+
+        # PUMP BUTTONS
 
 
 
@@ -433,12 +468,14 @@ class MainWindow(QMainWindow):
 
     def toggle_flow_blood(self):
         if self.flag_blood_on:
+            writeBloodSyringe(self.device_serials[2], 0.00, 0.00)
             self.ui.value_flowrate_blood.setText("OFF")
             self.ui.display_system_log.append("Blood: OFF")
             self.flag_blood_on = False
 
         else:
-            input_value_float, input_value_string = self.input_check_suceth()
+            input_value_float, input_value_string = self.input_check_blood()
+            writeBloodSyringe(self.device_serials[2], 9.99, input_value_float)
             self.ui.value_flowrate_blood.setText(input_value_string)
             self.ui.display_system_log.append("Blood: ON")
             self.flag_blood_on = True
@@ -842,6 +879,16 @@ class MainWindow(QMainWindow):
     # =================================================
     # MOVEMENT FUNCTIONS
     # =================================================
+
+    def movement_homing(self, motornumber=0):
+        # motornumber = 0 --> ALL MOTORS
+        if self.flag_connections[2]:
+            writeMotorHoming(self.device_serials[2], motornumber)
+            if motornumber == 0:
+                print("HOMING STARTED FOR ALL MOTORS")
+            else:
+                print("HOMING STARTED FOR MOTOR {}".format(motornumber))
+
     def movement_startjogging(self, motornumber, direction, fast):
         if self.flag_connections[2]:
             if direction < 0:
@@ -855,7 +902,7 @@ class MainWindow(QMainWindow):
         if self.flag_connections[2]:
             writeMotorJog(self.device_serials[2], motornumber, 0, 0)
 
-        print("TRYING TO STOP JOGGING: motor: {}".format(motornumber))
+            print("TRYING TO STOP JOGGING: motor: {}".format(motornumber))
 
     def movement_relative(self, motornumber, distance):
         if self.flag_connections[2]:
@@ -868,8 +915,7 @@ class MainWindow(QMainWindow):
                 direction = 0
             writeMotorDistance(self.device_serials[2], motornumber, distance, direction)
 
-        
-        print("TRYING TO MOVE: motor: {}; distance: {}; direction: {}".format(motornumber, distance, direction))
+            print("TRYING TO MOVE: motor: {}; distance: {}; direction: {}".format(motornumber, distance, direction))
 
     def movement_absoluteposition_blood(self):
         position = self.ui.input_blood_position.text()
@@ -883,7 +929,7 @@ class MainWindow(QMainWindow):
             print("VALUE IS NOT A NUMBER") 
 
     def movement_absoluteposition_cartridge(self):
-        position = self.ui.input_blood_position.text()
+        position = self.ui.input_cartridge_position.text()
         try:
             position_float = float(position)
             print(type(position_float))
@@ -891,10 +937,21 @@ class MainWindow(QMainWindow):
             writeMotorPosition(self.device_serials[2], 2, position_float)
 
         except:
-            print("VALUE IS NOT A NUMBER") 
+            print("VALUE IS NOT A NUMBER")
 
     def movement_absoluteposition_flasks_ud(self):
-        position = self.ui.input_blood_position.text()
+        position = self.ui.line_flasks_pos_ud.text()
+        try:
+            position_float = float(position)
+            print(type(position_float))
+            print(position_float)
+            writeMotorPosition(self.device_serials[2], 4, position_float)
+
+        except:
+            print("VALUE IS NOT A NUMBER") 
+
+    def movement_absoluteposition_flasks_lr(self):
+        position = self.ui.line_flasks_pos_lr.text()
         try:
             position_float = float(position)
             print(type(position_float))
@@ -904,16 +961,11 @@ class MainWindow(QMainWindow):
         except:
             print("VALUE IS NOT A NUMBER") 
 
-    def movement_absoluteposition_flasks_lr(self):
-        position = self.ui.input_blood_position.text()
-        try:
-            position_float = float(position)
-            print(type(position_float))
-            print(position_float)
-            writeMotorPosition(self.device_serials[2], 4, position_float)
-
-        except:
-            print("VALUE IS NOT A NUMBER") 
+    def movement_flasknumber(self, flasknumber):
+        if self.flag_connections[2]:
+            writeFlaskPosition(self.device_serials[2], flasknumber)
+            print("TRYING TO MOVE FLASK TO POSITION {}".format(flasknumber))
+        
     
     
 

@@ -35,7 +35,7 @@ QWidget#Window_DeviceControl {
 
 
 /* WIDGET BACKGROUNDS */
-QWidget#Window_Voltage, #Window_Status, #Window_PulseShape, #Window_LiveData, #Window_Fluidics, #Window_Graphs, #Window_DeviceToggle {
+QWidget#Window_Voltage, #Window_Status, #Window_PulseShape, #Window_PSU, #Window_PG, #Window_LiveData, #Window_Fluidics, #Window_Graphs, #Window_DeviceToggle, #frame_movement_blood, #frame_movement_cartridge, #frame_movement_flasks, #frame_homing {
     background-color: #222222;
     border-radius: 10px;
     padding: 5px;
