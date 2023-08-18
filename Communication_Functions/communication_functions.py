@@ -961,9 +961,6 @@ def read_flowrate(ser):
     line = ''
     if ser.in_waiting: # Check if there is data waiting in the buffer
 
-        print(ser.in_waiting)
-
-
         while ser.in_waiting:
             line = ser.readline().decode('utf-8')
             if '\n' in line:
@@ -1040,14 +1037,14 @@ def writePumpFlowRate(ser, val1=2.50, val2=0.00):
  
 def writeSucrosePumpFlowRate(ser, val1=2.50, val2=0.00):
     # Construct the message
-    msg = f'wPS-{val1:.2f}-{val2:.2f}\n'
+    msg = f'wFS-{val1:.2f}-{val2:.2f}\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
 
 def writeEthanolPumpFlowRate(ser, val1=2.50, val2=0.00):
     # Construct the message
-    msg = f'wPE-{val1:.2f}-{val2:.2f}\n'
+    msg = f'wFE-{val1:.2f}-{val2:.2f}\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     

@@ -20,7 +20,7 @@ VALVE1_ON = "wVS-000"
 PELTIER_ON = "wCS-1"
 PELTIER_OFF = "wCS-0"
 
-PUMPS_OFF ="wPO"
+PUMPS_OFF ="wFO\n"
 
 #region : The matrix begins here -Thread Worker Classes 
 
@@ -75,6 +75,7 @@ class ReadSerialWorker(QObject):
                 break
             self._lock.unlock()
             data = read_flowrate(self.device_serials)
+            print(data)
             if data is not None:
                 self.update_data.emit(data)
             QThread.msleep(self.interval)
