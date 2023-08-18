@@ -960,6 +960,10 @@ def read_temperature(ser):
 def read_flowrate(ser):
     line = ''
     if ser.in_waiting: # Check if there is data waiting in the buffer
+
+        print(ser.in_waiting)
+
+
         while ser.in_waiting:
             line = ser.readline().decode('utf-8')
             if '\n' in line:
@@ -980,7 +984,7 @@ def read_flowrate(ser):
 #================================================================== 
 
 # HANDSHAKE FUNCTION
-def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_code="HANDSHAKE"):
+def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_code="HANDSHAKE\n"):
     """Make sure connection is established by sending and receiving stuff."""
     
     # Close and reopen, just to make sure. Had some troubles without it after uploading new firmware and without manual restart of the 3PAC board.
@@ -990,8 +994,8 @@ def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_c
     print("opening")
     ser.open()
 
-    # Chill out while everything gets set
-    time.sleep(10)
+    # Chill out while everything gets set (SETUP LIGHT SEQUENCE)
+    time.sleep(5)
 
     # Set a long timeout to complete handshake (and save original timeout in variable for later)
     timeout = ser.timeout
@@ -1017,33 +1021,82 @@ def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_c
     # Reset the timeout
     ser.timeout = timeout
 
+      
 
-# CRAFT PACKAGE TO TURN ON PID MODE 
+
 def turnOnPumpPID(ser):
     # Construct the message
-    msg = f'wPS-22'
+    msg = f'wPS-22\n'
     # Write the message
     ser.write(msg.encode())
 
-def writeFlowRate(ser, val1=2.50, val2=0.00):
+def writePumpFlowRate(ser, val1=2.50, val2=0.00):
+    ser.flush()
     # Construct the message
-    msg = f'wPF-{val1:.2f}-{val2:.2f}'
+    msg = f'wPF-{val1:.2f}-{val2:.2f}\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
-    
-# CRAFT PACKAGE TO TURN ON PID MODE 
+ 
 def writeSucrosePumpFlowRate(ser, val1=2.50, val2=0.00):
     # Construct the message
-    msg = f'wPS-{val1:.2f}-{val2:.2f}'
+    msg = f'wPS-{val1:.2f}-{val2:.2f}\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
-# CRAFT PACKAGE TO TURN ON PID MODE 
+
 def writeEthanolPumpFlowRate(ser, val1=2.50, val2=0.00):
     # Construct the message
-    msg = f'wPE-{val1:.2f}-{val2:.2f}'
+    msg = f'wPE-{val1:.2f}-{val2:.2f}\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
    
+
+def writeMotorPosition(ser, motor_nr, position):
+    # Construct the message
+    msg = f'wMP-{motor_nr}-{position:06.2f}\n'
+    print(msg)
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
+def writeMotorDistance(ser, motor_nr, distance_in_mm, direction): # "direction": 1 = positive; 2 = negative; 0 = stop
+    # Construct the message
+    
+    msg = f'wMD-{motor_nr}-{distance_in_mm:06.2f}-{direction}\n'
+    print(msg)
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
+def writeMotorJog(ser, motor_nr, direction, fast):  # "direction": 1 = positive; 2 = negative; 0 = stop jogging
+    # Construct the message
+    if fast:
+        speed = 1
+    else:
+        speed = 0
+    msg = f'wMJ-{motor_nr}-{direction}-{speed}\n'   
+    print(msg)
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sendingw
+
+def writeMotorHoming(ser, motor_nr):
+    # motor_nr = 0 --> ALL STEPPERS
+    # Construct the message
+    msg = f'wMH-{motor_nr}\n'
+    print(msg)
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
+def writeFlaskPosition(ser, flask_nr):
+    # flask_nr = 0 --> PARKING POSITION
+    msg = f'wMF-{flask_nr}\n'
+    print(msg)
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
+def writeBloodSyringe(ser, volume, speed):
+    # if volume == 0.00 --> STOP MOVEMENT
+    msg = f'wMB-{volume:04.2f}-{speed:04.2f}\n'
+    print(msg)
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
