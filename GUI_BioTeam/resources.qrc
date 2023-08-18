@@ -1,0 +1,17 @@
+<RCC>
+  <qresource>
+
+  <file>images/boxplot_blue.png</file>
+  <file>images/logo_small_white.png</file>
+  <file>images/dark-off.png</file>
+  <file>images/dark-on.png</file>
+  <file>images/light-off.png</file>
+  <file>images/light-on.png</file>
+  <file>images/lightning_symbol.png</file>
+  <file>images/logo_long_white.png</file>
+  <file>images/play_pause.png</file>
+  <file>fonts/static/Archivo-Regular.ttf</file>
+
+
+  </qresource>
+</RCC>

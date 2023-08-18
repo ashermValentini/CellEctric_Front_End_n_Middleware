@@ -960,7 +960,9 @@ def read_temperature(ser):
 def read_flowrate(ser):
     line = ''
     if ser.in_waiting: # Check if there is data waiting in the buffer
+
         print(ser.in_waiting)
+
 
         while ser.in_waiting:
             line = ser.readline().decode('utf-8')
@@ -976,7 +978,6 @@ def read_flowrate(ser):
                 print("Error: Couldn't convert string to float.")
     else:
         return None
-
     
 #==================================================================
 #=============3PAC COMMANDS========================================
