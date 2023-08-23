@@ -161,7 +161,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.blood_is_jogging_down = False  # ethanol pumping button state flag (starts unclicked)
         self.blood_is_jogging_up = False    # ethanol pumping button state flag (starts unclicked)
 
-        self.ui.button_blood_top.pressed.connect(lambda: self.movement_homing(1))                       # connect the signal to the slot 
+        self.ui.button_blood_top.clicked.connect(lambda: self.movement_homing(1))                       # connect the signal to the slot 
         self.ui.button_blood_up.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, True)) # connect the signal to the slot    
         self.ui.button_blood_up.released.connect(lambda: self.movement_stopjogging(1))                  # connect the signal to the slot              
 
@@ -175,7 +175,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.flask_vertical_gantry_is_home= False      
 
-        self.ui.button_flask_bottom.pressed.connect(lambda: self.movement_homing(4))                        # connect the signal to the slot 
+        self.ui.button_flask_bottom.clicked.connect(lambda: self.movement_homing(4))                        # connect the signal to the slot 
         self.ui.button_flask_up.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, True))     # connect the signal to the slot    
         self.ui.button_flask_up.released.connect(lambda: self.movement_stopjogging(4))                      # connect the signal to the slot              
         self.ui.button_flask_down.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, True)) # connect the signal to the slot
@@ -183,7 +183,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.flask_horizontal_gantry_is_home= False      
 
-        self.ui.button_flask_rightmost.pressed.connect(lambda: self.movement_homing(3))                           # connect the signal to the slot 
+        self.ui.button_flask_rightmost.clicked.connect(lambda: self.movement_homing(3))                           # connect the signal to the slot 
         self.ui.button_flask_right.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, True))     # connect the signal to the slot    
         self.ui.button_flask_right.released.connect(lambda: self.movement_stopjogging(3))                      # connect the signal to the slot              
         self.ui.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, True)) # connect the signal to the slot
@@ -195,7 +195,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.cartrige_gantry_is_home= False      
 
-        self.ui.button_cartridge_bottom.pressed.connect(lambda: self.movement_homing(2))                           # connect the signal to the slot 
+        self.ui.button_cartridge_bottom.clicked.connect(lambda: self.movement_homing(2))                           # connect the signal to the slot 
         self.ui.button_cartridge_up.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_UP, True))     # connect the signal to the slot    
         self.ui.button_cartridge_up.released.connect(lambda: self.movement_stopjogging(2))                      # connect the signal to the slot              
         self.ui.button_cartridge_down.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, True)) # connect the signal to the slot
