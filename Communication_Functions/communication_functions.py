@@ -1110,4 +1110,14 @@ def writeBloodSyringe(ser, volume, speed):
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
 
+# SETS THE LED STATUS OF THE USER-SECTION-LIGHTS
+# 0 --> OFF
+# 1 --> ON
+# 2 --> BLINK
+# THERE IS ROOM FOR MORE FUNCTIONALITY IF NEEDED
+def writeLedStatus(ser, led1=0, led2=0, led3=0):
+    msg = f'wLS-{led1}{led2}{led3}\n'
+    print(msg)
+    # Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
 
