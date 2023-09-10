@@ -18,10 +18,10 @@ import numpy as np
 #SERIAL MESSAGES
 #==============================
 
-VALVE1_OFF = "wVS-001"
-VALVE1_ON = "wVS-000"
-PELTIER_ON = "wCS-1"
-PELTIER_OFF = "wCS-0"
+VALVE1_OFF = "wVS-001\n"
+VALVE1_ON = "wVS-000\n"
+PELTIER_ON = "wCS-1\n"
+PELTIER_OFF = "wCS-0\n"
 PUMPS_OFF ="wFO\n"
 
 #========================
@@ -36,6 +36,10 @@ DIR_M3_LEFT = 1
 DIR_M4_UP = 1
 DIR_M4_DOWN = -1
 
+
+#========================
+# THREADS
+#========================
 #region : The matrix begins here -Thread Worker Classes 
 
 class TempWorker(QObject):
@@ -102,6 +106,9 @@ class ReadSerialWorker(QObject):
 
 #endregion 
 
+#========================
+# MAIN
+#========================
 #region : Main functionality
 
 class Functionality(QtWidgets.QMainWindow):
@@ -109,12 +116,12 @@ class Functionality(QtWidgets.QMainWindow):
         super(Functionality, self).__init__()
         
   
-        # =================
+        # =====================================
         # START SERIAL CONNECTION TO DEVICES
-        # =================
+        # =====================================
         self.flag_connections = [False, False, False, False]
         self.device_serials = serial_start_connections() 
-                # CHECK CONNECTION STATUS
+        # CHECK CONNECTION STATUS
         if self.device_serials[0].isOpen():
             self.flag_connections[0] = True
         if self.device_serials[1].isOpen():
@@ -142,9 +149,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.button_motors_home.clicked.connect(lambda: self.movement_homing(0)) # connect the signal to the slot 
         self.ui.button_experiment_route.clicked.connect(self.go_to_route2)          # connect the signal to the slot
 
-        #===============================
+        #===========================================================================================================================================================================
         # Sucrose and Ethanol frame functionalities (with reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread for now)
-        #===============================
+        #===========================================================================================================================================================================
         self.serialWorker = ReadSerialWorker(self.device_serials)
         self.serialThread = QThread()
         self.serialWorker.moveToThread(self.serialThread) 
@@ -211,9 +218,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.button_cartridge_down.released.connect(lambda: self.movement_stopjogging(2))                    # connect the signal to the slot
 
             
-        #================================
-        # Temp plotting (with threads)
-        #================================
+        #====================================================
+        # Temp plotting frame functionality(with threads)
+        #====================================================
         self.tempWorker = TempWorker(self.device_serials)
         self.tempThread = QThread()
         
@@ -244,13 +251,17 @@ class Functionality(QtWidgets.QMainWindow):
         self.minval_pulse = -10
 
         
-    # Connections Frame Functionality
+        #======================================
+        # Connections frame functionality
+        #======================================
         self.coms_timer = QtCore.QTimer()
         self.coms_timer.setInterval(10000)  # 10 seconds
         self.coms_timer.timeout.connect(self.check_coms)
         self.coms_timer.start()
     
-    #Voltage Signal Frame Functionality
+        #======================================
+        # Voltage signal frame functionality
+        #======================================
     
         self.signal_is_enabled=False 
         self.ui.psu_button.pressed.connect(self.start_psu_pg)
@@ -433,12 +444,9 @@ class Functionality(QtWidgets.QMainWindow):
                 """)
             
                 p1fr=2.50
-                p2fr=0.00
-                
-                #print("MESSAGE: Start Sucrose")
-                writeSucrosePumpFlowRate(self.device_serials[2], p1fr, p2fr)
-                #msg = self.device_serials[2].readline()
-                #print("RESPONSE: " + msg.decode())
+
+                writeSucrosePumpFlowRate(self.device_serials[2], p1fr)
+
 
                 
             else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
@@ -464,10 +472,8 @@ class Functionality(QtWidgets.QMainWindow):
                 #Change the status of temp_is_plotting from true to False because we are about to stop plotting
                 self.sucrose_is_pumping = False 
         
-                #print("MESSAGE: Stop Sucrose")
                 self.device_serials[2].write(PUMPS_OFF.encode())
-                #msg = self.device_serials[2].readline()
-                #print("RESPONSE: " + msg.decode())     
+ 
             
 
 #endregion
@@ -493,12 +499,8 @@ class Functionality(QtWidgets.QMainWindow):
                     }
                 """)
                 p1fr=2.50
-                p2fr=0.00
-                
-                #print("MESSAGE: Start Ethanol")
-                writeEthanolPumpFlowRate(self.device_serials[2], p1fr, p2fr)
-                #msg = self.device_serials[2].readline()
-                #print("RESPONSE: " + msg.decode())
+
+                writeEthanolPumpFlowRate(self.device_serials[2], p1fr)
                 
             else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
                 self.ethanol_is_pumping = False 
