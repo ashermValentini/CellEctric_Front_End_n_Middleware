@@ -957,6 +957,15 @@ def read_temperature(ser):
 #=============FETCH FLOWRATE DATA==================================
 #================================================================== 
 
+# SEND SIGNAL TO 3PAC TO SEND FLOWRATE BACK TO BACKEND
+def fetchFlowrate(ser):
+    # if volume == 0.00 --> STOP MOVEMENT
+    msg = f'rP\n'
+    print(msg)
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
+# DECONSTRUCTS THE RECEIVED MESSAGE
 def read_flowrate(ser):
     line = ''
     if ser.in_waiting: # Check if there is data waiting in the buffer
@@ -1035,16 +1044,16 @@ def writePumpFlowRate(ser, val1=2.50, val2=0.00):
     ser.write(msg.encode())  # encode the string to bytes before sending
     
  
-def writeSucrosePumpFlowRate(ser, val1=2.50, val2=0.00):
+def writeSucrosePumpFlowRate(ser, val1=2.50):
     # Construct the message
-    msg = f'wFS-{val1:.2f}-{val2:.2f}\n'
+    msg = f'wPS-{val1:.2f}\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
 
-def writeEthanolPumpFlowRate(ser, val1=2.50, val2=0.00):
+def writeEthanolPumpFlowRate(ser, val1=2.50):
     # Construct the message
-    msg = f'wFE-{val1:.2f}-{val2:.2f}\n'
+    msg = f'wPE-{val1:.2f}\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
@@ -1097,3 +1106,15 @@ def writeBloodSyringe(ser, volume, speed):
     print(msg)
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
+
+# SETS THE LED STATUS OF THE USER-SECTION-LIGHTS
+# 0 --> OFF
+# 1 --> ON
+# 2 --> BLINK
+# THERE IS ROOM FOR MORE FUNCTIONALITY IF NEEDED
+def writeLedStatus(ser, led1=0, led2=0, led3=0):
+    msg = f'wLS-{led1}{led2}{led3}\n'
+    print(msg)
+    # Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
