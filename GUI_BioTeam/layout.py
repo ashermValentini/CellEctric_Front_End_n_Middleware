@@ -54,86 +54,42 @@ class Ui_MainWindow(object):
         self.h_layout.setContentsMargins(0, 0, 0, 0)   
         
     # region : Sidebar
+
+        # Create sidebar frame 
         self.frame_d_sidebar = QtWidgets.QFrame()
         self.frame_d_sidebar.setContentsMargins(0, 0, 0, 0)
         self.frame_d_sidebar.setFixedWidth(int(MainWindow.height() * 0.07))
         self.frame_d_sidebar.setStyleSheet("background-color: #222222;")
         self.frame_d_sidebar.setObjectName("frame_d_sidebar")
-        
-        self.h_layout.addWidget(self.frame_d_sidebar)
-        
 
-        # Add company logo to sidebar
-        self.sidebar_logo = QtWidgets.QLabel(self.frame_d_sidebar)
+        
+        # Create layout for sidebar 
+        self.side_bar_layout = QtWidgets.QVBoxLayout(self.frame_d_sidebar)
+
+        # Attach sidebars layout to the side bar frame 
+        self.frame_d_sidebar.setLayout(self.side_bar_layout)
+
+        # Create company logo
+        self.sidebar_logo = QtWidgets.QLabel()
         self.sidebar_logo.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
-
-        buffer = 10  # Amount of buffer space on each side
-        self.sidebar_logo.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 2 * buffer,
-                                      int(MainWindow.height() * 0.2))
-
+        buffer = 10  
+        self.sidebar_logo.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
         logo_pixmap = QtGui.QPixmap( ":/images/logo_small_white.png")
-        self.sidebar_logo.setPixmap(logo_pixmap.scaled(self.sidebar_logo.width(), self.sidebar_logo.height(),
-                                                       QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
-    #endregion
+        self.sidebar_logo.setPixmap(logo_pixmap.scaled(self.sidebar_logo.width(), self.sidebar_logo.height(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
 
-    # region: Topbar
-    
-        self.v_layout = QtWidgets.QVBoxLayout()
-        self.h_layout.addLayout(self.v_layout)
-        self.h_layout.setSpacing(0)
-        self.v_layout.setSpacing(0)
-        self.v_layout.setContentsMargins(0, 0, 0, 0)
-
-        
-        self.frame_d_topbar = QtWidgets.QFrame()
-        self.frame_d_topbar.setContentsMargins(0, 0, 0, 0)
-        self.frame_d_topbar.setFixedHeight(int(MainWindow.height() * 0.07))
-        self.frame_d_topbar.setStyleSheet("background-color: #222222;")
-        self.frame_d_topbar.setObjectName("frame_d_topbar")
-        
-        self.v_layout.addWidget(self.frame_d_topbar)
-
-        # Set up a layout for the frame_d_topbar
-        topbar_layout = QtWidgets.QHBoxLayout(self.frame_d_topbar)
-        topbar_layout.setContentsMargins(0, 0, 0, 0)
-        self.frame_d_topbar.setLayout(topbar_layout)
-
-        # Add label to top bar
-        self.label = QtWidgets.QLabel(self.frame_d_topbar)
-        self.label.setText("DASHBOARD")
-        self.label.setStyleSheet(header_style)
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-
-        topbar_layout.addStretch(1)
-        topbar_layout.addWidget(self.label)  # Add the label to the layout
-        topbar_layout.addStretch(1)
-
-        # Add experiment button to topbar 
-        self.experiment_page_button = QtWidgets.QPushButton(self.frame_d_topbar)
-        # load the image as an icon
+        # Create the button to home the motors
+        self.button_motors_home  = QtWidgets.QPushButton() 
+        buffer = 10  
+        self.button_motors_home.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/dark-on.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        # set the icon to the button
-        self.experiment_page_button.setIcon(icon)
-        # adjust the size of the button's icon to fit properly
-        self.experiment_page_button.setIconSize(QtCore.QSize(74,74))  # adjust the size accordingly
-        # if you don't want any text on the button, set an empty string as the button text
-        self.experiment_page_button.setText('')
-        # set the button's style (optional)
-        self.experiment_page_button.setStyleSheet('QPushButton {background-color: #222222; border: none;}')  # make the button's background color match with topbar
-        # add the button to the layout
-        # set the button's style
-        self.experiment_page_button.setStyleSheet("""
+        icon.addPixmap(QtGui.QPixmap(":/images/all_directions.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_motors_home.setIcon(icon)
+        self.button_motors_home.setIconSize(QtCore.QSize(40, 40))  # Adjust size as needed
+        self.button_motors_home.setStyleSheet("""
             QPushButton {
-                padding: 0px;
                 border: 2px solid white;
-                border-radius: 10px;
+                border-radius: 6px;
                 background-color: #222222;
-                color: #FFFFFF;
-                font-family: Archivo;
-                font-size: 15px;
-                
-
             }
 
             QPushButton:hover {
@@ -145,10 +101,75 @@ class Ui_MainWindow(object):
             }
         """)
 
-        
-        topbar_layout.addWidget(self.experiment_page_button)
-        topbar_layout.addSpacing(20)
+        self.button_experiment_route  = QtWidgets.QPushButton() 
+        buffer = 10  
+        self.button_experiment_route.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/flasks_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_experiment_route.setIcon(icon)
+        self.button_experiment_route.setIconSize(QtCore.QSize(40, 40))  # Adjust size as needed
+        self.button_experiment_route.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
 
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+        
+        # Add widgets to the layout  
+        self.side_bar_layout.addWidget(self.sidebar_logo)
+        self.side_bar_layout.addSpacing(15)
+        self.side_bar_layout.addWidget(self.button_motors_home)
+        self.side_bar_layout.addWidget(self.button_experiment_route)
+        self.side_bar_layout.addStretch(1)
+        
+
+
+        # Add the entire sidebar as the left most widget on the dashboard page 
+        self.h_layout.addWidget(self.frame_d_sidebar)
+    #endregion
+
+    # region: Topbar
+
+
+        self.v_layout = QtWidgets.QVBoxLayout()
+        self.h_layout.addLayout(self.v_layout)
+        self.h_layout.setSpacing(0)
+        self.v_layout.setSpacing(0)
+        self.v_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Create the topbar frame 
+        self.frame_d_topbar = QtWidgets.QFrame()
+        self.frame_d_topbar.setContentsMargins(0, 0, 0, 0)
+        self.frame_d_topbar.setFixedHeight(int(MainWindow.height() * 0.07))
+        self.frame_d_topbar.setStyleSheet("background-color: #222222;")
+        self.frame_d_topbar.setObjectName("frame_d_topbar")
+        
+        # Create layout for the frame_d_topbar
+        topbar_layout = QtWidgets.QHBoxLayout(self.frame_d_topbar)
+  
+        # Attach the topbar's layout to the topbar frame 
+        self.frame_d_topbar.setLayout(topbar_layout)
+
+        # Create label for topbar
+        self.label = QtWidgets.QLabel(self.frame_d_topbar)
+        self.label.setText("DASHBOARD")
+        self.label.setStyleSheet(header_style)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+
+        # Add the lable to the topbar's layout 
+        topbar_layout.addWidget(self.label)
+
+        # Add the top bar frame to the v_layout 
+        self.v_layout.addWidget(self.frame_d_topbar)
     #endregion
     
     # region : Main content
@@ -285,15 +306,15 @@ class Ui_MainWindow(object):
         layout_blood.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
         # endregion
 
-        # region: progress bar and button
+        # region: movement buttons
         progress_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
 
-        self.button_blood = QtWidgets.QPushButton()  # create button
+        self.button_blood_top = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/play_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_blood.setIcon(icon)
-        self.button_blood.setIconSize(QtCore.QSize(50, 50))  # Adjust size as needed
-        self.button_blood.setStyleSheet("""
+        icon.addPixmap(QtGui.QPixmap(":/images/top_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_blood_top.setIcon(icon)
+        self.button_blood_top.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.button_blood_top.setStyleSheet("""
             QPushButton {
                 border: 2px solid white;
                 border-radius: 6px;
@@ -309,12 +330,12 @@ class Ui_MainWindow(object):
             }
         """)
 
-        self.button_blood_fast = QtWidgets.QPushButton()  # create button
+        self.button_blood_up = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/play_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_blood_fast.setIcon(icon)
-        self.button_blood_fast.setIconSize(QtCore.QSize(50, 50))  # Adjust size as needed
-        self.button_blood_fast.setStyleSheet("""
+        icon.addPixmap(QtGui.QPixmap(":/images/up_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_blood_up.setIcon(icon)
+        self.button_blood_up.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.button_blood_up.setStyleSheet("""
             QPushButton {
                 border: 2px solid white;
                 border-radius: 6px;
@@ -330,8 +351,32 @@ class Ui_MainWindow(object):
             }
         """)
 
-        progress_button_layout.addWidget(self.button_blood)  # add button to the layout
-        progress_button_layout.addWidget(self.button_blood_fast)
+
+        self.button_blood_down = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/down_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_blood_down.setIcon(icon)
+        self.button_blood_down.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.button_blood_down.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+
+        progress_button_layout.addWidget(self.button_blood_top)  # add button to the layout
+        progress_button_layout.addWidget(self.button_blood_up)
+        progress_button_layout.addWidget(self.button_blood_down)
         layout_blood.addLayout(progress_button_layout)  # add layout for progress bar and button to main layout
         # endregion
        
@@ -504,11 +549,8 @@ class Ui_MainWindow(object):
         layout.addWidget(label)  # Add the label to the layout
 
         # Add a spacer for some vertical space
-        #spacer = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)  # Adjust the second parameter for more or less space
-        #layout.addItem(spacer)
         layout.addSpacing(75)
-        
-
+    
         # List of module names
         module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "3PAC", "Pressure Sensor"]
 
@@ -541,7 +583,7 @@ class Ui_MainWindow(object):
             # Add the module layout to the main layout
             layout.addLayout(module_layout)
 
-        layout.addSpacing(75) 
+        layout.addSpacing(30) 
 
         self.application_region_2_layout.addWidget(frame)
         #endregion 
@@ -562,7 +604,7 @@ class Ui_MainWindow(object):
         label.setAlignment(QtCore.Qt.AlignCenter)
 
         layout.addWidget(label)  
-        layout.addSpacing(75)   
+        layout.addSpacing(30)   
         
         # button creation
         self.temp_button = QtWidgets.QPushButton("Electrode Temperature")  # Set the text to empty since we are using an image
@@ -630,9 +672,105 @@ class Ui_MainWindow(object):
         layout.addWidget(self.voltage_button) 
         layout.addWidget(self.current_button) 
       
-        layout.addSpacing(75) 
+        layout.addSpacing(0) 
         self.application_region_2_layout.addWidget(plot_button_frame)
         
+        #endregion
+        
+        # region : Frame for cartridge motors
+        self.frame_cartridge = QtWidgets.QFrame()  # create cartridge frame
+        self.frame_cartridge.setStyleSheet("background-color: #222222; border-radius: 15px;")
+        self.frame_cartridge.setObjectName("frame_d_cartridgeMotors")
+
+        layout_cartridge = QtWidgets.QVBoxLayout(self.frame_cartridge)  # create layout for ethanol frame
+        self.frame_cartridge.setLayout(layout_cartridge)  # set layout to cartridge frame
+        layout_cartridge.setAlignment(QtCore.Qt.AlignCenter)
+
+        # region: label
+        label_cartridge = QtWidgets.QLabel(self.frame_cartridge)
+        label_cartridge.setStyleSheet(title_style)
+        label_cartridge.setText("CARTRIDGE")
+        label_cartridge.setAlignment(QtCore.Qt.AlignCenter)
+        layout_cartridge.addWidget(label_cartridge)  # add label to layout
+        layout_cartridge.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        # endregion
+
+        # region: movement buttons
+        progress_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
+
+        self.button_cartridge_bottom = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/bottom_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_cartridge_bottom.setIcon(icon)
+        self.button_cartridge_bottom.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.button_cartridge_bottom.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        self.button_cartridge_up  = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/up_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_cartridge_up.setIcon(icon)
+        self.button_cartridge_up.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.button_cartridge_up.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+
+        self.button_cartridge_down = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/down_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_cartridge_down.setIcon(icon)
+        self.button_cartridge_down.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.button_cartridge_down.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+
+        progress_button_layout.addWidget(self.button_cartridge_bottom)  # add button to the layout
+        progress_button_layout.addWidget(self.button_cartridge_up)
+        progress_button_layout.addWidget(self.button_cartridge_down)
+        layout_cartridge.addLayout(progress_button_layout)  # add layout for progress bar and button to main layout
+        
+        self.application_region_2_layout.addWidget(self.frame_cartridge)
+        # endregion
+
         #endregion
         
         self.application_region.addWidget(self.application_region_2_widget)
@@ -652,15 +790,13 @@ class Ui_MainWindow(object):
         # Layout for temperature components
         temp_layout = QtWidgets.QVBoxLayout(temp_frame)
 
-        # Spacer
-        spacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-
         # Title for temperature frame
         title_label = QtWidgets.QLabel("ELECTRODE TEMP.")
         title_label.setStyleSheet(title_style)
         title_label.setAlignment(QtCore.Qt.AlignCenter)
         temp_layout.addWidget(title_label)
-        temp_layout.addItem(spacer)
+        temp_layout.addSpacing(80)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+
 
         # Layout for image and stats
         temp_details_layout = QtWidgets.QHBoxLayout()
@@ -693,9 +829,6 @@ class Ui_MainWindow(object):
         min_temp_label.setStyleSheet(temperature_number_style)
         temp_stats_layout.addWidget(min_temp_label, alignment=QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
 
-        # Add vertical spacer for equal spacing
-        spacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        temp_layout.addItem(spacer)
         #endregion
         
         # region: Frame for voltage signal 
@@ -809,6 +942,176 @@ class Ui_MainWindow(object):
         frame_d_signal_layout.addLayout(inner_layout)# Add the inner layout to the frame's layout
         # endregion
 
+        # region : Frame for flask motors
+        self.frame_flask = QtWidgets.QFrame()  # create flask frame
+        self.frame_flask.setStyleSheet("background-color: #222222; border-radius: 15px;")
+        self.frame_flask.setObjectName("frame_d_flaskMotors")
+
+        layout_flask = QtWidgets.QVBoxLayout(self.frame_flask)  # create layout for ethanol frame
+        self.frame_flask.setLayout(layout_flask)  # set layout to flask frame
+        layout_flask.setAlignment(QtCore.Qt.AlignCenter)
+
+        # region: label
+        label_flask = QtWidgets.QLabel(self.frame_flask)
+        label_flask.setStyleSheet(title_style)
+        label_flask.setText("FLASKS")
+        label_flask.setAlignment(QtCore.Qt.AlignCenter)
+        layout_flask.addWidget(label_flask)  # add label to layout
+        layout_flask.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        # endregion
+
+        # region: flask up down buttons
+        flask_up_down_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
+
+        self.button_flask_bottom = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/bottom_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_flask_bottom.setIcon(icon)
+        self.button_flask_bottom.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.button_flask_bottom.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        self.button_flask_up  = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/up_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_flask_up.setIcon(icon)
+        self.button_flask_up.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.button_flask_up.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+
+        self.button_flask_down = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/down_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_flask_down.setIcon(icon)
+        self.button_flask_down.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.button_flask_down.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+
+        flask_up_down_button_layout.addWidget(self.button_flask_bottom)  # add button to the layout
+        flask_up_down_button_layout.addWidget(self.button_flask_up)
+        flask_up_down_button_layout.addWidget(self.button_flask_down)
+
+        layout_flask.addLayout(flask_up_down_button_layout)  # add layout for progress bar and button to main layout 
+        # endregion
+        
+        # region: flask left right
+        flask_left_right_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
+
+        self.button_flask_rightmost = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/rightmost_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_flask_rightmost.setIcon(icon)
+        self.button_flask_rightmost.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.button_flask_rightmost.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        self.button_flask_left  = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/left_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_flask_left.setIcon(icon)
+        self.button_flask_left.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.button_flask_left.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        self.button_flask_right = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/right_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_flask_right.setIcon(icon)
+        self.button_flask_right.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.button_flask_right.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        flask_left_right_button_layout.addWidget(self.button_flask_rightmost)  # add button to the layout
+        flask_left_right_button_layout.addWidget(self.button_flask_left)
+        flask_left_right_button_layout.addWidget(self.button_flask_right)
+
+        layout_flask.addLayout(flask_left_right_button_layout)  # add layout for progress bar and button to main layout
+        # endregion
+        
+        self.application_region_3_layout.addWidget(self.frame_flask)
+        
+        #endregion
+        
         self.application_region.addWidget(self.application_region_3_widget)
     #endregion
 

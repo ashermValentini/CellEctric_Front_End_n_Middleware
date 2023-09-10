@@ -14,13 +14,27 @@ from matplotlib.figure import Figure
 import matplotlib.ticker as ticker
 import numpy as np
 
+#==============================
+#SERIAL MESSAGES
+#==============================
+
 VALVE1_OFF = "wVS-001"
 VALVE1_ON = "wVS-000"
-
 PELTIER_ON = "wCS-1"
 PELTIER_OFF = "wCS-0"
+PUMPS_OFF ="wFO\n"
 
-PUMPS_OFF ="wPO"
+#========================
+# DIRECTIONS
+#========================
+DIR_M1_UP = -1
+DIR_M1_DOWN = 1
+DIR_M2_UP = 1
+DIR_M2_DOWN = -1
+DIR_M3_RIGHT = -1
+DIR_M3_LEFT = 1
+DIR_M4_UP = 1
+DIR_M4_DOWN = -1
 
 #region : The matrix begins here -Thread Worker Classes 
 
@@ -75,6 +89,7 @@ class ReadSerialWorker(QObject):
                 break
             self._lock.unlock()
             data = read_flowrate(self.device_serials)
+            print(data)
             if data is not None:
                 self.update_data.emit(data)
             QThread.msleep(self.interval)
@@ -94,17 +109,42 @@ class Functionality(QtWidgets.QMainWindow):
         super(Functionality, self).__init__()
         
   
-    # START SERIAL CONNECTION TO DEVICES
+        # =================
+        # START SERIAL CONNECTION TO DEVICES
+        # =================
+        self.flag_connections = [False, False, False, False]
         self.device_serials = serial_start_connections() 
-        handshake_3PAC(self.device_serials[2], print_handshake_message=True)
-        
-    # Set up the UI layout
+                # CHECK CONNECTION STATUS
+        if self.device_serials[0].isOpen():
+            self.flag_connections[0] = True
+        if self.device_serials[1].isOpen():
+            self.flag_connections[1] = True
+        if self.device_serials[2].isOpen():
+            self.flag_connections[2] = True
+        if self.device_serials[3] is not None:
+            self.flag_connections[3] = True
+
+        if self.flag_connections[2]:
+            handshake_3PAC(self.device_serials[2], print_handshake_message=True)
+
+        #==============================
+        # Set up the UI layout
+        #==============================
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-         
-        
-    # Sucrose and Ethanol frame functionalities (with reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread for now)
-    
+
+        #================================
+        # Side bar functionality 
+        #================================
+
+        self.all_motors_are_home= False # sucrose pumping button state flag (starts unclicked)
+
+        self.ui.button_motors_home.clicked.connect(lambda: self.movement_homing(0)) # connect the signal to the slot 
+        self.ui.button_experiment_route.clicked.connect(self.go_to_route2)          # connect the signal to the slot
+
+        #===============================
+        # Sucrose and Ethanol frame functionalities (with reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread for now)
+        #===============================
         self.serialWorker = ReadSerialWorker(self.device_serials)
         self.serialThread = QThread()
         self.serialWorker.moveToThread(self.serialThread) 
@@ -112,19 +152,68 @@ class Functionality(QtWidgets.QMainWindow):
         self.serialWorker.update_data.connect(self.updateEthanolProgressBar) # connect the worker signal to your progress bar update function
         self.serialWorker.update_data.connect(self.updateSucroseProgressBar) # connect the worker signal to your progress bar update function
 
-        self.serialThread.started.connect(self.serialWorker.run) # start the workers run function when the thread starts
+        self.serialThread.started.connect(self.serialWorker.run)  # start the workers run function when the thread starts
         self.serialThread.start() #start the thread so that the dashboard always reads incoming serial data from the esp32 
 
         self.sucrose_is_pumping = False # sucrose pumping button state flag (starts unclicked)
         self.ethanol_is_pumping = False # ethanol pumping button state flag (starts unclicked)
         
- 
-        self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump)
-        
-        self.ui.button_ethanol.pressed.connect(self.start_ethanol_pump)
+        self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump) # connect the signal to the slot 
+        self.ui.button_ethanol.pressed.connect(self.start_ethanol_pump) # connect the signal to the slot 
+
+
+        #================================
+        # Blood frame functionality
+        #================================
+
+        self.blood_is_homing= False         # sucrose pumping button state flag (starts unclicked)
+        self.blood_is_jogging_down = False  # ethanol pumping button state flag (starts unclicked)
+        self.blood_is_jogging_up = False    # ethanol pumping button state flag (starts unclicked)
+
+        self.ui.button_blood_top.clicked.connect(lambda: self.movement_homing(1))                       # connect the signal to the slot 
+        self.ui.button_blood_up.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, True)) # connect the signal to the slot    
+        self.ui.button_blood_up.released.connect(lambda: self.movement_stopjogging(1))                  # connect the signal to the slot              
+
+        self.ui.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, True)) # connect the signal to the slot
+        self.ui.button_blood_down.released.connect(lambda: self.movement_stopjogging(1))                    # connect the signal to the slot
+
+
+        #================================
+        # Flask frame functionality
+        #================================
+
+        self.flask_vertical_gantry_is_home= False      
+
+        self.ui.button_flask_bottom.clicked.connect(lambda: self.movement_homing(4))                        # connect the signal to the slot 
+        self.ui.button_flask_up.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, False))     # connect the signal to the slot    
+        self.ui.button_flask_up.released.connect(lambda: self.movement_stopjogging(4))                      # connect the signal to the slot              
+        self.ui.button_flask_down.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, False)) # connect the signal to the slot
+        self.ui.button_flask_down.released.connect(lambda: self.movement_stopjogging(4))                    # connect the signal to the slot
+
+        self.flask_horizontal_gantry_is_home= False      
+
+        self.ui.button_flask_rightmost.clicked.connect(lambda: self.movement_homing(3))                           # connect the signal to the slot 
+        self.ui.button_flask_right.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, True))     # connect the signal to the slot    
+        self.ui.button_flask_right.released.connect(lambda: self.movement_stopjogging(3))                      # connect the signal to the slot              
+        self.ui.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, True)) # connect the signal to the slot
+        self.ui.button_flask_left.released.connect(lambda: self.movement_stopjogging(3))                    # connect the signal to the slot
+
+        #================================
+        # Cartrige frame functionality
+        #================================
+
+        self.cartrige_gantry_is_home= False      
+
+        self.ui.button_cartridge_bottom.clicked.connect(lambda: self.movement_homing(2))                           # connect the signal to the slot 
+        self.ui.button_cartridge_up.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_UP, True))     # connect the signal to the slot    
+        self.ui.button_cartridge_up.released.connect(lambda: self.movement_stopjogging(2))                      # connect the signal to the slot              
+        self.ui.button_cartridge_down.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, True)) # connect the signal to the slot
+        self.ui.button_cartridge_down.released.connect(lambda: self.movement_stopjogging(2))                    # connect the signal to the slot
+
             
-    # Temp plotting (with threads)
-        
+        #================================
+        # Temp plotting (with threads)
+        #================================
         self.tempWorker = TempWorker(self.device_serials)
         self.tempThread = QThread()
         
@@ -138,7 +227,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.xdata = np.linspace(0, 499, 500)  
         self.plotdata = np.zeros(500)
 
-    # Voltage plotting frame functionality
+        #======================================
+        # Voltage plotting frame functionality
+        #======================================
         self.voltage_is_plotting = False 
         self.ui.voltage_button.pressed.connect(self.start_voltage_plotting)
         
@@ -152,9 +243,6 @@ class Functionality(QtWidgets.QMainWindow):
         self.maxval_pulse = 10  
         self.minval_pulse = -10
 
-    # Using the current button to check moving within the page stack 
-    
-        self.ui.current_button.pressed.connect(self.go_to_route2)
         
     # Connections Frame Functionality
         self.coms_timer = QtCore.QTimer()
@@ -440,6 +528,10 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion 
 
+#region : BLOOD PUMP
+        # see motor movement functions
+#endregion
+
 # region : CONNECTION CIRCLE FUNCTION           
     def check_coms(self):
 
@@ -558,5 +650,31 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.stack.setCurrentIndex(1)
         
 #endregion 
+
+#region : MOTOR MOVEMENTS
+    def movement_homing(self, motornumber=0):
+        # motornumber = 0 --> ALL MOTORS
+        if self.flag_connections[2]:
+            writeMotorHoming(self.device_serials[2], motornumber)
+            if motornumber == 0:
+                print("HOMING STARTED FOR ALL MOTORS")
+            else:
+                print("HOMING STARTED FOR MOTOR {}".format(motornumber))      
+
+    def movement_startjogging(self, motornumber, direction, fast):
+        if self.flag_connections[2]:
+            if direction < 0:
+                direction = 2
+            writeMotorJog(self.device_serials[2], motornumber, direction, fast)
+
+            print("TRYING TO START JOGGING: motor: {}; direction: {}; fast: {}".format(motornumber, direction, fast))
+
+
+    def movement_stopjogging(self, motornumber):
+        if self.flag_connections[2]:
+            writeMotorJog(self.device_serials[2], motornumber, 0, 0)
+
+            print("TRYING TO STOP JOGGING: motor: {}".format(motornumber))  
+#endregion
 
 #endregion 

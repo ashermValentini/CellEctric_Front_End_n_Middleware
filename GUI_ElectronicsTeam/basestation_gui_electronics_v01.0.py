@@ -144,7 +144,7 @@ class MainWindow(QMainWindow):
 
         # JOGGING BLOOD
         self.ui.move_blood_upfast.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, True))     #(self, motornumber, direction, fast)
-        self.ui.move_blood_upfast.released.connect(lambda: self.movement_stopjogging(1))               #(self, motornumber)
+        self.ui.move_blood_upfast.released.connect(lambda: self.movement_stopjogging(1))                        #(self, motornumber)
 
         self.ui.move_blood_upslow.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, False))
         self.ui.move_blood_upslow.released.connect(lambda: self.movement_stopjogging(1))
