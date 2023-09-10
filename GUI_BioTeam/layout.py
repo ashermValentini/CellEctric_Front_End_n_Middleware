@@ -54,86 +54,42 @@ class Ui_MainWindow(object):
         self.h_layout.setContentsMargins(0, 0, 0, 0)   
         
     # region : Sidebar
+
+        # Create sidebar frame 
         self.frame_d_sidebar = QtWidgets.QFrame()
         self.frame_d_sidebar.setContentsMargins(0, 0, 0, 0)
         self.frame_d_sidebar.setFixedWidth(int(MainWindow.height() * 0.07))
         self.frame_d_sidebar.setStyleSheet("background-color: #222222;")
         self.frame_d_sidebar.setObjectName("frame_d_sidebar")
-        
-        self.h_layout.addWidget(self.frame_d_sidebar)
-        
 
-        # Add company logo to sidebar
-        self.sidebar_logo = QtWidgets.QLabel(self.frame_d_sidebar)
+        
+        # Create layout for sidebar 
+        self.side_bar_layout = QtWidgets.QVBoxLayout(self.frame_d_sidebar)
+
+        # Attach sidebars layout to the side bar frame 
+        self.frame_d_sidebar.setLayout(self.side_bar_layout)
+
+        # Create company logo
+        self.sidebar_logo = QtWidgets.QLabel()
         self.sidebar_logo.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
-
-        buffer = 10  # Amount of buffer space on each side
-        self.sidebar_logo.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 2 * buffer,
-                                      int(MainWindow.height() * 0.2))
-
+        buffer = 10  
+        self.sidebar_logo.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
         logo_pixmap = QtGui.QPixmap( ":/images/logo_small_white.png")
-        self.sidebar_logo.setPixmap(logo_pixmap.scaled(self.sidebar_logo.width(), self.sidebar_logo.height(),
-                                                       QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
-    #endregion
+        self.sidebar_logo.setPixmap(logo_pixmap.scaled(self.sidebar_logo.width(), self.sidebar_logo.height(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
 
-    # region: Topbar
-    
-        self.v_layout = QtWidgets.QVBoxLayout()
-        self.h_layout.addLayout(self.v_layout)
-        self.h_layout.setSpacing(0)
-        self.v_layout.setSpacing(0)
-        self.v_layout.setContentsMargins(0, 0, 0, 0)
-
-        
-        self.frame_d_topbar = QtWidgets.QFrame()
-        self.frame_d_topbar.setContentsMargins(0, 0, 0, 0)
-        self.frame_d_topbar.setFixedHeight(int(MainWindow.height() * 0.07))
-        self.frame_d_topbar.setStyleSheet("background-color: #222222;")
-        self.frame_d_topbar.setObjectName("frame_d_topbar")
-        
-        self.v_layout.addWidget(self.frame_d_topbar)
-
-        # Set up a layout for the frame_d_topbar
-        topbar_layout = QtWidgets.QHBoxLayout(self.frame_d_topbar)
-        topbar_layout.setContentsMargins(0, 0, 0, 0)
-        self.frame_d_topbar.setLayout(topbar_layout)
-
-        # Add label to top bar
-        self.label = QtWidgets.QLabel(self.frame_d_topbar)
-        self.label.setText("DASHBOARD")
-        self.label.setStyleSheet(header_style)
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-
-        topbar_layout.addStretch(1)
-        topbar_layout.addWidget(self.label)  # Add the label to the layout
-        topbar_layout.addStretch(1)
-
-        # Add experiment button to topbar 
-        self.experiment_page_button = QtWidgets.QPushButton(self.frame_d_topbar)
-        # load the image as an icon
+        # Create the button to home the motors
+        self.button_motors_home  = QtWidgets.QPushButton() 
+        buffer = 10  
+        self.button_motors_home.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/dark-on.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        # set the icon to the button
-        self.experiment_page_button.setIcon(icon)
-        # adjust the size of the button's icon to fit properly
-        self.experiment_page_button.setIconSize(QtCore.QSize(74,74))  # adjust the size accordingly
-        # if you don't want any text on the button, set an empty string as the button text
-        self.experiment_page_button.setText('')
-        # set the button's style (optional)
-        self.experiment_page_button.setStyleSheet('QPushButton {background-color: #222222; border: none;}')  # make the button's background color match with topbar
-        # add the button to the layout
-        # set the button's style
-        self.experiment_page_button.setStyleSheet("""
+        icon.addPixmap(QtGui.QPixmap(":/images/all_directions.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_motors_home.setIcon(icon)
+        self.button_motors_home.setIconSize(QtCore.QSize(40, 40))  # Adjust size as needed
+        self.button_motors_home.setStyleSheet("""
             QPushButton {
-                padding: 0px;
                 border: 2px solid white;
-                border-radius: 10px;
+                border-radius: 6px;
                 background-color: #222222;
-                color: #FFFFFF;
-                font-family: Archivo;
-                font-size: 15px;
-                
-
             }
 
             QPushButton:hover {
@@ -145,10 +101,75 @@ class Ui_MainWindow(object):
             }
         """)
 
-        
-        topbar_layout.addWidget(self.experiment_page_button)
-        topbar_layout.addSpacing(20)
+        self.button_experiment_route  = QtWidgets.QPushButton() 
+        buffer = 10  
+        self.button_experiment_route.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/flasks_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_experiment_route.setIcon(icon)
+        self.button_experiment_route.setIconSize(QtCore.QSize(40, 40))  # Adjust size as needed
+        self.button_experiment_route.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
 
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+        
+        # Add widgets to the layout  
+        self.side_bar_layout.addWidget(self.sidebar_logo)
+        self.side_bar_layout.addSpacing(15)
+        self.side_bar_layout.addWidget(self.button_motors_home)
+        self.side_bar_layout.addWidget(self.button_experiment_route)
+        self.side_bar_layout.addStretch(1)
+        
+
+
+        # Add the entire sidebar as the left most widget on the dashboard page 
+        self.h_layout.addWidget(self.frame_d_sidebar)
+    #endregion
+
+    # region: Topbar
+
+
+        self.v_layout = QtWidgets.QVBoxLayout()
+        self.h_layout.addLayout(self.v_layout)
+        self.h_layout.setSpacing(0)
+        self.v_layout.setSpacing(0)
+        self.v_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Create the topbar frame 
+        self.frame_d_topbar = QtWidgets.QFrame()
+        self.frame_d_topbar.setContentsMargins(0, 0, 0, 0)
+        self.frame_d_topbar.setFixedHeight(int(MainWindow.height() * 0.07))
+        self.frame_d_topbar.setStyleSheet("background-color: #222222;")
+        self.frame_d_topbar.setObjectName("frame_d_topbar")
+        
+        # Create layout for the frame_d_topbar
+        topbar_layout = QtWidgets.QHBoxLayout(self.frame_d_topbar)
+  
+        # Attach the topbar's layout to the topbar frame 
+        self.frame_d_topbar.setLayout(topbar_layout)
+
+        # Create label for topbar
+        self.label = QtWidgets.QLabel(self.frame_d_topbar)
+        self.label.setText("DASHBOARD")
+        self.label.setStyleSheet(header_style)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+
+        # Add the lable to the topbar's layout 
+        topbar_layout.addWidget(self.label)
+
+        # Add the top bar frame to the v_layout 
+        self.v_layout.addWidget(self.frame_d_topbar)
     #endregion
     
     # region : Main content
@@ -528,11 +549,8 @@ class Ui_MainWindow(object):
         layout.addWidget(label)  # Add the label to the layout
 
         # Add a spacer for some vertical space
-        #spacer = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)  # Adjust the second parameter for more or less space
-        #layout.addItem(spacer)
         layout.addSpacing(75)
-        
-
+    
         # List of module names
         module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "3PAC", "Pressure Sensor"]
 

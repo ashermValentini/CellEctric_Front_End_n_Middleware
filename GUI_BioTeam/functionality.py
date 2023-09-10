@@ -132,7 +132,16 @@ class Functionality(QtWidgets.QMainWindow):
         #==============================
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-         
+
+        #================================
+        # Side bar functionality 
+        #================================
+
+        self.all_motors_are_home= False # sucrose pumping button state flag (starts unclicked)
+
+        self.ui.button_motors_home.clicked.connect(lambda: self.movement_homing(0)) # connect the signal to the slot 
+        self.ui.button_experiment_route.clicked.connect(self.go_to_route2)          # connect the signal to the slot
+
         #===============================
         # Sucrose and Ethanol frame functionalities (with reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread for now)
         #===============================
@@ -176,9 +185,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.flask_vertical_gantry_is_home= False      
 
         self.ui.button_flask_bottom.clicked.connect(lambda: self.movement_homing(4))                        # connect the signal to the slot 
-        self.ui.button_flask_up.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, True))     # connect the signal to the slot    
+        self.ui.button_flask_up.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, False))     # connect the signal to the slot    
         self.ui.button_flask_up.released.connect(lambda: self.movement_stopjogging(4))                      # connect the signal to the slot              
-        self.ui.button_flask_down.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, True)) # connect the signal to the slot
+        self.ui.button_flask_down.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, False)) # connect the signal to the slot
         self.ui.button_flask_down.released.connect(lambda: self.movement_stopjogging(4))                    # connect the signal to the slot
 
         self.flask_horizontal_gantry_is_home= False      
@@ -234,9 +243,6 @@ class Functionality(QtWidgets.QMainWindow):
         self.maxval_pulse = 10  
         self.minval_pulse = -10
 
-    # Using the current button to check moving within the page stack 
-    
-        self.ui.current_button.pressed.connect(self.go_to_route2)
         
     # Connections Frame Functionality
         self.coms_timer = QtCore.QTimer()
