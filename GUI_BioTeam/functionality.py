@@ -145,9 +145,12 @@ class Functionality(QtWidgets.QMainWindow):
         #================================
 
         self.all_motors_are_home= False # sucrose pumping button state flag (starts unclicked)
+        self.lights_are_on= False # sucrose pumping button state flag (starts unclicked)
+        
 
         self.ui.button_motors_home.clicked.connect(lambda: self.movement_homing(0)) # connect the signal to the slot 
         self.ui.button_experiment_route.clicked.connect(self.go_to_route2)          # connect the signal to the slot
+        self.ui.button_lights.clicked.connect(self.skakel_ligte)          # connect the signal to the slot
 
         #===========================================================================================================================================================================
         # Sucrose and Ethanol frame functionalities (with reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread for now)
@@ -200,9 +203,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.flask_horizontal_gantry_is_home= False      
 
         self.ui.button_flask_rightmost.clicked.connect(lambda: self.movement_homing(3))                           # connect the signal to the slot 
-        self.ui.button_flask_right.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, True))     # connect the signal to the slot    
+        self.ui.button_flask_right.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, False))     # connect the signal to the slot    
         self.ui.button_flask_right.released.connect(lambda: self.movement_stopjogging(3))                      # connect the signal to the slot              
-        self.ui.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, True)) # connect the signal to the slot
+        self.ui.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, False)) # connect the signal to the slot
         self.ui.button_flask_left.released.connect(lambda: self.movement_stopjogging(3))                    # connect the signal to the slot
 
         #================================
@@ -212,9 +215,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.cartrige_gantry_is_home= False      
 
         self.ui.button_cartridge_bottom.clicked.connect(lambda: self.movement_homing(2))                           # connect the signal to the slot 
-        self.ui.button_cartridge_up.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_UP, True))     # connect the signal to the slot    
+        self.ui.button_cartridge_up.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_UP, False))     # connect the signal to the slot    
         self.ui.button_cartridge_up.released.connect(lambda: self.movement_stopjogging(2))                      # connect the signal to the slot              
-        self.ui.button_cartridge_down.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, True)) # connect the signal to the slot
+        self.ui.button_cartridge_down.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, False)) # connect the signal to the slot
         self.ui.button_cartridge_down.released.connect(lambda: self.movement_stopjogging(2))                    # connect the signal to the slot
 
             
@@ -500,7 +503,8 @@ class Functionality(QtWidgets.QMainWindow):
                 """)
                 p1fr=2.50
 
-                writeEthanolPumpFlowRate(self.device_serials[2], p1fr)
+                #writeEthanolPumpFlowRate(self.device_serials[2], p1fr)
+                writeMaxDutyCycle(self.device_serials[2])
                 
             else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
                 self.ethanol_is_pumping = False 
@@ -525,8 +529,7 @@ class Functionality(QtWidgets.QMainWindow):
                 
                 #print("MESSAGE: Stop Ethanol")
                 self.device_serials[2].write(PUMPS_OFF.encode())
-                #msg = self.device_serials[2].readline()
-                #print("RESPONSE: " + msg.decode()) 
+
 
 #endregion 
 
@@ -679,4 +682,49 @@ class Functionality(QtWidgets.QMainWindow):
             print("TRYING TO STOP JOGGING: motor: {}".format(motornumber))  
 #endregion
 
+#region : LEDS 
+
+    def skakel_ligte(self): 
+        if not self.lights_are_on: 
+            self.lights_are_on = True  
+            self.ui.button_lights.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #0796FF;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 30px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+            """)
+
+            writeLedStatus(self.device_serials[2], 1, 1, 1)
+
+        else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
+            self.lights_are_on = False 
+            self.ui.button_lights.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #222222;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 30px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+
+                QPushButton:pressed {
+                    background-color: #0796FF;
+                }
+            """)
+            writeLedStatus(self.device_serials[2], 0, 0, 0)
+    
+#endregion
 #endregion 

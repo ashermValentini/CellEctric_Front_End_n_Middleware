@@ -1041,6 +1041,14 @@ def writePumpFlowRate(ser, val1=2.50, val2=0.00):
     msg = f'wPF-{val1:.2f}-{val2:.2f}\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
+
+
+def writeMaxDutyCycle(ser):
+    ser.flush()
+    # Construct the message
+    msg = f'wPD-1-230\n'
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
     
  
 def writeSucrosePumpFlowRate(ser, val1=2.50):

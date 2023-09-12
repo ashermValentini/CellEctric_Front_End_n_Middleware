@@ -77,6 +77,30 @@ class Ui_MainWindow(object):
         logo_pixmap = QtGui.QPixmap( ":/images/logo_small_white.png")
         self.sidebar_logo.setPixmap(logo_pixmap.scaled(self.sidebar_logo.width(), self.sidebar_logo.height(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
 
+        # Create the button to turn on the lights
+        self.button_lights  = QtWidgets.QPushButton() 
+        buffer = 10  
+        self.button_lights .setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/lightbulb.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_lights .setIcon(icon)
+        self.button_lights .setIconSize(QtCore.QSize(40, 40))  # Adjust size as needed
+        self.button_lights .setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+        
         # Create the button to home the motors
         self.button_motors_home  = QtWidgets.QPushButton() 
         buffer = 10  
@@ -100,7 +124,8 @@ class Ui_MainWindow(object):
                 background-color: #0796FF;
             }
         """)
-
+        
+        # Create the button for routing to the experiment page 
         self.button_experiment_route  = QtWidgets.QPushButton() 
         buffer = 10  
         self.button_experiment_route.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
@@ -127,6 +152,7 @@ class Ui_MainWindow(object):
         # Add widgets to the layout  
         self.side_bar_layout.addWidget(self.sidebar_logo)
         self.side_bar_layout.addSpacing(15)
+        self.side_bar_layout.addWidget(self.button_lights)
         self.side_bar_layout.addWidget(self.button_motors_home)
         self.side_bar_layout.addWidget(self.button_experiment_route)
         self.side_bar_layout.addStretch(1)
