@@ -207,7 +207,7 @@ class Ui_MainWindow(object):
         self.application_region = QtWidgets.QHBoxLayout()
         self.main_content.addLayout(self.application_region)
 
-    # region : SUCROSE, EHTANOL, BLOOD frame setups
+    # region : LEFT FRAMES 
         self.application_region_1_widget = QtWidgets.QWidget()
         self.application_region_1_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_1_layout = QtWidgets.QVBoxLayout(self.application_region_1_widget)
@@ -554,7 +554,7 @@ class Ui_MainWindow(object):
         self.application_region.addWidget(self.application_region_1_widget)
     #endregion
     
-    # region : CONNECTION and PLOT frame setup  
+    # region : MIDDLE FRAMES  
         self.application_region_2_widget = QtWidgets.QWidget()
         self.application_region_2_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_2_layout = QtWidgets.QVBoxLayout(self.application_region_2_widget)
@@ -726,7 +726,7 @@ class Ui_MainWindow(object):
 
         self.button_cartridge_bottom = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/bottom_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/images/top_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_cartridge_bottom.setIcon(icon)
         self.button_cartridge_bottom.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
         self.button_cartridge_bottom.setStyleSheet("""
@@ -802,7 +802,7 @@ class Ui_MainWindow(object):
         self.application_region.addWidget(self.application_region_2_widget)
     #endregion
     
-    # region : ELECTRODE TEMP and SIGNAL frames' setup
+    # region : RIGHT FRAMES 
         self.application_region_3_widget = QtWidgets.QWidget()
         self.application_region_3_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_3_layout = QtWidgets.QVBoxLayout(self.application_region_3_widget)
@@ -1173,7 +1173,7 @@ class Ui_MainWindow(object):
 
         self.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF', fontsize=15)
         self.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF',  fontsize=15)
-        self.axes_voltage.set_title('My Title', color='#FFFFFF', fontsize=20, fontweight='bold')
+        self.axes_voltage.set_title('Electrode Temperature', color='#FFFFFF', fontsize=20, fontweight='bold')
         
 
     #endregion

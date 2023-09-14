@@ -1125,3 +1125,14 @@ def writeLedStatus(ser, led1=0, led2=0, led3=0):
     # Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
 
+
+# SETS THE LED STATUS OF THE USER-SECTION-LIGHTS
+# 0 --> OFF
+# 1 --> ON
+# THERE IS ROOM FOR MORE FUNCTIONALITY IF NEEDED
+def writeLogoStatus(ser, Logo=0):
+    msg = f'wLO-{Logo}\n'
+    print(msg)
+    # Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending    
+
