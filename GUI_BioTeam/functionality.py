@@ -239,9 +239,20 @@ class Functionality(QtWidgets.QMainWindow):
         self.temp_is_plotting = False
         self.tempThread.started.connect(self.tempWorker.run)
         self.ui.temp_button.pressed.connect(self.start_stop_temp_plotting)
+
                     
         self.xdata = np.linspace(0, 499, 500)  
         self.plotdata = np.zeros(500)
+
+        #====================================================
+        # Box plot frame functionality
+        #====================================================
+        self.max_temp = float('-inf')
+        self.min_temp = float('inf')
+
+        self.tempWorker.update_temp.connect(self.update_temperature_labels)
+
+
 
         #======================================
         # Voltage plotting frame functionality
@@ -339,7 +350,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.ui.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF',  fontsize=15)
         self.ui.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF', fontsize=15)
-        self.ui.axes_voltage.set_title('My Title', color='#FFFFFF', fontsize=20, fontweight='bold')
+        self.ui.axes_voltage.set_title('Electrode Temperature', color='#FFFFFF', fontsize=20, fontweight='bold')
 
         self.ui.canvas_voltage.draw()
     #endregion
@@ -741,6 +752,21 @@ class Functionality(QtWidgets.QMainWindow):
     
 #endregion
 
+
+    @pyqtSlot(float)
+    def update_temperature_labels(self, temperature):
+        if temperature > self.max_temp:
+            self.max_temp = temperature
+            self.ui.max_temp_label.setText(f"{self.max_temp}°")
+            
+        if temperature < self.min_temp:
+            self.min_temp = temperature
+            self.ui.min_temp_label.setText(f"{self.min_temp}°")
+
+
+
+
+
 # region : Investors Presentation
 
     def start_demo(self):
@@ -759,7 +785,7 @@ class Functionality(QtWidgets.QMainWindow):
     def step_four(self):
         self.start_ethanol_pump()
         writeLedStatus(self.device_serials[2], 0, 0, 2)         # turn light back on  
-        QTimer.singleShot(60000, self.step_four_part_two)       # flush ethanol (1 min)
+        QTimer.singleShot(30000, self.step_four_part_two)       # flush ethanol (1 min)
 
     def step_four_part_two(self):
         self.start_ethanol_pump()  
@@ -800,7 +826,7 @@ class Functionality(QtWidgets.QMainWindow):
 
     def step_seven_part_two(self): 
         writeMotorDistance(self.device_serials[2], 3, 62, 1)   # retrieve mixing flask (move left)
-        QTimer.singleShot(15000, self.end_demo)
+        QTimer.singleShot(10000, self.end_demo)
     
     def end_demo(self): 
         writeLedStatus(self.device_serials[2], 2, 2, 2)         # blink lights to take the flask

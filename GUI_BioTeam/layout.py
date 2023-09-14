@@ -302,7 +302,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_sucrose_2 = QtWidgets.QLineEdit()
         self.line_edit_sucrose_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
-        self.line_edit_sucrose_2.setText("NF")
+        self.line_edit_sucrose_2.setText("45")
 
         group_box_layout_2.addWidget(self.line_edit_sucrose_2)
         group_box_layout_2.addWidget(unit_label_2)
@@ -436,7 +436,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_blood_2 = QtWidgets.QLineEdit()
         self.line_edit_blood_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
-        self.line_edit_blood_2.setText("NF")
+        self.line_edit_blood_2.setText("45")
 
         group_box_layout_2.addWidget(self.line_edit_blood_2)
         group_box_layout_2.addWidget(unit_label_2)
@@ -536,7 +536,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_ethanol_2 = QtWidgets.QLineEdit()
         self.line_edit_ethanol_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
-        self.line_edit_ethanol_2.setText("NF")
+        self.line_edit_ethanol_2.setText("30")
 
         group_box_layout_2.addWidget(self.line_edit_ethanol_2)
         group_box_layout_2.addWidget(unit_label_2)
@@ -578,7 +578,7 @@ class Ui_MainWindow(object):
         layout.addSpacing(75)
     
         # List of module names
-        module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "3PAC", "Pressure Sensor"]
+        module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "3PAC"]
 
         # Dictionary to hold the circles
         self.circles = {}
@@ -843,17 +843,17 @@ class Ui_MainWindow(object):
         temp_details_layout.addLayout(temp_stats_layout)
 
         # Example temperature statistics
-        max_temp_label = QtWidgets.QLabel("35°")
-        max_temp_label.setStyleSheet(temperature_number_style)
-        temp_stats_layout.addWidget(max_temp_label, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
+        self.max_temp_label = QtWidgets.QLabel("-")
+        self.max_temp_label.setStyleSheet(temperature_number_style)
+        temp_stats_layout.addWidget(self.max_temp_label, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
 
-        avg_temp_label = QtWidgets.QLabel("25°")
+        avg_temp_label = QtWidgets.QLabel(" ")
         avg_temp_label.setStyleSheet(temperature_number_style)
         temp_stats_layout.addWidget(avg_temp_label, alignment=QtCore.Qt.AlignCenter)
 
-        min_temp_label = QtWidgets.QLabel("15°")
-        min_temp_label.setStyleSheet(temperature_number_style)
-        temp_stats_layout.addWidget(min_temp_label, alignment=QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
+        self.min_temp_label = QtWidgets.QLabel("-")
+        self.min_temp_label.setStyleSheet(temperature_number_style)
+        temp_stats_layout.addWidget(self.min_temp_label, alignment=QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
 
         #endregion
         
