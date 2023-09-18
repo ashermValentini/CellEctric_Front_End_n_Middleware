@@ -169,13 +169,17 @@ class Functionality(QtWidgets.QMainWindow):
         self.serialWorker.update_data.connect(self.updateSucroseProgressBar) # connect the worker signal to your progress bar update function
 
         self.serialThread.started.connect(self.serialWorker.run)  # start the workers run function when the thread starts
-        self.serialThread.start() #start the thread so that the dashboard always reads incoming serial data from the esp32 
+        if self.flag_connections[2]:
+            self.serialThread.start() #start the thread so that the dashboard always reads incoming serial data from the esp32 
 
         self.sucrose_is_pumping = False # sucrose pumping button state flag (starts unclicked)
         self.ethanol_is_pumping = False # ethanol pumping button state flag (starts unclicked)
         
-        self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump) # connect the signal to the slot 
-        self.ui.button_ethanol.pressed.connect(self.start_ethanol_pump) # connect the signal to the slot 
+        if self.flag_connections[2]:
+            self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump) # connect the signal to the slot 
+            
+        if self.flag_connections[2]: 
+            self.ui.button_ethanol.pressed.connect(self.start_ethanol_pump) # connect the signal to the slot 
 
 
         #================================
@@ -774,7 +778,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.step_two()
 
     def step_two(self):
-        writeMotorDistance(self.device_serials[2], 2, 25, 2)    # connect fluidics to cartridge 
+        writeMotorDistance(self.device_serials[2], 2, 30, 2)    # connect fluidics to cartridge 
         writeLedStatus(self.device_serials[2], 0, 1, 0)         # syringe region led on
         QTimer.singleShot(5000, self.step_three)
  
@@ -802,8 +806,8 @@ class Functionality(QtWidgets.QMainWindow):
         QTimer.singleShot(10000, self.step_five_part_three)
     
     def step_five_part_three(self): 
-        writeMotorDistance(self.device_serials[2], 4, 35, 1)    # connect mixing flask to cartridge (move up)
-        QTimer.singleShot(6500, self.step_six)
+        writeMotorDistance(self.device_serials[2], 4, 20 , 1)    # connect mixing flask to cartridge (move up)
+        QTimer.singleShot(7000, self.step_six)
     
     def step_six(self): 
         writeBloodSyringe(self.device_serials[2], 5, 0.125)     # flush blood (1 min)
@@ -812,21 +816,21 @@ class Functionality(QtWidgets.QMainWindow):
     
     def step_six_part_two(self): 
         self.start_sucrose_pump()
-        QTimer.singleShot(45000, self.step_six_part_three)      # flush sucrose (1 min)
+        QTimer.singleShot(44000, self.step_six_part_three)      # flush sucrose (1 min)
 
     def step_six_part_three(self): 
         self.start_sucrose_pump()
         writeLedStatus(self.device_serials[2], 0, 0, 0)         # turn light back on 
-        QTimer.singleShot(5000, self.step_seven)                # stop sucrose 
+        QTimer.singleShot(7000, self.step_seven)                # stop sucrose 
 
     def step_seven(self): 
-        writeMotorDistance(self.device_serials[2], 4, 35, 2)    # disconnect mixing flask (move down)
+        writeMotorDistance(self.device_serials[2], 4, 20, 2)    # disconnect mixing flask (move down)
         writeLedStatus(self.device_serials[2], 1, 0, 0)         # flask region led on 
-        QTimer.singleShot(6500, self.step_seven_part_two)
+        QTimer.singleShot(7000, self.step_seven_part_two)
 
     def step_seven_part_two(self): 
         writeMotorDistance(self.device_serials[2], 3, 62, 1)   # retrieve mixing flask (move left)
-        QTimer.singleShot(10000, self.end_demo)
+        QTimer.singleShot(7000, self.end_demo)
     
     def end_demo(self): 
         writeLedStatus(self.device_serials[2], 2, 2, 2)         # blink lights to take the flask
