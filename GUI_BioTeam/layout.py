@@ -77,6 +77,30 @@ class Ui_MainWindow(object):
         logo_pixmap = QtGui.QPixmap( ":/images/logo_small_white.png")
         self.sidebar_logo.setPixmap(logo_pixmap.scaled(self.sidebar_logo.width(), self.sidebar_logo.height(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
 
+        # Create the button to turn on the lights
+        self.button_lights  = QtWidgets.QPushButton() 
+        buffer = 10  
+        self.button_lights .setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/lightbulb.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_lights .setIcon(icon)
+        self.button_lights .setIconSize(QtCore.QSize(40, 40))  # Adjust size as needed
+        self.button_lights .setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+        
         # Create the button to home the motors
         self.button_motors_home  = QtWidgets.QPushButton() 
         buffer = 10  
@@ -100,7 +124,8 @@ class Ui_MainWindow(object):
                 background-color: #0796FF;
             }
         """)
-
+        
+        # Create the button for routing to the experiment page 
         self.button_experiment_route  = QtWidgets.QPushButton() 
         buffer = 10  
         self.button_experiment_route.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
@@ -127,6 +152,7 @@ class Ui_MainWindow(object):
         # Add widgets to the layout  
         self.side_bar_layout.addWidget(self.sidebar_logo)
         self.side_bar_layout.addSpacing(15)
+        self.side_bar_layout.addWidget(self.button_lights)
         self.side_bar_layout.addWidget(self.button_motors_home)
         self.side_bar_layout.addWidget(self.button_experiment_route)
         self.side_bar_layout.addStretch(1)
@@ -181,7 +207,7 @@ class Ui_MainWindow(object):
         self.application_region = QtWidgets.QHBoxLayout()
         self.main_content.addLayout(self.application_region)
 
-    # region : SUCROSE, EHTANOL, BLOOD frame setups
+    # region : LEFT FRAMES 
         self.application_region_1_widget = QtWidgets.QWidget()
         self.application_region_1_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_1_layout = QtWidgets.QVBoxLayout(self.application_region_1_widget)
@@ -276,7 +302,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_sucrose_2 = QtWidgets.QLineEdit()
         self.line_edit_sucrose_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
-        self.line_edit_sucrose_2.setText("NF")
+        self.line_edit_sucrose_2.setText("45")
 
         group_box_layout_2.addWidget(self.line_edit_sucrose_2)
         group_box_layout_2.addWidget(unit_label_2)
@@ -410,7 +436,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_blood_2 = QtWidgets.QLineEdit()
         self.line_edit_blood_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
-        self.line_edit_blood_2.setText("NF")
+        self.line_edit_blood_2.setText("45")
 
         group_box_layout_2.addWidget(self.line_edit_blood_2)
         group_box_layout_2.addWidget(unit_label_2)
@@ -510,7 +536,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_ethanol_2 = QtWidgets.QLineEdit()
         self.line_edit_ethanol_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
-        self.line_edit_ethanol_2.setText("NF")
+        self.line_edit_ethanol_2.setText("30")
 
         group_box_layout_2.addWidget(self.line_edit_ethanol_2)
         group_box_layout_2.addWidget(unit_label_2)
@@ -528,7 +554,7 @@ class Ui_MainWindow(object):
         self.application_region.addWidget(self.application_region_1_widget)
     #endregion
     
-    # region : CONNECTION and PLOT frame setup  
+    # region : MIDDLE FRAMES  
         self.application_region_2_widget = QtWidgets.QWidget()
         self.application_region_2_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_2_layout = QtWidgets.QVBoxLayout(self.application_region_2_widget)
@@ -552,7 +578,7 @@ class Ui_MainWindow(object):
         layout.addSpacing(75)
     
         # List of module names
-        module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "3PAC", "Pressure Sensor"]
+        module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "3PAC"]
 
         # Dictionary to hold the circles
         self.circles = {}
@@ -700,7 +726,7 @@ class Ui_MainWindow(object):
 
         self.button_cartridge_bottom = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/bottom_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/images/top_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_cartridge_bottom.setIcon(icon)
         self.button_cartridge_bottom.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
         self.button_cartridge_bottom.setStyleSheet("""
@@ -776,7 +802,7 @@ class Ui_MainWindow(object):
         self.application_region.addWidget(self.application_region_2_widget)
     #endregion
     
-    # region : ELECTRODE TEMP and SIGNAL frames' setup
+    # region : RIGHT FRAMES 
         self.application_region_3_widget = QtWidgets.QWidget()
         self.application_region_3_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_3_layout = QtWidgets.QVBoxLayout(self.application_region_3_widget)
@@ -817,17 +843,17 @@ class Ui_MainWindow(object):
         temp_details_layout.addLayout(temp_stats_layout)
 
         # Example temperature statistics
-        max_temp_label = QtWidgets.QLabel("35°")
-        max_temp_label.setStyleSheet(temperature_number_style)
-        temp_stats_layout.addWidget(max_temp_label, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
+        self.max_temp_label = QtWidgets.QLabel("-")
+        self.max_temp_label.setStyleSheet(temperature_number_style)
+        temp_stats_layout.addWidget(self.max_temp_label, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
 
-        avg_temp_label = QtWidgets.QLabel("25°")
+        avg_temp_label = QtWidgets.QLabel(" ")
         avg_temp_label.setStyleSheet(temperature_number_style)
         temp_stats_layout.addWidget(avg_temp_label, alignment=QtCore.Qt.AlignCenter)
 
-        min_temp_label = QtWidgets.QLabel("15°")
-        min_temp_label.setStyleSheet(temperature_number_style)
-        temp_stats_layout.addWidget(min_temp_label, alignment=QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
+        self.min_temp_label = QtWidgets.QLabel("-")
+        self.min_temp_label.setStyleSheet(temperature_number_style)
+        temp_stats_layout.addWidget(self.min_temp_label, alignment=QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
 
         #endregion
         
@@ -1147,7 +1173,7 @@ class Ui_MainWindow(object):
 
         self.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF', fontsize=15)
         self.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF',  fontsize=15)
-        self.axes_voltage.set_title('My Title', color='#FFFFFF', fontsize=20, fontweight='bold')
+        self.axes_voltage.set_title('Electrode Temperature', color='#FFFFFF', fontsize=20, fontweight='bold')
         
 
     #endregion

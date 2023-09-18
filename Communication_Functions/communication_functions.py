@@ -961,7 +961,6 @@ def read_temperature(ser):
 def fetchFlowrate(ser):
     # if volume == 0.00 --> STOP MOVEMENT
     msg = f'rP\n'
-    print(msg)
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
 
@@ -975,9 +974,9 @@ def read_flowrate(ser):
             if '\n' in line:
                 received_line = line.strip()
 
-        if received_line.startswith('rPF-'): # Check if the line starts with 'rAC-'
+        if received_line.startswith('rPF-'): # Check if the line starts with 'rPF-'
             try:
-                # Extract the part of the line after 'rAC-', convert to float, and return
+                # Extract the part of the line after 'rPF-', convert to float, and return
                 flow_rate = float(line[4:])
                 return flow_rate
             except ValueError:
@@ -1042,18 +1041,26 @@ def writePumpFlowRate(ser, val1=2.50, val2=0.00):
     msg = f'wPF-{val1:.2f}-{val2:.2f}\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
+
+
+def writeMaxDutyCycle(ser):
+    ser.flush()
+    # Construct the message
+    msg = f'wPD-1-230\n'
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
     
  
 def writeSucrosePumpFlowRate(ser, val1=2.50):
     # Construct the message
-    msg = f'wPS-{val1:.2f}\n'
+    msg = f'wFS-{val1:.2f}\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
 
 def writeEthanolPumpFlowRate(ser, val1=2.50):
     # Construct the message
-    msg = f'wPE-{val1:.2f}\n'
+    msg = f'wFE-{val1:.2f}\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     
@@ -1117,4 +1124,15 @@ def writeLedStatus(ser, led1=0, led2=0, led3=0):
     print(msg)
     # Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
+
+
+# SETS THE LED STATUS OF THE USER-SECTION-LIGHTS
+# 0 --> OFF
+# 1 --> ON
+# THERE IS ROOM FOR MORE FUNCTIONALITY IF NEEDED
+def writeLogoStatus(ser, Logo=0):
+    msg = f'wLO-{Logo}\n'
+    print(msg)
+    # Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending    
 
