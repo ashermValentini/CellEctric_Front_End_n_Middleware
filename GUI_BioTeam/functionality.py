@@ -44,7 +44,7 @@ DIR_M4_DOWN = -1
 
 class TempWorker(QObject):
     update_temp = pyqtSignal(float)
-    interval = 100
+    interval = 250
     
     def __init__(self, device_serials):
         super(TempWorker, self).__init__()
@@ -177,8 +177,6 @@ class Functionality(QtWidgets.QMainWindow):
         
         if self.flag_connections[2]:
             self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump) # connect the signal to the slot 
-            
-        if self.flag_connections[2]: 
             self.ui.button_ethanol.pressed.connect(self.start_ethanol_pump) # connect the signal to the slot 
 
 
@@ -190,12 +188,13 @@ class Functionality(QtWidgets.QMainWindow):
         self.blood_is_jogging_down = False  # ethanol pumping button state flag (starts unclicked)
         self.blood_is_jogging_up = False    # ethanol pumping button state flag (starts unclicked)
 
-        self.ui.button_blood_top.clicked.connect(lambda: self.movement_homing(1))                       # connect the signal to the slot 
-        self.ui.button_blood_up.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, True)) # connect the signal to the slot    
-        self.ui.button_blood_up.released.connect(lambda: self.movement_stopjogging(1))                  # connect the signal to the slot              
+        if self.flag_connections[2]: 
+            self.ui.button_blood_top.clicked.connect(lambda: self.movement_homing(1))                       # connect the signal to the slot 
+            self.ui.button_blood_up.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, True)) # connect the signal to the slot    
+            self.ui.button_blood_up.released.connect(lambda: self.movement_stopjogging(1))                  # connect the signal to the slot              
 
-        self.ui.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, True)) # connect the signal to the slot
-        self.ui.button_blood_down.released.connect(lambda: self.movement_stopjogging(1))                    # connect the signal to the slot
+            self.ui.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, True)) # connect the signal to the slot
+            self.ui.button_blood_down.released.connect(lambda: self.movement_stopjogging(1))                    # connect the signal to the slot
 
 
         #================================
@@ -203,32 +202,33 @@ class Functionality(QtWidgets.QMainWindow):
         #================================
 
         self.flask_vertical_gantry_is_home= False      
-
-        self.ui.button_flask_bottom.clicked.connect(lambda: self.movement_homing(4))                        # connect the signal to the slot 
-        self.ui.button_flask_up.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, False))     # connect the signal to the slot    
-        self.ui.button_flask_up.released.connect(lambda: self.movement_stopjogging(4))                      # connect the signal to the slot              
-        self.ui.button_flask_down.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, False)) # connect the signal to the slot
-        self.ui.button_flask_down.released.connect(lambda: self.movement_stopjogging(4))                    # connect the signal to the slot
+        if self.flag_connections[2]: 
+            self.ui.button_flask_bottom.clicked.connect(lambda: self.movement_homing(4))                        # connect the signal to the slot 
+            self.ui.button_flask_up.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, False))     # connect the signal to the slot    
+            self.ui.button_flask_up.released.connect(lambda: self.movement_stopjogging(4))                      # connect the signal to the slot              
+            self.ui.button_flask_down.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, False)) # connect the signal to the slot
+            self.ui.button_flask_down.released.connect(lambda: self.movement_stopjogging(4))                    # connect the signal to the slot
 
         self.flask_horizontal_gantry_is_home= False      
-
-        self.ui.button_flask_rightmost.clicked.connect(lambda: self.movement_homing(3))                           # connect the signal to the slot 
-        self.ui.button_flask_right.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, False))     # connect the signal to the slot    
-        self.ui.button_flask_right.released.connect(lambda: self.movement_stopjogging(3))                      # connect the signal to the slot              
-        self.ui.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, False)) # connect the signal to the slot
-        self.ui.button_flask_left.released.connect(lambda: self.movement_stopjogging(3))                    # connect the signal to the slot
+        if self.flag_connections[2]:
+            self.ui.button_flask_rightmost.clicked.connect(lambda: self.movement_homing(3))                           # connect the signal to the slot 
+            self.ui.button_flask_right.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, False))     # connect the signal to the slot    
+            self.ui.button_flask_right.released.connect(lambda: self.movement_stopjogging(3))                      # connect the signal to the slot              
+            self.ui.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, False)) # connect the signal to the slot
+            self.ui.button_flask_left.released.connect(lambda: self.movement_stopjogging(3))                    # connect the signal to the slot
 
         #================================
         # Cartrige frame functionality
         #================================
 
-        self.cartrige_gantry_is_home= False      
+        self.cartrige_gantry_is_home= False 
 
-        self.ui.button_cartridge_bottom.clicked.connect(lambda: self.movement_homing(2))                           # connect the signal to the slot 
-        self.ui.button_cartridge_up.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_UP, False))     # connect the signal to the slot    
-        self.ui.button_cartridge_up.released.connect(lambda: self.movement_stopjogging(2))                      # connect the signal to the slot              
-        self.ui.button_cartridge_down.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, False)) # connect the signal to the slot
-        self.ui.button_cartridge_down.released.connect(lambda: self.movement_stopjogging(2))                    # connect the signal to the slot
+        if self.flag_connections[2]:
+            self.ui.button_cartridge_bottom.clicked.connect(lambda: self.movement_homing(2))                           # connect the signal to the slot 
+            self.ui.button_cartridge_up.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_UP, False))     # connect the signal to the slot    
+            self.ui.button_cartridge_up.released.connect(lambda: self.movement_stopjogging(2))                      # connect the signal to the slot              
+            self.ui.button_cartridge_down.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, False)) # connect the signal to the slot
+            self.ui.button_cartridge_down.released.connect(lambda: self.movement_stopjogging(2))                    # connect the signal to the slot
 
             
         #====================================================
@@ -348,7 +348,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.xdata[-1] = self.xdata[-2] + 1  # This will keep increasing the count on the x-axis
 
         self.ui.axes_voltage.clear()
-        self.ui.axes_voltage.plot(self.xdata, self.ydata, color='#0796FF')
+        self.ui.axes_voltage.plot(self.xdata, self.ydata, color='#FFFFFF')
         self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
         self.ui.axes_voltage.set_ylim(min(self.ydata) - 1, max(self.ydata) + 10)  # dynamically update y range
 
@@ -497,13 +497,9 @@ class Functionality(QtWidgets.QMainWindow):
                 self.sucrose_is_pumping = False 
                 self.updateSucroseProgressBar(0)
                 self.device_serials[2].write(PUMPS_OFF.encode())
- 
-            
-
 #endregion
 
 # region : ETHANOL PUMPING 
-
     def start_ethanol_pump(self):
         if not self.sucrose_is_pumping:
             if not self.ethanol_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
@@ -553,7 +549,6 @@ class Functionality(QtWidgets.QMainWindow):
                 self.device_serials[2].write(PUMPS_OFF.encode())
                 self.updateEthanolProgressBar(0)
 
-
 #endregion 
 
 # region : BLOOD PUMP
@@ -566,7 +561,7 @@ class Functionality(QtWidgets.QMainWindow):
         #temperature = find_serial_port(SERIAL_TEMPSENS_VENDOR_ID, SERIAL_TEMPSENS_PRODUCT_ID)
         temp_serial = read_temperature(self.device_serials[3])
         esp = find_esp()
-        if temp_serial is not -1:
+        if temp_serial != -1:
             # Change circle color to green
             self.ui.circles["Temperature Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
         else:
@@ -756,6 +751,7 @@ class Functionality(QtWidgets.QMainWindow):
     
 #endregion
 
+#region : Box Plot Functionality
 
     @pyqtSlot(float)
     def update_temperature_labels(self, temperature):
@@ -767,74 +763,71 @@ class Functionality(QtWidgets.QMainWindow):
             self.min_temp = temperature
             self.ui.min_temp_label.setText(f"{self.min_temp}°")
 
-
-
-
+#endregion
 
 # region : Investors Presentation
 
     def start_demo(self):
-        # Start the sequence of operations
-        self.step_two()
+        self.step_two()                                         # start the automation sequence (AS)
 
     def step_two(self):
-        writeMotorDistance(self.device_serials[2], 2, 30, 2)    # connect fluidics to cartridge 
-        writeLedStatus(self.device_serials[2], 0, 1, 0)         # syringe region led on
-        QTimer.singleShot(5000, self.step_three)
+        writeMotorDistance(self.device_serials[2], 2, 27.5, 2)    # connect fluidics to cartridge (move motor two down a distance 27.5mm)
+        writeLedStatus(self.device_serials[2], 0, 1, 0)         # syringe region LED on
+        QTimer.singleShot(5000, self.step_three)                # give the motor 5 seconds to reach its posistion before executing the next step in the AS 
  
     def step_three(self):
-        writeMotorDistance(self.device_serials[2], 4, 35, 1)    # connect waste flask to cartridge (move up)
-        QTimer.singleShot(6500, self.step_four)  
+        writeMotorDistance(self.device_serials[2], 4, 37, 1)    # connect waste flask to cartridge (move motor 4 up a distance 38mm)
+        QTimer.singleShot(6500, self.step_four)                 # give the motor 6.5 seconds to reach its posistion before executing the next step in the AS
 
     def step_four(self):
-        self.start_ethanol_pump()
-        writeLedStatus(self.device_serials[2], 0, 0, 2)         # turn light back on  
-        QTimer.singleShot(30000, self.step_four_part_two)       # flush ethanol (1 min)
+        self.start_ethanol_pump()                               # flush ethanol
+        writeLedStatus(self.device_serials[2], 0, 0, 2)         # blink the resevoir region LED  
+        QTimer.singleShot(30000, self.step_four_part_two)       # let ethanol flush for 30 seconds 
 
     def step_four_part_two(self):
-        self.start_ethanol_pump()  
-        writeLedStatus(self.device_serials[2], 0, 0, 0)         # turn light back on
-        QTimer.singleShot(3000, self.step_five)                 # stop ethanol 
+        self.start_ethanol_pump()                               # stop ethanol 
+        writeLedStatus(self.device_serials[2], 0, 0, 0)         # turn of all LEDs
+        QTimer.singleShot(3000, self.step_five)                 # wait 3 seconds before proceeding to next step (can reduce this time) 
 
     def step_five(self):
-        writeMotorDistance(self.device_serials[2], 4, 35, 2)    # disconnect waste flask (move down)
+        writeMotorDistance(self.device_serials[2], 4, 37, 2)    # disconnect waste flask (move motor 4 down a distance of 37mm)
         writeLedStatus(self.device_serials[2], 1, 0, 0)         # flask region led on 
-        QTimer.singleShot(6500, self.step_five_part_two)
+        QTimer.singleShot(6500, self.step_five_part_two)        # give motor 4 6.5 seconds to get to its position before proceeding to the next step in the AS
     
     def step_five_part_two(self):
-        writeMotorDistance(self.device_serials[2], 3, 62, 1)    # connect mixing flask to cartridge (move left)
-        QTimer.singleShot(10000, self.step_five_part_three)
+        writeMotorDistance(self.device_serials[2], 3, 60, 1)    # connect mixing flask to cartridge (move motor three left a distance of 60mm)
+        QTimer.singleShot(10000, self.step_five_part_three)     # give motor 3 10 seconds to get to its position before proceeding to the next step in the AS
     
     def step_five_part_three(self): 
-        writeMotorDistance(self.device_serials[2], 4, 20 , 1)    # connect mixing flask to cartridge (move up)
-        QTimer.singleShot(7000, self.step_six)
+        writeMotorDistance(self.device_serials[2], 4, 37 , 1)   # connect mixing flask to cartridge (move motor 3 up a distance of 38mm)
+        QTimer.singleShot(7000, self.step_six)                  # give motor 4 7 seconds to get to its position before proceeding to the next step in the AS
     
     def step_six(self): 
-        writeBloodSyringe(self.device_serials[2], 5, 0.125)     # flush blood (1 min)
-        writeLedStatus(self.device_serials[2], 0, 2, 0)         # turn light back on 
-        QTimer.singleShot(50, self.step_six_part_two)
+        writeBloodSyringe(self.device_serials[2], 0.115, 0.125) # flush blood 
+        writeLedStatus(self.device_serials[2], 0, 2, 0)         # blink syring region LED 
+        QTimer.singleShot(50, self.step_six_part_two)           # wait 50ms before proceeding to the next step in the AS to allow the serial coms to complete
     
     def step_six_part_two(self): 
-        self.start_sucrose_pump()
-        QTimer.singleShot(44000, self.step_six_part_three)      # flush sucrose (1 min)
+        self.start_sucrose_pump()                               # flush sucrose (with blood running)
+        QTimer.singleShot(60000, self.step_six_part_three)      # let sucrose flush with blood for 60 seconds
 
     def step_six_part_three(self): 
-        self.start_sucrose_pump()
-        writeLedStatus(self.device_serials[2], 0, 0, 0)         # turn light back on 
-        QTimer.singleShot(7000, self.step_seven)                # stop sucrose 
+        self.start_sucrose_pump()                               # stop sucrose
+        writeLedStatus(self.device_serials[2], 0, 0, 0)         # turn off all LEDs
+        QTimer.singleShot(7000, self.step_seven)                
 
     def step_seven(self): 
-        writeMotorDistance(self.device_serials[2], 4, 20, 2)    # disconnect mixing flask (move down)
+        writeMotorDistance(self.device_serials[2], 4, 37, 2)    # disconnect mixing flask (move motor 4 down a distnace of 38 mm)
         writeLedStatus(self.device_serials[2], 1, 0, 0)         # flask region led on 
-        QTimer.singleShot(7000, self.step_seven_part_two)
+        QTimer.singleShot(7000, self.step_seven_part_two)       # give motor 4 7 seconds to get to its position before proceeding to the next step in the AS
 
     def step_seven_part_two(self): 
-        writeMotorDistance(self.device_serials[2], 3, 62, 1)   # retrieve mixing flask (move left)
-        QTimer.singleShot(7000, self.end_demo)
+        writeMotorDistance(self.device_serials[2], 3, 62, 1)    # retrieve mixing flask (move motor three a distance of 62 mm left)
+        QTimer.singleShot(7000, self.end_demo)                  # give motor 3 7 seconds to get to its posistion before proceeding to the next step
     
     def end_demo(self): 
         writeLedStatus(self.device_serials[2], 2, 2, 2)         # blink lights to take the flask
-        QTimer.singleShot(10000, self.end_demo_part_two)
+        QTimer.singleShot(10000, self.end_demo_part_two)        # let the lights blink for 10 seconds
     
     def end_demo_part_two(self):
         writeLedStatus(self.device_serials[2], 1, 0, 0)         # turn light back on 
