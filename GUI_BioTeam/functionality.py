@@ -289,6 +289,12 @@ class Functionality(QtWidgets.QMainWindow):
     
         self.signal_is_enabled=False 
         self.ui.psu_button.pressed.connect(self.start_psu_pg)
+
+        #======================================
+        # Pressure frame functionality
+        #======================================
+
+        self.ui.pressure_reset_button.pressed.connect(self.update_pressure_progress_bar)
         
 
 # region : PLOTTING FUNCTIONS  
@@ -352,9 +358,31 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
         self.ui.axes_voltage.set_ylim(min(self.ydata) - 1, max(self.ydata) + 10)  # dynamically update y range
 
-        self.ui.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF',  fontsize=15)
-        self.ui.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF', fontsize=15)
-        self.ui.axes_voltage.set_title('Electrode Temperature', color='#FFFFFF', fontsize=20, fontweight='bold')
+
+        # Get the Axes object from the Figure for voltage plot
+        self.ui.axes_voltage.grid(True, color='black', linestyle='--')
+        self.ui.axes_voltage.set_facecolor('#222222')
+        self.ui.axes_voltage.spines['bottom'].set_color('#FFFFFF')
+        self.ui.axes_voltage.spines['top'].set_color('#FFFFFF')
+        self.ui.axes_voltage.spines['right'].set_color('#FFFFFF')
+        self.ui.axes_voltage.spines['left'].set_color('#FFFFFF')
+        self.ui.axes_voltage.tick_params(colors='#FFFFFF')
+
+        # Increase the font size of the x-axis and y-axis labels
+        self.ui.axes_voltage.tick_params(axis='x', labelsize=14)  # You can adjust the font size (e.g., 12)
+        self.ui.axes_voltage.tick_params(axis='y', labelsize=14)  # You can adjust the font size (e.g., 12)
+        # Move the y-axis ticks and labels to the right
+        self.ui.axes_voltage.yaxis.tick_right()
+        # Adjust the position of the x-axis label
+        self.ui.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
+
+        # Adjust the position of the y-axis label to the left
+        self.ui.axes_voltage.yaxis.set_label_coords(-0.05, 0.5)  # Move the y-axis label to the left
+
+        # Set static labels
+        self.ui.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF', fontsize=15)
+        self.ui.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF',  fontsize=15)
+        self.ui.axes_voltage.set_title('Electrode Temperature', color='#FFFFFF', fontsize=20, fontweight='bold', y=1.05)
 
         self.ui.canvas_voltage.draw()
     #endregion
@@ -692,7 +720,6 @@ class Functionality(QtWidgets.QMainWindow):
 
             print("TRYING TO START JOGGING: motor: {}; direction: {}; fast: {}".format(motornumber, direction, fast))
 
-
     def movement_stopjogging(self, motornumber):
         if self.flag_connections[2]:
             writeMotorJog(self.device_serials[2], motornumber, 0, 0)
@@ -745,10 +772,7 @@ class Functionality(QtWidgets.QMainWindow):
             """)
             writeLogoStatus(self.device_serials[2], 0)
             writeLedStatus(self.device_serials[2], 0, 0, 0)
-
-       
-
-    
+   
 #endregion
 
 #region : Box Plot Functionality
@@ -757,11 +781,38 @@ class Functionality(QtWidgets.QMainWindow):
     def update_temperature_labels(self, temperature):
         if temperature > self.max_temp:
             self.max_temp = temperature
-            self.ui.max_temp_label.setText(f"{self.max_temp}°")
+            self.ui.max_temp_data.setText(f"{self.max_temp}°")
             
         if temperature < self.min_temp:
             self.min_temp = temperature
-            self.ui.min_temp_label.setText(f"{self.min_temp}°")
+            self.ui.min_temp_data.setText(f"{self.min_temp}°")
+
+#endregion
+
+#region : UPDATE PRESSURE PROGRESS BAR 
+
+    def update_pressure_progress_bar(self):
+        # Reset progress bar
+        self.ui.pressure_progress_bar.setValue(0)
+        
+        # Setup timer to update progress bar every second
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_pressure_progress)
+        self.timer.start(1000)  # 1000 milliseconds == 1 second
+        
+        # Initialize the counter
+        self.counter = 0
+        
+    def update_pressure_progress(self):
+        self.counter += 1
+        
+        if self.counter <= 60:
+            self.ui.pressure_progress_bar.setValue(int((self.counter / 60) * 100))
+        else:
+            # Stop the timer and reset the counter when 60 seconds have passed
+            self.timer.stop()
+            self.counter = 0
+            self.ui.pressure_progress_bar.setValue(0)  # Reset the progress bar to 0%
 
 #endregion
 
@@ -771,7 +822,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.step_two()                                         # start the automation sequence (AS)
 
     def step_two(self):
-        writeMotorDistance(self.device_serials[2], 2, 27.5, 2)    # connect fluidics to cartridge (move motor two down a distance 27.5mm)
+        writeMotorDistance(self.device_serials[2], 2, 27.5, 2)  # connect fluidics to cartridge (move motor two down a distance 27.5mm)
         writeLedStatus(self.device_serials[2], 0, 1, 0)         # syringe region LED on
         QTimer.singleShot(5000, self.step_three)                # give the motor 5 seconds to reach its posistion before executing the next step in the AS 
  

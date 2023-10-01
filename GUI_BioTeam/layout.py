@@ -1,5 +1,6 @@
-from PyQt5 import QtCore, QtGui, QtWidgets#
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QProgressBar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.patches import FancyBboxPatch
@@ -9,6 +10,7 @@ from roundprogressBar import MainWindow
 import resources_rc
 
 class Ui_MainWindow(object):
+
     def setupUi(self, MainWindow):
         # Load custom font
         QtGui.QFontDatabase.addApplicationFont(":/fonts/static/Archivo-Regular.ttf")
@@ -18,7 +20,7 @@ class Ui_MainWindow(object):
         text_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px; }"
         header_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 50px; font-weight: bold;  }"
         input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 25px;  }"
-        temperature_number_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 40px;  }"
+        temperature_number_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px;  }"
 
         # Set up the main window 
         MainWindow.setObjectName("MainWindow")
@@ -817,45 +819,159 @@ class Ui_MainWindow(object):
         temp_layout = QtWidgets.QVBoxLayout(temp_frame)
 
         # Title for temperature frame
-        title_label = QtWidgets.QLabel("ELECTRODE TEMP.")
+        title_label = QtWidgets.QLabel("TEMPERATURE")
         title_label.setStyleSheet(title_style)
         title_label.setAlignment(QtCore.Qt.AlignCenter)
         temp_layout.addWidget(title_label)
-        temp_layout.addSpacing(80)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        temp_layout.addSpacing(25)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
 
 
         # Layout for image and stats
         temp_details_layout = QtWidgets.QHBoxLayout()
         temp_layout.addLayout(temp_details_layout)
 
-        # Add image to temperature frame
-        self.temp_image = QtWidgets.QLabel()
-        self.temp_image.setAlignment(QtCore.Qt.AlignCenter)
-        temp_image_pixmap = QtGui.QPixmap( ":/images/boxplot_blue.png")
-        scaled_image = temp_image_pixmap.scaled(int(self.temp_image.width() * 0.70),
-                                                int(self.temp_image.height() * 0.70),
-                                                QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-        self.temp_image.setPixmap(scaled_image)
-        temp_details_layout.addWidget(self.temp_image)
+        # Add labels for the temperature stats frame
+        temp_stats_labels_layout = QtWidgets.QVBoxLayout()
+        temp_details_layout.addLayout(temp_stats_labels_layout)
 
-        # Add temperature statistics next to image
+        self.max_temp_label = QtWidgets.QLabel("Max")
+        self.max_temp_label.setStyleSheet(temperature_number_style)
+        temp_stats_labels_layout.addWidget(self.max_temp_label, alignment=QtCore.Qt.AlignTop )
+
+        self.min_temp_label = QtWidgets.QLabel("Min")
+        self.min_temp_label.setStyleSheet(temperature_number_style)
+        temp_stats_labels_layout.addWidget(self.min_temp_label, alignment=QtCore.Qt.AlignBottom)
+
+
+        # Add temperature statistics next to labels
         temp_stats_layout = QtWidgets.QVBoxLayout()
         temp_details_layout.addLayout(temp_stats_layout)
 
-        # Example temperature statistics
-        self.max_temp_label = QtWidgets.QLabel("-")
-        self.max_temp_label.setStyleSheet(temperature_number_style)
-        temp_stats_layout.addWidget(self.max_temp_label, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
+        
+        self.max_temp_data = QtWidgets.QLabel("-")
+        self.max_temp_data.setStyleSheet(temperature_number_style)
+        temp_stats_layout.addWidget(self.max_temp_data, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
 
-        avg_temp_label = QtWidgets.QLabel(" ")
-        avg_temp_label.setStyleSheet(temperature_number_style)
-        temp_stats_layout.addWidget(avg_temp_label, alignment=QtCore.Qt.AlignCenter)
-
-        self.min_temp_label = QtWidgets.QLabel("-")
-        self.min_temp_label.setStyleSheet(temperature_number_style)
-        temp_stats_layout.addWidget(self.min_temp_label, alignment=QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
+        self.min_temp_data = QtWidgets.QLabel("-")
+        self.min_temp_data.setStyleSheet(temperature_number_style)
+        temp_stats_layout.addWidget(self.min_temp_data, alignment=QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
 
         #endregion
+        
+        # region: Frame for resevoir pressure reading/reseting 
+        pressure_frame = QtWidgets.QFrame()
+        pressure_frame.setStyleSheet("background-color: #222222; border-radius: 15px; height: 20%;")
+        pressure_frame.setObjectName("frame_d_pressure")
+        self.application_region_3_layout.addWidget(pressure_frame)
+
+        # Layout for pressure frame components
+        pressure_layout = QtWidgets.QVBoxLayout(pressure_frame)
+
+        # Title for pressure frame
+        title_label = QtWidgets.QLabel("PRESSURE")
+        title_label.setStyleSheet(title_style)
+        title_label.setAlignment(QtCore.Qt.AlignCenter)
+        pressure_layout.addWidget(title_label)
+        pressure_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+
+
+        #region : pressure check button and data
+        pressure_details_layout = QtWidgets.QHBoxLayout()
+        pressure_layout.addLayout(pressure_details_layout)
+
+        # Add pressure check button
+        self.pressure_check_button = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/undo.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pressure_check_button.setIcon(icon)
+        self.pressure_check_button.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.pressure_check_button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        pressure_details_layout.addWidget(self.pressure_check_button, alignment=QtCore.Qt.AlignTop )
+
+        pressure_details_layout.addSpacing(140)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+
+        # Add pressure statistics next to labels
+        self.pressure_data = QtWidgets.QLabel("-")
+        self.pressure_data.setStyleSheet(temperature_number_style)
+        pressure_details_layout.addWidget(self.pressure_data, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
+        #endregion
+
+        #region : pressure reset and progress bar
+
+        # Layout for pressure reset button and progress bar
+        pressure_reset_layout = QtWidgets.QHBoxLayout()
+        pressure_layout.addLayout(pressure_reset_layout)
+        
+        # Add labels for pressure reset
+        self.pressure_reset_button = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/increase.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pressure_reset_button.setIcon(icon)
+        self.pressure_reset_button.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.pressure_reset_button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        pressure_reset_layout.addWidget(self.pressure_reset_button, alignment=QtCore.Qt.AlignTop)
+
+
+        # Add pressure reset progress bar
+
+        self.pressure_progress_bar = QProgressBar()
+        self.pressure_progress_bar.setStyleSheet(
+            """
+            QProgressBar {
+                border: 2px solid white;
+                border-radius: 3px;
+                background-color: #222222;
+                text-align: center;
+                height: 40px;  /* Adjust as necessary */
+            }
+
+            QProgressBar::chunk {
+                background-color: rgba(7, 150, 255, 0.7);
+            }
+            QProgressBar {
+                color: white;  /* Color of the text */
+                font-size: 15px;  /* Size of the text */
+            }
+            """
+        )
+
+
+        self.pressure_progress_bar.setValue(0)
+
+        pressure_reset_layout.addWidget(self.pressure_progress_bar, alignment=QtCore.Qt.AlignTop)
+        #endregion
+
+        # endregion
         
         # region: Frame for voltage signal 
         frame_d_signal = QtWidgets.QFrame()
@@ -1168,12 +1284,22 @@ class Ui_MainWindow(object):
         self.axes_voltage.spines['right'].set_color('#FFFFFF')
         self.axes_voltage.spines['left'].set_color('#FFFFFF')
         self.axes_voltage.tick_params(colors='#FFFFFF')
-        
-        # Set static labels
 
+        # Increase the font size of the x-axis and y-axis labels
+        self.axes_voltage.tick_params(axis='x', labelsize=14)  # You can adjust the font size (e.g., 12)
+        self.axes_voltage.tick_params(axis='y', labelsize=14)  # You can adjust the font size (e.g., 12)
+        # Move the y-axis ticks and labels to the right
+        self.axes_voltage.yaxis.tick_right()
+        # Adjust the position of the x-axis label
+        self.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
+
+        # Adjust the position of the y-axis label to the left
+        self.axes_voltage.yaxis.set_label_coords(-0.05, 0.5)  # Move the y-axis label to the left
+
+        # Set static labels
         self.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF', fontsize=15)
         self.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF',  fontsize=15)
-        self.axes_voltage.set_title('Electrode Temperature', color='#FFFFFF', fontsize=20, fontweight='bold')
+        self.axes_voltage.set_title('Electrode Temperature', color='#FFFFFF', fontsize=20, fontweight='bold', y=1.05)
         
 
     #endregion
@@ -1207,8 +1333,7 @@ class Ui_MainWindow(object):
         self.sidebar_logo.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 2 * buffer,
                                       int(MainWindow.height() * 0.2))
 
-        logo_pixmap = QtGui.QPixmap(
-            r'C:\Users\offic\CellEctric Biosciences\Sepsis Project - Documents\Development\4 Automation and Control Systems\11_GUI\BIO_Team_GUI\GUI_BioTeam\assets\images\logo_small_white.png')
+        logo_pixmap = QtGui.QPixmap( ":/images/logo_small_white.png")
         self.sidebar_logo.setPixmap(logo_pixmap.scaled(self.sidebar_logo.width(), self.sidebar_logo.height(),
                                                        QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
     #endregion
