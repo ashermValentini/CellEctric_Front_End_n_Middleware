@@ -605,15 +605,23 @@ class Functionality(QtWidgets.QMainWindow):
 
 # region : ROUND PROGRESS BAR FUNCTIONS 
     def updateSucroseProgressBar(self, value):
-        
         if self.sucrose_is_pumping:
             if value:
                 value = float(value)
-                if value <= self.ui.progress_bar_sucrose.max:
+                
+                # Check if the value is below zero
+                if value < 0:
+                    self.ui.progress_bar_sucrose.setValue(0)
+                # Check if the value is greater than the maximum allowed value
+                elif value > self.ui.progress_bar_sucrose.max:
+                    self.ui.progress_bar_sucrose.setValue(self.ui.progress_bar_sucrose.max)
+                else:
                     self.ui.progress_bar_sucrose.setValue(value)
             else:
                 self.ui.progress_bar_sucrose.setValue(0)
-        else: self.ui.progress_bar_sucrose.setValue(0)
+        else: 
+            self.ui.progress_bar_sucrose.setValue(0)
+
    
                
     def updateEthanolProgressBar(self, value):
