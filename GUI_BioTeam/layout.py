@@ -903,10 +903,11 @@ class Ui_MainWindow(object):
 
         pressure_details_layout.addWidget(self.pressure_check_button, alignment=QtCore.Qt.AlignTop )
 
-        pressure_details_layout.addSpacing(140)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        #pressure_details_layout.addSpacing(110)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
 
+        pressure_details_layout.addStretch(1) 
         # Add pressure statistics next to labels
-        self.pressure_data = QtWidgets.QLabel("-")
+        self.pressure_data = QtWidgets.QLabel("- Bar")
         self.pressure_data.setStyleSheet(temperature_number_style)
         pressure_details_layout.addWidget(self.pressure_data, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
         #endregion

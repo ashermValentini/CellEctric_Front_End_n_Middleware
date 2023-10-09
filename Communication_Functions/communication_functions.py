@@ -959,12 +959,34 @@ def read_temperature(ser):
 
 # SEND SIGNAL TO 3PAC TO SEND FLOWRATE BACK TO BACKEND
 def fetchFlowrate(ser):
-    # if volume == 0.00 --> STOP MOVEMENT
     msg = f'rP\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
 
-# DECONSTRUCTS THE RECEIVED MESSAGE
+
+#==================================================================
+#=============FETCH PRESSURE DATA==================================
+#================================================================== 
+
+# SEND SIGNAL TO 3PAC TO SEND PRESSURE DATA TO MIDDLEWARE
+def fetch_pressure(ser):
+    msg = f'rRS\n'
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
+#==================================================================
+#=============STOP FETCHING PRESSURE DATA==========================
+#================================================================== 
+
+# SEND SIGNAL TO 3PAC TO STOP SENDING PRESSURE DATA TO MIDDLEWARE
+def stop_fetching_pressure(ser):
+    msg = f'rRO\n'
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
+#==================================================================
+#=============PROCESS DATA SENT FROM THE 3PAC======================
+#================================================================== 
 def read_flowrate(ser):
     line = ''
     if ser.in_waiting: # Check if there is data waiting in the buffer
@@ -979,6 +1001,13 @@ def read_flowrate(ser):
                 # Extract the part of the line after 'rPF-', convert to float, and return
                 flow_rate = float(line[4:])
                 return flow_rate
+            except ValueError:
+                print("Error: Couldn't convert string to float.")
+        elif received_line.startswith('rRP-'): # Check if the line starts with 'rRP-'
+            try:
+                # Extract the part of the line after 'rRP-', convert to float, and return
+                pressure = float(line[4:])
+                return pressure
             except ValueError:
                 print("Error: Couldn't convert string to float.")
     else:
@@ -1043,10 +1072,17 @@ def writePumpFlowRate(ser, val1=2.50, val2=0.00):
     ser.write(msg.encode())  # encode the string to bytes before sending
 
 
-def writeMaxDutyCycle(ser):
+def writePressureCommandStart(ser):
     ser.flush()
     # Construct the message
-    msg = f'wPD-1-230\n'
+    msg = f'wRS\n'
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
+def writePressureCommandStop(ser):
+    ser.flush()
+    # Construct the message
+    msg = f'wRO\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
     

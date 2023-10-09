@@ -168,9 +168,6 @@ class Functionality(QtWidgets.QMainWindow):
         self.serialWorker.update_data.connect(self.updateEthanolProgressBar) # connect the worker signal to your progress bar update function
         self.serialWorker.update_data.connect(self.updateSucroseProgressBar) # connect the worker signal to your progress bar update function
 
-        self.serialThread.started.connect(self.serialWorker.run)  # start the workers run function when the thread starts
-        if self.flag_connections[2]:
-            self.serialThread.start() #start the thread so that the dashboard always reads incoming serial data from the esp32 
 
         self.sucrose_is_pumping = False # sucrose pumping button state flag (starts unclicked)
         self.ethanol_is_pumping = False # ethanol pumping button state flag (starts unclicked)
@@ -293,8 +290,21 @@ class Functionality(QtWidgets.QMainWindow):
         #======================================
         # Pressure frame functionality
         #======================================
+        self.reading_pressure = False
+        self.resetting_pressure = False 
 
-        self.ui.pressure_reset_button.pressed.connect(self.update_pressure_progress_bar)
+        if self.flag_connections[2]: 
+            self.ui.pressure_check_button.pressed.connect(self.start_stop_pressure_reading)
+            self.ui.pressure_reset_button.pressed.connect(self.update_pressure_progress_bar)
+
+        self.serialWorker.update_data.connect(self.update_pressure_line_edit) # connect the worker signal to your progress bar update function
+
+        #================================================
+        # Start the thread that will read from the 3PAC
+        #================================================
+        self.serialThread.started.connect(self.serialWorker.run)  # start the workers run function when the thread starts
+        if self.flag_connections[2]:
+            self.serialThread.start() #start the thread so that the dashboard always reads incoming serial data from the esp32 
         
 
 # region : PLOTTING FUNCTIONS  
@@ -476,7 +486,7 @@ class Functionality(QtWidgets.QMainWindow):
 
 # region : SUCROSE PUMPING 
     def start_sucrose_pump(self):
-        if not self.ethanol_is_pumping:
+        if not self.ethanol_is_pumping and not self.reading_pressure:
             if not self.sucrose_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
                 self.sucrose_is_pumping = True  
                 # Change button color to blue
@@ -525,11 +535,12 @@ class Functionality(QtWidgets.QMainWindow):
                 self.sucrose_is_pumping = False 
                 self.updateSucroseProgressBar(0)
                 self.device_serials[2].write(PUMPS_OFF.encode())
+
 #endregion
 
 # region : ETHANOL PUMPING 
     def start_ethanol_pump(self):
-        if not self.sucrose_is_pumping:
+        if not self.sucrose_is_pumping and not self.reading_pressure:
             if not self.ethanol_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
                 self.ethanol_is_pumping = True  
                 self.ui.button_ethanol.setStyleSheet("""
@@ -550,7 +561,6 @@ class Functionality(QtWidgets.QMainWindow):
 
                 #writeEthanolPumpFlowRate(self.device_serials[2], p1fr)
                 writeSucrosePumpFlowRate(self.device_serials[2], p1fr) #only for the investors presentation
-                #writeMaxDutyCycle(self.device_serials[2])
                 
             else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
                 self.ui.button_ethanol.setStyleSheet("""
@@ -579,6 +589,55 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion 
 
+# region : START PRESSURE READING
+    def start_stop_pressure_reading(self):
+        if not self.ethanol_is_pumping and not self.sucrose_is_pumping: #if we are currently pumping ethanol or sucrose we will not let this pressure read function run
+            if not self.reading_pressure:   #if reading pressure is false (ie the button has just been pressed to start reading pressure) then we need to:
+                self.reading_pressure = True  
+                # Change button color to blue
+                self.ui.pressure_check_button.setStyleSheet("""
+                    QPushButton {
+                        border: 2px solid white;
+                        border-radius: 10px;
+                        background-color: #0796FF;
+                        color: #FFFFFF;
+                        font-family: Archivo;
+                        font-size: 30px;
+                    }
+
+                    QPushButton:hover {
+                        background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                    }
+                """)
+
+                fetch_pressure(self.device_serials[2])
+            
+            else: #Else if reading pressure is true then it means the button was pressed during a state of reading pressure and the user would like to stop reading pressure which means we need to:
+                # Change button color back to original
+                self.reading_pressure=False
+                self.ui.pressure_check_button.setStyleSheet("""
+                    QPushButton {
+                        border: 2px solid white;
+                        border-radius: 10px;
+                        background-color: #222222;
+                        color: #FFFFFF;
+                        font-family: Archivo;
+                        font-size: 30px;
+                    }
+
+                    QPushButton:hover {
+                        background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                    }
+
+                    QPushButton:pressed {
+                        background-color: #0796FF;
+                    }
+                """)
+                stop_fetching_pressure(self.device_serials[2])
+                self.ui.pressure_data.setText("-       Bar")
+
+#endregion
+
 # region : BLOOD PUMP
         # see motor movement functions
 #endregion
@@ -587,16 +646,13 @@ class Functionality(QtWidgets.QMainWindow):
     def check_coms(self):
 
         #temperature = find_serial_port(SERIAL_TEMPSENS_VENDOR_ID, SERIAL_TEMPSENS_PRODUCT_ID)
-        temp_serial = read_temperature(self.device_serials[3])
-        esp = find_esp()
-        if temp_serial != -1:
-            # Change circle color to green
+    
+        if self.flag_connections[3]:
             self.ui.circles["Temperature Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
         else:
-            # Change circle color to white
             self.ui.circles["Temperature Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
             
-        if esp is not None:
+        if self.flag_connections[2]:
             self.ui.circles["3PAC"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
         else: 
             self.ui.circles["3PAC"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
@@ -629,8 +685,14 @@ class Functionality(QtWidgets.QMainWindow):
         if self.ethanol_is_pumping:
             if value:
                 value = float(value)
-                if value <= self.ui.progress_bar_ethanol.max:
-                    self.ui.progress_bar_ethanol.setValue(value)
+                # Check if the value is below zero
+                if value < 0:
+                    self.ui.progress_bar_sucrose.setValue(0)
+                # Check if the value is greater than the maximum allowed value
+                elif value > self.ui.progress_bar_sucrose.max:
+                    self.ui.progress_bar_sucrose.setValue(self.ui.progress_bar_sucrose.max)
+                else:
+                    self.ui.progress_bar_sucrose.setValue(value)
             else:
                 self.ui.progress_bar_ethanol.setValue(0)
         else: self.ui.progress_bar_ethanol.setValue(0)
@@ -783,7 +845,7 @@ class Functionality(QtWidgets.QMainWindow):
    
 #endregion
 
-#region : Box Plot Functionality
+#region : TEMPERATURE FRAME
 
     @pyqtSlot(float)
     def update_temperature_labels(self, temperature):
@@ -800,27 +862,99 @@ class Functionality(QtWidgets.QMainWindow):
 #region : UPDATE PRESSURE PROGRESS BAR 
 
     def update_pressure_progress_bar(self):
-        # Reset progress bar
-        self.ui.pressure_progress_bar.setValue(0)
-        
-        # Setup timer to update progress bar every second
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_pressure_progress)
-        self.timer.start(1000)  # 1000 milliseconds == 1 second
-        
-        # Initialize the counter
-        self.counter = 0
+        if not self.resetting_pressure:
+
+            self.resetting_pressure = True 
+
+            self.ui.pressure_reset_button.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #0796FF;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 30px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+            """)
+
+            # Reset progress bar
+            self.ui.pressure_progress_bar.setValue(0)
+            
+            # Setup timer to update progress bar every second
+            self.timer = QTimer(self)
+            self.timer.timeout.connect(self.update_pressure_progress)
+            self.timer.start(1000)  # 1000 milliseconds == 1 second
+            writePressureCommandStart(self.device_serials[2]); 
+            
+            # Initialize the counter
+            self.counter = 0
+
+        else: 
+            self.ui.pressure_reset_button.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #222222;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 30px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+
+                QPushButton:pressed {
+                    background-color: #0796FF;
+                }
+            """)
+            self.resetting_pressure = False
         
     def update_pressure_progress(self):
         self.counter += 1
         
-        if self.counter <= 60:
+        if self.counter <= 60 and self.resetting_pressure:
             self.ui.pressure_progress_bar.setValue(int((self.counter / 60) * 100))
         else:
             # Stop the timer and reset the counter when 60 seconds have passed
             self.timer.stop()
             self.counter = 0
             self.ui.pressure_progress_bar.setValue(0)  # Reset the progress bar to 0%
+            self.ui.pressure_reset_button.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #222222;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 30px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+
+                QPushButton:pressed {
+                    background-color: #0796FF;
+                }
+            """)
+            writePressureCommandStop(self.device_serials[2]); 
+
+
+#endregion
+
+#region : UPDATE PRESSURE LINE EDIT VALUE
+
+    def update_pressure_line_edit(self, value):
+        if self.reading_pressure and value is not None:
+            self.ui.pressure_data.setText(f"{value} Bar")
+
+
+
 
 #endregion
 
