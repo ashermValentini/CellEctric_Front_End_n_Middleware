@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1336</width>
-    <height>819</height>
+    <width>1154</width>
+    <height>813</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -77,29 +77,197 @@
        </item>
        <item>
         <widget class="QStackedWidget" name="stackedWidget">
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
          <widget class="QWidget" name="Dashboard">
           <layout class="QGridLayout" name="gridLayout_6">
-           <item row="1" column="2">
-            <widget class="QWidget" name="Window_Graphs" native="true">
+           <item row="0" column="0">
+            <widget class="QWidget" name="Window_PSU" native="true">
              <property name="minimumSize">
               <size>
-               <width>0</width>
-               <height>250</height>
+               <width>150</width>
+               <height>0</height>
               </size>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_10">
+             <property name="maximumSize">
+              <size>
+               <width>150</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_6">
               <item>
-               <widget class="MplWidget" name="MplWidget" native="true"/>
+               <widget class="QPushButton" name="button_toggle_psu_enable">
+                <property name="font">
+                 <font>
+                  <pointsize>20</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>PSU</string>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="PosVoltInput">
+                <item>
+                 <widget class="QLabel" name="ImagePlus">
+                  <property name="minimumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_plus_w.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="input_voltage_positive">
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>45</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="PosVolt_Unit">
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>V</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="NegVoltInput">
+                <item>
+                 <widget class="QLabel" name="ImageMinus">
+                  <property name="minimumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>20</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="pixmap">
+                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_minus_w.png</pixmap>
+                  </property>
+                  <property name="scaledContents">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="input_voltage_negative">
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>45</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="NegVolt_Unit">
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>V</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="checkbox_link_voltages">
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true"/>
+                </property>
+                <property name="text">
+                 <string>LINK VOLTAGES</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="button_apply_voltages">
+                <property name="text">
+                 <string>APPLY VOLTAGE</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </widget>
            </item>
-           <item row="1" column="1">
+           <item row="2" column="1">
             <widget class="QWidget" name="Window_LiveData" native="true">
              <property name="minimumSize">
               <size>
-               <width>300</width>
-               <height>250</height>
+               <width>230</width>
+               <height>300</height>
               </size>
              </property>
              <property name="maximumSize">
@@ -127,31 +295,6 @@
               <item row="10" column="3" colspan="2">
                <layout class="QHBoxLayout" name="Image_Min_Pressure">
                 <item>
-                 <widget class="QLabel" name="label_77">
-                  <property name="minimumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="pixmap">
-                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_down_w.png</pixmap>
-                  </property>
-                  <property name="scaledContents">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
                  <widget class="QLabel" name="label_78">
                   <property name="font">
                    <font>
@@ -168,31 +311,6 @@
               <item row="9" column="3" colspan="2">
                <layout class="QHBoxLayout" name="Image_Max_Pressure">
                 <item>
-                 <widget class="QLabel" name="label_79">
-                  <property name="minimumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="pixmap">
-                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_up_w.png</pixmap>
-                  </property>
-                  <property name="scaledContents">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
                  <widget class="QLabel" name="label_80">
                   <property name="font">
                    <font>
@@ -205,45 +323,6 @@
                  </widget>
                 </item>
                </layout>
-              </item>
-              <item row="5" column="2">
-               <spacer name="verticalSpacer_6">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>40</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="8" column="2">
-               <spacer name="verticalSpacer_4">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>40</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="2" column="2">
-               <spacer name="verticalSpacer_5">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>40</height>
-                 </size>
-                </property>
-               </spacer>
               </item>
               <item row="7" column="5">
                <layout class="QHBoxLayout" name="Values_Min_Temp">
@@ -267,7 +346,7 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>21.3</string>
+                   <string>--</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -290,31 +369,6 @@
               </item>
               <item row="7" column="3" colspan="2">
                <layout class="QHBoxLayout" name="Image_Min_Temp">
-                <item>
-                 <widget class="QLabel" name="label_39">
-                  <property name="minimumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="pixmap">
-                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_down_w.png</pixmap>
-                  </property>
-                  <property name="scaledContents">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
                 <item>
                  <widget class="QLabel" name="label_51">
                   <property name="font">
@@ -351,7 +405,7 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>9.5</string>
+                   <string>--</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -394,7 +448,7 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>10</string>
+                   <string>--</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -437,7 +491,7 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>9.5</string>
+                   <string>--</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -480,7 +534,7 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>42.5</string>
+                   <string>--</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -504,31 +558,6 @@
               <item row="1" column="3" colspan="2">
                <layout class="QHBoxLayout" name="Image_Min_Voltage">
                 <item>
-                 <widget class="QLabel" name="label_42">
-                  <property name="minimumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="pixmap">
-                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_down_w.png</pixmap>
-                  </property>
-                  <property name="scaledContents">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
                  <widget class="QLabel" name="label_47">
                   <property name="font">
                    <font>
@@ -548,14 +577,14 @@
                  <widget class="QLabel" name="label_34">
                   <property name="minimumSize">
                    <size>
-                    <width>40</width>
-                    <height>40</height>
+                    <width>25</width>
+                    <height>25</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>40</width>
-                    <height>40</height>
+                    <width>25</width>
+                    <height>25</height>
                    </size>
                   </property>
                   <property name="text">
@@ -589,31 +618,6 @@
               <item row="3" column="3" colspan="2">
                <layout class="QHBoxLayout" name="Image_Max_Current">
                 <item>
-                 <widget class="QLabel" name="label_36">
-                  <property name="minimumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="pixmap">
-                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_up_w.png</pixmap>
-                  </property>
-                  <property name="scaledContents">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
                  <widget class="QLabel" name="label_48">
                   <property name="font">
                    <font>
@@ -630,31 +634,6 @@
               <item row="0" column="3" colspan="2">
                <layout class="QHBoxLayout" name="Image_Max_Voltage">
                 <item>
-                 <widget class="QLabel" name="label_41">
-                  <property name="minimumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="pixmap">
-                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_up_w.png</pixmap>
-                  </property>
-                  <property name="scaledContents">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
                  <widget class="QLabel" name="label_46">
                   <property name="font">
                    <font>
@@ -670,6 +649,9 @@
               </item>
               <item row="3" column="5">
                <layout class="QHBoxLayout" name="Values_Max_Current">
+                <property name="spacing">
+                 <number>7</number>
+                </property>
                 <item>
                  <widget class="QLabel" name="value_current_max">
                   <property name="minimumSize">
@@ -690,7 +672,7 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>10</string>
+                   <string>--</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -714,31 +696,6 @@
               <item row="4" column="3" colspan="2">
                <layout class="QHBoxLayout" name="Image_Min_Current">
                 <item>
-                 <widget class="QLabel" name="label_38">
-                  <property name="minimumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="pixmap">
-                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_down_w.png</pixmap>
-                  </property>
-                  <property name="scaledContents">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
                  <widget class="QLabel" name="label_49">
                   <property name="font">
                    <font>
@@ -758,14 +715,14 @@
                  <widget class="QLabel" name="label_35">
                   <property name="minimumSize">
                    <size>
-                    <width>40</width>
-                    <height>40</height>
+                    <width>25</width>
+                    <height>25</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>40</width>
-                    <height>40</height>
+                    <width>25</width>
+                    <height>25</height>
                    </size>
                   </property>
                   <property name="text">
@@ -802,14 +759,14 @@
                  <widget class="QLabel" name="label_40">
                   <property name="minimumSize">
                    <size>
-                    <width>40</width>
-                    <height>40</height>
+                    <width>25</width>
+                    <height>25</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>40</width>
-                    <height>40</height>
+                    <width>25</width>
+                    <height>25</height>
                    </size>
                   </property>
                   <property name="text">
@@ -862,7 +819,7 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>44.5</string>
+                   <string>--</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -885,31 +842,6 @@
               </item>
               <item row="6" column="3" colspan="2">
                <layout class="QHBoxLayout" name="Image_Max_Temp">
-                <item>
-                 <widget class="QLabel" name="label_37">
-                  <property name="minimumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="pixmap">
-                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_up_w.png</pixmap>
-                  </property>
-                  <property name="scaledContents">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
                 <item>
                  <widget class="QLabel" name="label_50">
                   <property name="font">
@@ -946,7 +878,7 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>35.2</string>
+                   <string>--</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -973,14 +905,14 @@
                  <widget class="QLabel" name="label_17">
                   <property name="minimumSize">
                    <size>
-                    <width>40</width>
-                    <height>40</height>
+                    <width>25</width>
+                    <height>25</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
-                    <width>40</width>
-                    <height>40</height>
+                    <width>25</width>
+                    <height>25</height>
                    </size>
                   </property>
                   <property name="text">
@@ -1008,6 +940,45 @@
                 </item>
                </layout>
               </item>
+              <item row="2" column="0">
+               <spacer name="verticalSpacer_5">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="5" column="0">
+               <spacer name="verticalSpacer_6">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="8" column="0">
+               <spacer name="verticalSpacer_4">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
              </layout>
             </widget>
            </item>
@@ -1016,7 +987,7 @@
              <property name="minimumSize">
               <size>
                <width>550</width>
-               <height>150</height>
+               <height>270</height>
               </size>
              </property>
              <property name="maximumSize">
@@ -1032,7 +1003,7 @@
                  <widget class="QFrame" name="WidgetValveStates">
                   <property name="minimumSize">
                    <size>
-                    <width>400</width>
+                    <width>250</width>
                     <height>250</height>
                    </size>
                   </property>
@@ -1064,6 +1035,12 @@
                       <layout class="QVBoxLayout" name="verticalLayout">
                        <item>
                         <widget class="QPushButton" name="button_valvestate_sucrose">
+                         <property name="minimumSize">
+                          <size>
+                           <width>120</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="font">
                           <font>
                            <pointsize>20</pointsize>
@@ -1082,6 +1059,12 @@
                        </item>
                        <item>
                         <widget class="QPushButton" name="button_valvestate_ethanol">
+                         <property name="minimumSize">
+                          <size>
+                           <width>120</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="font">
                           <font>
                            <pointsize>20</pointsize>
@@ -1100,6 +1083,12 @@
                        </item>
                        <item>
                         <widget class="QPushButton" name="button_valvestate_cleaning">
+                         <property name="minimumSize">
+                          <size>
+                           <width>120</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="font">
                           <font>
                            <pointsize>20</pointsize>
@@ -1118,6 +1107,12 @@
                        </item>
                        <item>
                         <widget class="QPushButton" name="button_valvestate_off">
+                         <property name="minimumSize">
+                          <size>
+                           <width>120</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="font">
                           <font>
                            <pointsize>20</pointsize>
@@ -1139,29 +1134,26 @@
                      <item>
                       <layout class="QVBoxLayout" name="verticalLayout_9">
                        <item>
-                        <widget class="QCheckBox" name="checkbox_valvecontrol">
-                         <property name="font">
-                          <font>
-                           <pointsize>10</pointsize>
-                          </font>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true"/>
-                         </property>
-                         <property name="text">
-                          <string>INDIVIDUAL VALVE CONTROL</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
                         <widget class="QPushButton" name="button_toggle_valve1">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>50</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>80</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
                          <property name="font">
                           <font>
                            <pointsize>8</pointsize>
                           </font>
                          </property>
                          <property name="text">
-                          <string>V1 - CARTRIDGE PATH</string>
+                          <string>V1 - CARTR.</string>
                          </property>
                          <property name="checkable">
                           <bool>true</bool>
@@ -1170,13 +1162,25 @@
                        </item>
                        <item>
                         <widget class="QPushButton" name="button_toggle_valve2">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>50</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>80</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
                          <property name="font">
                           <font>
                            <pointsize>8</pointsize>
                           </font>
                          </property>
                          <property name="text">
-                          <string>V2 - ETHANOL PATH</string>
+                          <string>V2 - ETH.</string>
                          </property>
                          <property name="checkable">
                           <bool>true</bool>
@@ -1185,13 +1189,25 @@
                        </item>
                        <item>
                         <widget class="QPushButton" name="button_toggle_valve3">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>50</height>
+                          </size>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>80</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
                          <property name="font">
                           <font>
                            <pointsize>8</pointsize>
                           </font>
                          </property>
                          <property name="text">
-                          <string>V3 - SUCROSE PATH</string>
+                          <string>V3 - SUC.</string>
                          </property>
                          <property name="checkable">
                           <bool>true</bool>
@@ -1201,6 +1217,21 @@
                       </layout>
                      </item>
                     </layout>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="checkbox_valvecontrol">
+                     <property name="font">
+                      <font>
+                       <pointsize>10</pointsize>
+                      </font>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true"/>
+                     </property>
+                     <property name="text">
+                      <string>INDIVIDUAL VALVE CONTROL</string>
+                     </property>
+                    </widget>
                    </item>
                    <item>
                     <spacer name="verticalSpacer_7">
@@ -1735,7 +1766,7 @@
              </layout>
             </widget>
            </item>
-           <item row="1" column="0">
+           <item row="2" column="0">
             <widget class="QWidget" name="Window_Status" native="true">
              <property name="minimumSize">
               <size>
@@ -1914,9 +1945,6 @@
                 </item>
                </layout>
               </item>
-              <item>
-               <widget class="QTextBrowser" name="display_system_log"/>
-              </item>
              </layout>
             </widget>
            </item>
@@ -1924,7 +1952,7 @@
             <widget class="QWidget" name="Window_PG" native="true">
              <property name="minimumSize">
               <size>
-               <width>300</width>
+               <width>200</width>
                <height>150</height>
               </size>
              </property>
@@ -2173,21 +2201,6 @@
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_2">
                 <item>
-                 <widget class="QLabel" name="BoxLabel_PulseShape">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>PULSE SHAPE</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignCenter</set>
-                  </property>
-                 </widget>
-                </item>
-                <item>
                  <widget class="QPushButton" name="button_toggle_logging">
                   <property name="font">
                    <font>
@@ -2220,12 +2233,12 @@
              </layout>
             </widget>
            </item>
-           <item row="0" column="0">
-            <widget class="QWidget" name="Window_PSU" native="true">
+           <item row="1" column="0">
+            <widget class="QFrame" name="Window_Syringe">
              <property name="minimumSize">
               <size>
-               <width>150</width>
-               <height>0</height>
+               <width>0</width>
+               <height>100</height>
               </size>
              </property>
              <property name="maximumSize">
@@ -2234,168 +2247,97 @@
                <height>16777215</height>
               </size>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_6">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_17">
               <item>
-               <widget class="QPushButton" name="button_toggle_psu_enable">
-                <property name="font">
-                 <font>
-                  <pointsize>20</pointsize>
-                 </font>
-                </property>
+               <widget class="QLabel" name="Text_SyringeSettings">
                 <property name="text">
-                 <string>PSU</string>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
+                 <string>SYRINGE SETTINGS</string>
                 </property>
                </widget>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="PosVoltInput">
+               <widget class="QLabel" name="Text_InnerDiameter">
+                <property name="text">
+                 <string>Inner Diameter [mm]</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="input_syringe_diameter"/>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QFrame" name="Window_PressureControl">
+             <property name="maximumSize">
+              <size>
+               <width>300</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_18">
+              <item>
+               <widget class="QLabel" name="TEXT_PressurePumpControl">
+                <property name="text">
+                 <string>PRESSURE PUMP CONTROL</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_13">
                 <item>
-                 <widget class="QLabel" name="ImagePlus">
-                  <property name="minimumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
+                 <widget class="QLabel" name="TEXT_Psys">
                   <property name="text">
-                   <string/>
-                  </property>
-                  <property name="pixmap">
-                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_plus_w.png</pixmap>
-                  </property>
-                  <property name="scaledContents">
-                   <bool>true</bool>
+                   <string>Psys</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="input_voltage_positive">
-                  <property name="font">
-                   <font>
-                    <pointsize>14</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>45</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                 </widget>
+                 <widget class="QLineEdit" name="input_system_pressure"/>
                 </item>
                 <item>
-                 <widget class="QLabel" name="PosVolt_Unit">
-                  <property name="font">
-                   <font>
-                    <pointsize>14</pointsize>
-                   </font>
-                  </property>
+                 <widget class="QLabel" name="TEXT_mbar">
                   <property name="text">
-                   <string>V</string>
+                   <string>mbar</string>
                   </property>
                  </widget>
                 </item>
                </layout>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="NegVoltInput">
-                <item>
-                 <widget class="QLabel" name="ImageMinus">
-                  <property name="minimumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>20</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="pixmap">
-                   <pixmap resource="../../../GUI-BASESTATION/GUI_01/resources.qrc">:/icons/icons_bright/icon_minus_w.png</pixmap>
-                  </property>
-                  <property name="scaledContents">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="input_voltage_negative">
-                  <property name="font">
-                   <font>
-                    <pointsize>14</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>45</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="NegVolt_Unit">
-                  <property name="font">
-                   <font>
-                    <pointsize>14</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>V</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="checkbox_link_voltages">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true"/>
-                </property>
+               <widget class="QPushButton" name="button_apply_system_pressure">
                 <property name="text">
-                 <string>LINK VOLTAGES</string>
+                 <string>SET PRESSURE</string>
                 </property>
                </widget>
               </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="1" column="2" rowspan="3">
+            <widget class="QWidget" name="Window_Graphs" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>250</height>
+              </size>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_10">
               <item>
-               <widget class="QPushButton" name="button_apply_voltages">
-                <property name="text">
-                 <string>APPLY VOLTAGE</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="verticalSpacer_2">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>40</height>
-                 </size>
-                </property>
-               </spacer>
+               <widget class="MplWidget" name="MplWidget" native="true"/>
               </item>
              </layout>
             </widget>
@@ -2782,6 +2724,13 @@
                    </property>
                   </spacer>
                  </item>
+                 <item row="12" column="0" colspan="5">
+                  <widget class="QPushButton" name="button_blood_setpos">
+                   <property name="text">
+                    <string>SET POSITION</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="7" column="0">
                   <widget class="QPushButton" name="move_blood_downslow">
                    <property name="minimumSize">
@@ -2799,13 +2748,6 @@
                    </property>
                    <property name="flat">
                     <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="12" column="0" colspan="5">
-                  <widget class="QPushButton" name="button_blood_setpos">
-                   <property name="text">
-                    <string>SET POSITION</string>
                    </property>
                   </widget>
                  </item>
@@ -2863,13 +2805,17 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="11" column="2" colspan="3">
-                  <widget class="QLineEdit" name="input_blood_position"/>
-                 </item>
                  <item row="11" column="0" colspan="2">
                   <widget class="QLabel" name="label_blood_position">
                    <property name="text">
                     <string>POSITION:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="10" column="0" colspan="5">
+                  <widget class="Line" name="line_3">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
                    </property>
                   </widget>
                  </item>
@@ -2907,10 +2853,13 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="10" column="0" colspan="5">
-                  <widget class="Line" name="line_3">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
+                 <item row="11" column="2" colspan="2">
+                  <widget class="QLineEdit" name="input_blood_position"/>
+                 </item>
+                 <item row="11" column="4">
+                  <widget class="QLabel" name="label_11">
+                   <property name="text">
+                    <string>NAN</string>
                    </property>
                   </widget>
                  </item>
@@ -3265,9 +3214,6 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="9" column="2" colspan="3">
-                  <widget class="QLineEdit" name="input_cartridge_position"/>
-                 </item>
                  <item row="1" column="1" colspan="2">
                   <spacer name="horizontalSpacer_12">
                    <property name="orientation">
@@ -3388,6 +3334,16 @@
                   <widget class="Line" name="line_4">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="2" colspan="2">
+                  <widget class="QLineEdit" name="input_cartridge_position"/>
+                 </item>
+                 <item row="9" column="4">
+                  <widget class="QLabel" name="label_12">
+                   <property name="text">
+                    <string>NAN</string>
                    </property>
                   </widget>
                  </item>
@@ -4400,35 +4356,28 @@
               </item>
               <item>
                <layout class="QGridLayout" name="gridLayout_12">
-                <item row="3" column="0">
-                 <widget class="QPushButton" name="button_flaskpos_1">
+                <item row="1" column="3">
+                 <widget class="QLabel" name="label_71">
                   <property name="text">
-                   <string>FLASK 1</string>
+                   <string>NAN</string>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="1">
-                 <widget class="QPushButton" name="button_flaskpos_2">
+                <item row="2" column="4" colspan="4">
+                 <widget class="QPushButton" name="button_set_flasks_pos_lr">
                   <property name="text">
-                   <string>FLASK 2</string>
+                   <string>SET POSITION</string>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="2">
-                 <widget class="QPushButton" name="button_flaskpos_3">
+                <item row="2" column="0" colspan="4">
+                 <widget class="QPushButton" name="button_set_flasks_pos_ud">
                   <property name="text">
-                   <string>FLASK 3</string>
+                   <string>SET POSITION</string>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="3">
-                 <widget class="QPushButton" name="button_flaskpos_4">
-                  <property name="text">
-                   <string>FLASK 4</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0" colspan="2">
+                <item row="0" column="0" colspan="4">
                  <widget class="QLabel" name="label_32">
                   <property name="font">
                    <font>
@@ -4443,7 +4392,7 @@
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="2" colspan="2">
+                <item row="0" column="4" colspan="4">
                  <widget class="QLabel" name="label_31">
                   <property name="font">
                    <font>
@@ -4458,27 +4407,92 @@
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="0" colspan="2">
+                <item row="1" column="1">
+                 <widget class="QLabel" name="label_73">
+                  <property name="text">
+                   <string>POSITION:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="7">
+                 <widget class="QLabel" name="label_72">
+                  <property name="text">
+                   <string>NAN</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
                  <widget class="QLineEdit" name="line_flasks_pos_ud"/>
                 </item>
-                <item row="2" column="0" colspan="2">
-                 <widget class="QPushButton" name="button_set_flasks_pos_ud">
+                <item row="1" column="5">
+                 <widget class="QLabel" name="label_74">
                   <property name="text">
-                   <string>SET POSITION</string>
+                   <string>POSITION:</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="2" colspan="2">
+                <item row="1" column="6">
                  <widget class="QLineEdit" name="line_flasks_pos_lr"/>
                 </item>
-                <item row="2" column="2" colspan="2">
-                 <widget class="QPushButton" name="button_set_flasks_pos_lr">
-                  <property name="text">
-                   <string>SET POSITION</string>
-                  </property>
-                 </widget>
-                </item>
                </layout>
+              </item>
+              <item>
+               <widget class="QFrame" name="frame">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>40</height>
+                 </size>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_12">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QPushButton" name="button_flaskpos_1">
+                   <property name="text">
+                    <string>FLASK 1</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="button_flaskpos_2">
+                   <property name="text">
+                    <string>FLASK 2</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="button_flaskpos_4">
+                   <property name="text">
+                    <string>FLASK 4</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="button_flaskpos_3">
+                   <property name="text">
+                    <string>FLASK 3</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
               </item>
              </layout>
             </widget>
@@ -4561,9 +4575,9 @@
           </layout>
          </widget>
          <widget class="QWidget" name="Settings">
-          <layout class="QGridLayout" name="gridLayout_2">
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_6">
+          <layout class="QVBoxLayout" name="verticalLayout_19">
+           <item>
+            <widget class="QLabel" name="TEXT_SETTINGS">
              <property name="font">
               <font>
                <pointsize>24</pointsize>
@@ -4573,6 +4587,9 @@
               <string>SETTINGS</string>
              </property>
             </widget>
+           </item>
+           <item>
+            <widget class="QTextBrowser" name="display_system_log"/>
            </item>
           </layout>
          </widget>
