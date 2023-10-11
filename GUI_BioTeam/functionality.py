@@ -75,7 +75,7 @@ class TempWorker(QObject):
 
 class ReadSerialWorker(QObject):
     update_data = pyqtSignal(float)
-    interval = 250  # customize the interval to the nyquist criteria (half the sending rate from the esp32 so that we dont miss data)
+    interval = 500  
 
     def __init__(self, device_serials):
         super(ReadSerialWorker, self).__init__()
@@ -114,7 +114,14 @@ class ReadSerialWorker(QObject):
 class Functionality(QtWidgets.QMainWindow):
     def __init__(self):
         super(Functionality, self).__init__()
+
+
+        # =====================================
+        # GLOBAL VARIABLES
+        # =====================================    
         
+        self.accumulated_sucrose_volume = 0
+        self.accumulated_ethanol_volume = 0
   
         # =====================================
         # START SERIAL CONNECTION TO DEVICES
@@ -184,6 +191,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.blood_is_homing= False         # sucrose pumping button state flag (starts unclicked)
         self.blood_is_jogging_down = False  # ethanol pumping button state flag (starts unclicked)
         self.blood_is_jogging_up = False    # ethanol pumping button state flag (starts unclicked)
+        self.blood_is_pumping = False
 
         if self.flag_connections[2]: 
             self.ui.button_blood_top.clicked.connect(lambda: self.movement_homing(1))                       # connect the signal to the slot 
@@ -192,6 +200,7 @@ class Functionality(QtWidgets.QMainWindow):
 
             self.ui.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, True)) # connect the signal to the slot
             self.ui.button_blood_down.released.connect(lambda: self.movement_stopjogging(1))                    # connect the signal to the slot
+            self.ui.button_blood_play_pause.pressed.connect(self.start_blood_pump)
 
 
         #================================
@@ -533,6 +542,7 @@ class Functionality(QtWidgets.QMainWindow):
                 """)
                 #Change the status of temp_is_plotting from true to False because we are about to stop plotting
                 self.sucrose_is_pumping = False 
+                self.accumulated_sucrose_volume=0 
                 self.updateSucroseProgressBar(0)
                 self.device_serials[2].write(PUMPS_OFF.encode())
 
@@ -560,7 +570,7 @@ class Functionality(QtWidgets.QMainWindow):
                 p1fr=2.50
 
                 #writeEthanolPumpFlowRate(self.device_serials[2], p1fr)
-                writeSucrosePumpFlowRate(self.device_serials[2], p1fr) #only for the investors presentation
+                writeEthanolPumpFlowRate(self.device_serials[2], p1fr) #only for the investors presentation
                 
             else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
                 self.ui.button_ethanol.setStyleSheet("""
@@ -584,6 +594,7 @@ class Functionality(QtWidgets.QMainWindow):
                 
                 #print("MESSAGE: Stop Ethanol")
                 self.ethanol_is_pumping = False 
+                self.accumulated_ethanol_volume = 0
                 self.device_serials[2].write(PUMPS_OFF.encode())
                 self.updateEthanolProgressBar(0)
 
@@ -639,7 +650,52 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion
 
 # region : BLOOD PUMP
-        # see motor movement functions
+    def start_blood_pump(self):
+        if not self.blood_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
+            self.blood_is_pumping = True  
+            self.ui.button_blood_play_pause.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #0796FF;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 30px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+            """)
+            blood_volume= float(self.ui.line_edit_blood_2.text()) 
+            blood_speed = float(self.ui.line_edit_blood.text())
+
+            writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
+
+                
+        else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
+            self.ui.button_blood_play_pause.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #222222;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 30px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+
+                QPushButton:pressed {
+                    background-color: #0796FF;
+                }
+            """)
+            self.blood_is_pumping = False 
+            writeBloodSyringe(self.device_serials[2], 0, 0) #cant remember the disable motor command so change at some point to that command 
+
+
 #endregion
 
 # region : CONNECTION CIRCLE FUNCTION           
@@ -664,6 +720,18 @@ class Functionality(QtWidgets.QMainWindow):
         if self.sucrose_is_pumping:
             if value:
                 value = float(value)
+
+                # Check that volume has been reached
+                volume_per_interval = value *(ReadSerialWorker.interval/60000)
+                self.accumulated_sucrose_volume += volume_per_interval
+
+                try:
+                    line_edit_value = float(self.ui.line_edit_sucrose_2.text()) 
+                    if self.accumulated_sucrose_volume >= line_edit_value:
+                        self.start_sucrose_pump()  
+                        return
+                except ValueError:
+                    pass  
                 
                 # Check if the value is below zero
                 if value < 0:
@@ -685,14 +753,27 @@ class Functionality(QtWidgets.QMainWindow):
         if self.ethanol_is_pumping:
             if value:
                 value = float(value)
+
+
+                # Check that volume has been reached
+                volume_per_interval = value *(ReadSerialWorker.interval/60000)
+                self.accumulated_ethanol_volume += volume_per_interval
+
+                try:
+                    line_edit_value = float(self.ui.line_edit_ethanol_2.text()) 
+                    if self.accumulated_ethanol_volume >= line_edit_value:
+                        self.start_ethanol_pump()  
+                        return
+                except ValueError:
+                    pass  
                 # Check if the value is below zero
                 if value < 0:
-                    self.ui.progress_bar_sucrose.setValue(0)
+                    self.ui.progress_bar_ethanol.setValue(0)
                 # Check if the value is greater than the maximum allowed value
-                elif value > self.ui.progress_bar_sucrose.max:
-                    self.ui.progress_bar_sucrose.setValue(self.ui.progress_bar_sucrose.max)
+                elif value > self.ui.progress_bar_ethanol.max:
+                    self.ui.progress_bar_ethanol.setValue(self.ui.progress_bar_ethanol.max)
                 else:
-                    self.ui.progress_bar_sucrose.setValue(value)
+                    self.ui.progress_bar_ethanol.setValue(value)
             else:
                 self.ui.progress_bar_ethanol.setValue(0)
         else: self.ui.progress_bar_ethanol.setValue(0)

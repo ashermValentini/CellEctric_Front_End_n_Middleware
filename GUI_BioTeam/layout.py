@@ -299,12 +299,12 @@ class Ui_MainWindow(object):
         group_box_layout_2 = QtWidgets.QHBoxLayout(group_box_sucrose_2)  # create layout for second groupbox
         group_box_sucrose_2.setLayout(group_box_layout_2)  # set layout to second groupbox
 
-        unit_label_2 = QtWidgets.QLabel("s")  # unit for time variable
+        unit_label_2 = QtWidgets.QLabel("ml")  # unit for time variable
         unit_label_2.setStyleSheet(input_style)
 
         self.line_edit_sucrose_2 = QtWidgets.QLineEdit()
         self.line_edit_sucrose_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
-        self.line_edit_sucrose_2.setText("45")
+        self.line_edit_sucrose_2.setText("5")
 
         group_box_layout_2.addWidget(self.line_edit_sucrose_2)
         group_box_layout_2.addWidget(unit_label_2)
@@ -401,10 +401,36 @@ class Ui_MainWindow(object):
             }
         """)
 
+        self.button_blood_play_pause = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/play_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_blood_play_pause.setIcon(icon)
+        self.button_blood_play_pause.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.button_blood_play_pause.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+
+
+
+
 
         progress_button_layout.addWidget(self.button_blood_top)  # add button to the layout
         progress_button_layout.addWidget(self.button_blood_up)
         progress_button_layout.addWidget(self.button_blood_down)
+        progress_button_layout.addWidget(self.button_blood_play_pause)  # add button to the layout
         layout_blood.addLayout(progress_button_layout)  # add layout for progress bar and button to main layout
         # endregion
        
@@ -422,7 +448,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_blood = QtWidgets.QLineEdit()
         self.line_edit_blood.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
-        self.line_edit_blood.setText("2.50")
+        self.line_edit_blood.setText("0.25")
         group_box_layout.addWidget(self.line_edit_blood)
         group_box_layout.addWidget(unit_label)
         # endregion
@@ -433,12 +459,12 @@ class Ui_MainWindow(object):
         group_box_layout_2 = QtWidgets.QHBoxLayout(group_box_blood_2)  # create layout for second groupbox
         group_box_blood_2.setLayout(group_box_layout_2)  # set layout to second groupbox
 
-        unit_label_2 = QtWidgets.QLabel("s")  # unit for time variable
+        unit_label_2 = QtWidgets.QLabel("ml")  # unit for time variable
         unit_label_2.setStyleSheet(input_style)
 
         self.line_edit_blood_2 = QtWidgets.QLineEdit()
         self.line_edit_blood_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
-        self.line_edit_blood_2.setText("45")
+        self.line_edit_blood_2.setText("1")
 
         group_box_layout_2.addWidget(self.line_edit_blood_2)
         group_box_layout_2.addWidget(unit_label_2)
@@ -533,12 +559,12 @@ class Ui_MainWindow(object):
         group_box_layout_2 = QtWidgets.QHBoxLayout(group_box_ethanol_2)  # create layout for second groupbox
         group_box_ethanol_2.setLayout(group_box_layout_2)  # set layout to second groupbox
 
-        unit_label_2 = QtWidgets.QLabel("s")  # unit for time variable
+        unit_label_2 = QtWidgets.QLabel("ml")  # unit for time variable
         unit_label_2.setStyleSheet(input_style)
 
         self.line_edit_ethanol_2 = QtWidgets.QLineEdit()
         self.line_edit_ethanol_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
-        self.line_edit_ethanol_2.setText("30")
+        self.line_edit_ethanol_2.setText("5")
 
         group_box_layout_2.addWidget(self.line_edit_ethanol_2)
         group_box_layout_2.addWidget(unit_label_2)
