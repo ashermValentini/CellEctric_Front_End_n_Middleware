@@ -167,7 +167,6 @@ class Ui_MainWindow(object):
 
     # region: Topbar
 
-
         self.v_layout = QtWidgets.QVBoxLayout()
         self.h_layout.addLayout(self.v_layout)
         self.h_layout.setSpacing(0)
@@ -944,7 +943,7 @@ class Ui_MainWindow(object):
         pressure_reset_layout = QtWidgets.QHBoxLayout()
         pressure_layout.addLayout(pressure_reset_layout)
         
-        # Add labels for pressure reset
+        # Add button to reset the pressure
         self.pressure_reset_button = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/increase.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -970,7 +969,6 @@ class Ui_MainWindow(object):
 
 
         # Add pressure reset progress bar
-
         self.pressure_progress_bar = QProgressBar()
         self.pressure_progress_bar.setStyleSheet(
             """
@@ -991,7 +989,6 @@ class Ui_MainWindow(object):
             }
             """
         )
-
 
         self.pressure_progress_bar.setValue(0)
 
@@ -1337,71 +1334,317 @@ class Ui_MainWindow(object):
         self.main_content.setStretchFactor(self.plot_layout, 50)    
 #endregion
 
-#region : Experiment Page Layout        
+
+
+
+#region : Experiment Page Layout    
+# 
+        self.experiment_page_h_layout = QtWidgets.QHBoxLayout(self.experiment)
+        self.experiment_page_h_layout.setContentsMargins(0, 0, 0, 0)    
+    
     # region : Sidebar
 
-        self.h_layout = QtWidgets.QHBoxLayout(self.experiment)
-        self.h_layout.setContentsMargins(0, 0, 0, 0)
-    
-        self.frame_d_sidebar = QtWidgets.QFrame()
-        self.frame_d_sidebar.setContentsMargins(0, 0, 0, 0)
-        self.frame_d_sidebar.setFixedWidth(int(MainWindow.height() * 0.05))
-        self.frame_d_sidebar.setStyleSheet("background-color: #222222;")
-        self.frame_d_sidebar.setObjectName("frame_d_sidebar")
+        self.frame_e_sidebar = QtWidgets.QFrame()
+        self.frame_e_sidebar.setContentsMargins(0, 0, 0, 0)
+        self.frame_e_sidebar.setFixedWidth(int(MainWindow.height() * 0.07))
+        self.frame_e_sidebar.setStyleSheet("background-color: #222222;")
+        self.frame_e_sidebar.setObjectName("frame_d_sidebar")
         
-        self.h_layout.addWidget(self.frame_d_sidebar)
+        # Create layout for sidebar 
+        self.experiment_page_side_bar_layout = QtWidgets.QVBoxLayout(self.frame_e_sidebar)
         
+        # Attach sidebars layout to the side bar frame 
+        self.frame_e_sidebar.setLayout(self.experiment_page_side_bar_layout)
 
-        # Add company logo to sidebar
-        self.sidebar_logo = QtWidgets.QLabel(self.frame_d_sidebar)
-        self.sidebar_logo.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
+        # Create company logo
+        self.experiment_page_sidebar_logo = QtWidgets.QLabel()
+        self.experiment_page_sidebar_logo.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
+        buffer = 10  
+        self.experiment_page_sidebar_logo.setGeometry(buffer, buffer, self.frame_e_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
+        experiment_page_logo_pixmap = QtGui.QPixmap( ":/images/logo_small_white.png")
+        self.experiment_page_sidebar_logo.setPixmap(experiment_page_logo_pixmap.scaled(self.experiment_page_sidebar_logo.width(), self.experiment_page_sidebar_logo.height(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
+        
+        # Create the button to turn on the lights
+        self.experiment_page_button_lights  = QtWidgets.QPushButton() 
+        buffer = 10  
+        self.experiment_page_button_lights  .setGeometry(buffer, buffer, self.frame_e_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/lightbulb.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.experiment_page_button_lights  .setIcon(icon)
+        self.experiment_page_button_lights  .setIconSize(QtCore.QSize(40, 40))  # Adjust size as needed
+        self.experiment_page_button_lights  .setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
 
-        buffer = 10  # Amount of buffer space on each side
-        self.sidebar_logo.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 2 * buffer,
-                                      int(MainWindow.height() * 0.2))
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
 
-        logo_pixmap = QtGui.QPixmap( ":/images/logo_small_white.png")
-        self.sidebar_logo.setPixmap(logo_pixmap.scaled(self.sidebar_logo.width(), self.sidebar_logo.height(),
-                                                       QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        # Create the button for routing to the experiment page 
+        self.button_dashboard_route  = QtWidgets.QPushButton() 
+        buffer = 10  
+        self.button_dashboard_route.setGeometry(buffer, buffer, self.frame_e_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/icon_dashboard_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_dashboard_route.setIcon(icon)
+        self.button_dashboard_route.setIconSize(QtCore.QSize(40, 40))  # Adjust size as needed
+        self.button_dashboard_route.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+        
+        # Add widgets to the layout  
+        self.experiment_page_side_bar_layout.addWidget(self.experiment_page_sidebar_logo)
+        self.experiment_page_side_bar_layout.addSpacing(15)
+        self.experiment_page_side_bar_layout.addWidget(self.experiment_page_button_lights)
+        self.experiment_page_side_bar_layout.addWidget(self.button_dashboard_route)
+        self.experiment_page_side_bar_layout.addStretch(1)
+
+        # Add the entire sidebar as the left most widget on the experimentn page 
+        self.experiment_page_h_layout.addWidget(self.frame_e_sidebar)
+
     #endregion
+        
+        self.experiment_page_v_layout = QtWidgets.QVBoxLayout()
+        self.experiment_page_h_layout.addLayout(self.experiment_page_v_layout)
+        self.experiment_page_h_layout.setSpacing(0)
+        self.experiment_page_v_layout.setSpacing(0)
+        self.experiment_page_v_layout.setContentsMargins(0, 0, 0, 0)
 
     # region: Topbar
     
-        self.v_layout = QtWidgets.QVBoxLayout()
-        self.h_layout.addLayout(self.v_layout)
-        self.h_layout.setSpacing(0)
-        self.v_layout.setSpacing(0)
-        self.v_layout.setContentsMargins(0, 0, 0, 0)
-
+        self.frame_e_topbar = QtWidgets.QFrame()
+        self.frame_e_topbar.setContentsMargins(0, 0, 0, 0)
+        self.frame_e_topbar.setFixedHeight(int(MainWindow.height() * 0.07))
+        self.frame_e_topbar.setStyleSheet("background-color: #222222;")
+        self.frame_e_topbar.setObjectName("frame_d_topbar")
         
-        self.frame_d_topbar = QtWidgets.QFrame()
-        self.frame_d_topbar.setContentsMargins(0, 0, 0, 0)
-        self.frame_d_topbar.setFixedHeight(int(MainWindow.height() * 0.05))
-        self.frame_d_topbar.setStyleSheet("background-color: #222222;")
-        self.frame_d_topbar.setObjectName("frame_d_topbar")
-        
-        self.v_layout.addWidget(self.frame_d_topbar)
+        # Create layout for the frame_d_topbar
+        experiment_page_topbar_layout = QtWidgets.QHBoxLayout(self.frame_e_topbar)
 
+        # Attach the topbar's layout to the topbar frame 
+        self.frame_e_topbar.setLayout(experiment_page_topbar_layout)
 
-        # Add "Dashboard" label to top bar
-        self.label = QtWidgets.QLabel(self.frame_d_topbar)
-        self.label.setText("EXPERIMENT")
-        self.label.setStyleSheet(header_style)
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        # Add "experiment" label to top bar
+        self.experiment_page_label = QtWidgets.QLabel(self.frame_e_topbar)
+        self.experiment_page_label.setText("EXPERIMENT")
+        self.experiment_page_label.setStyleSheet(header_style)
+        self.experiment_page_label.setAlignment(QtCore.Qt.AlignCenter)
 
-        # Set up a layout for the frame_d_topbar
-        topbar_layout = QtWidgets.QHBoxLayout(self.frame_d_topbar)
-        topbar_layout.setContentsMargins(0, 0, 0, 0)
-        self.frame_d_topbar.setLayout(topbar_layout)
-        topbar_layout.addWidget(self.label)  # Add the label to the layout
+        # Add the lable to the topbar's layout 
+        experiment_page_topbar_layout.addWidget(self.experiment_page_label)
+
+        # Add the top bar frame to the v_layout 
+        self.experiment_page_v_layout.addWidget(self.frame_e_topbar)
 
 
     #endregion
     
     # region : Main content
-        self.main_content = QtWidgets.QVBoxLayout()
-        self.main_content.setContentsMargins(0, 0, 0, 0)
-        self.v_layout.addLayout(self.main_content)
+        self.experiment_page_main_content = QtWidgets.QVBoxLayout()
+        self.experiment_page_main_content.setContentsMargins(20, 20, 0, 0)
+        self.experiment_page_main_content.setAlignment(QtCore.Qt.AlignTop)
+
+        self.experiment_page_v_layout.addLayout(self.experiment_page_main_content)
+
+    # region : data saving 
+        self.frame_user_info= QtWidgets.QFrame()
+        self.frame_user_info.setStyleSheet("background-color: #222222; border-radius: 15px;")
+        self.frame_user_info.setObjectName("frame_e_user_info")
+
+        layout_user_info = QtWidgets.QHBoxLayout(self.frame_user_info)
+        self.frame_user_info.setLayout(layout_user_info)
+
+        # region : add label for the which user
+        label_user_name = QtWidgets.QLabel(self.frame_user_info)
+        label_user_name.setStyleSheet(input_style)
+        label_user_name.setText("Member: ")
+        #endregion
+
+        # region: add combobox to select user name
+        self.user_name_combobox = QtWidgets.QComboBox()
+        combobox_button_style = """
+        QComboBox, QPushButton {
+            color: #FFFFFF;
+            background-color: rgba(255, 255, 255, 0.1);
+            font-family: Archivo;
+            font-size: 20px;   /* adjust this as needed */
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 5px;
+            padding: 5px 15px;
+        }
+        QComboBox::drop-down, QPushButton {
+            border: none;
+        }
+        QComboBox:hover, QPushButton:hover {
+            background-color: rgba(7, 150, 255, 0.7);  
+        }
+        QComboBox QAbstractItemView {
+        color: #FFFFFF;
+        background-color: rgba(255, 255, 255, 0.1);
+        font-family: Archivo;
+        font-size: 20px;   /* adjust this as needed */
+        border: 2px solid rgba(255, 255, 255, 0.7);
+        border-radius: 5px;
+        selection-background-color: rgba(7, 150, 255, 0.5);  
+        }
+        """   
+        
+        self.user_name_combobox.setStyleSheet(combobox_button_style)
+        self.user_name_combobox.addItems(["Dora", "Julia"])  # Add more emails as needed
+        #endregion
+
+        # region: add label for which email
+        label_user_email = QtWidgets.QLabel(self.frame_user_info)
+        label_user_email.setStyleSheet(input_style)
+        label_user_email.setText("Email: ")
+        #endregion
+
+        # region: add combobox to select which email to use
+        self.user_email_combobox = QtWidgets.QComboBox()
+        combobox_button_style = """
+        QComboBox, QPushButton {
+            color: #FFFFFF;
+            background-color: rgba(255, 255, 255, 0.1);
+            font-family: Archivo;
+            font-size: 20px;   /* adjust this as needed */
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 5px;
+            padding: 5px 15px;
+        }
+        QComboBox::drop-down, QPushButton {
+            border: none;
+        }
+        QComboBox:hover, QPushButton:hover {
+            background-color: rgba(7, 150, 255, 0.7);  
+        }
+        QComboBox QAbstractItemView {
+        color: #FFFFFF;
+        background-color: rgba(255, 255, 255, 0.1);
+        font-family: Archivo;
+        font-size: 20px;   /* adjust this as needed */
+        border: 2px solid rgba(255, 255, 255, 0.7);
+        border-radius: 5px;
+        selection-background-color: rgba(7, 150, 255, 0.5);  
+        }
+        """   
+        
+        self.user_email_combobox.setStyleSheet(combobox_button_style)
+        self.user_email_combobox.addItems(["user1@example.com", "user2@example.com"])  # Add more emails as needed
+        #endregion
+
+        # region: add label for which application
+        label_application = QtWidgets.QLabel(self.frame_user_info)
+        label_application.setStyleSheet(input_style)
+        label_application.setText("Application: ")
+        #endregion
+
+        # region: add combobox to select which application to use
+        self.application_combobox = QtWidgets.QComboBox()
+        combobox_button_style = """
+        QComboBox, QPushButton {
+            color: #FFFFFF;
+            background-color: rgba(255, 255, 255, 0.1);
+            font-family: Archivo;
+            font-size: 20px;   /* adjust this as needed */
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 5px;
+            padding: 5px 15px;
+        }
+        QComboBox::drop-down, QPushButton {
+            border: none;
+        }
+        QComboBox:hover, QPushButton:hover {
+            background-color: rgba(7, 150, 255, 0.7);  
+        }
+        QComboBox QAbstractItemView {
+        color: #FFFFFF;
+        background-color: rgba(255, 255, 255, 0.1);
+        font-family: Archivo;
+        font-size: 20px;   /* adjust this as needed */
+        border: 2px solid rgba(255, 255, 255, 0.7);
+        border-radius: 5px;
+        selection-background-color: rgba(7, 150, 255, 0.5);  
+        }
+        """   
+        
+        self.application_combobox.setStyleSheet(combobox_button_style)
+        self.application_combobox.addItems(["POCII", "Ethanol to Sucrose Flush", "CG2 QC", "Autotune", "Demonstration"])  # Add more emails as needed
+        #endregion
+
+        # region: add choice lockin button 
+        self.user_info_lockin_button = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/check.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.user_info_lockin_button.setIcon(icon)
+        self.user_info_lockin_button.setIconSize(QtCore.QSize(20, 20))  # Adjust size as needed
+        self.user_info_lockin_button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        #endregion
+
+        layout_user_info.addWidget(label_user_name)
+        layout_user_info.addWidget(self.user_name_combobox)
+        layout_user_info.addStretch(1)
+
+        layout_user_info.addWidget(label_user_email)
+        layout_user_info.addWidget(self.user_email_combobox)
+
+        layout_user_info.addStretch(1)
+        layout_user_info.addWidget(label_application)
+        layout_user_info.addWidget(self.application_combobox)
+
+        layout_user_info.addStretch(1)
+        layout_user_info.addWidget(self.user_info_lockin_button)
+
+    # endregion
+
+    # region : line separator 
+        self.line = QtWidgets.QFrame()
+        self.line.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line.setStyleSheet("background-color: white;")
+
+    #endregion
+        self.experiment_page_main_content.addWidget(self.frame_user_info, alignment=QtCore.Qt.AlignTop)
+        self.experiment_page_main_content.addSpacing(20)
+        self.experiment_page_main_content.addWidget(self.line)
+        self.experiment_page_main_content.addSpacing(20)
+                
+
+
     #endregion
     
 #endregion    

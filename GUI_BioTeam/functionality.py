@@ -8,6 +8,7 @@ from Communication_Functions.communication_functions import *
 
 from PyQt5 import QtWidgets, QtCore, QtGui 
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTimer
+from PyQt5.QtWidgets import QProgressBar
 from layout import Ui_MainWindow
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -36,6 +37,108 @@ DIR_M3_LEFT = 1
 DIR_M4_UP = 1
 DIR_M4_DOWN = -1
 
+
+
+#===============================
+# EXPERIMENT FUNCTINALITY FRAME
+#===============================
+class CustomExperimentFrame(QtWidgets.QFrame):
+    def __init__(self, title, icon_paths):
+        super().__init__()
+        
+        self.setStyleSheet("background-color: #222222; border-radius: 15px;")
+        
+        layout = QtWidgets.QVBoxLayout(self)
+        
+        # Label
+        self.label = QtWidgets.QLabel(title)
+        self.label.setStyleSheet("QLabel { color : #FFFFFF; font-family: Archivo; font-size: 25px;  }")
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        
+        # Action items layout
+        self.button_layout = QtWidgets.QHBoxLayout()
+        
+        # Start/stop button
+        self.start_stop_button = QtWidgets.QPushButton()
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(icon_paths["start_stop"]), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.start_stop_button.setIcon(icon)
+        self.start_stop_button.setIconSize(QtCore.QSize(30, 30))
+        self.start_stop_button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        
+        # Progress bar
+        self.progress_bar = QtWidgets.QProgressBar()
+        self.progress_bar.setStyleSheet(
+            """
+            QProgressBar {
+                border: 2px solid white;
+                border-radius: 3px;
+                background-color: #222222;
+                text-align: center;
+                height: 50px;  /* Adjust as necessary */
+            }
+
+            QProgressBar::chunk {
+                background-color: rgba(7, 150, 255, 0.7);
+            }
+            QProgressBar {
+                color: white;  /* Color of the text */
+                font-size: 15px;  /* Size of the text */
+            }
+            """
+        )
+            
+        self.progress_bar.setValue(0)
+        
+        # Reset button
+        self.reset_button = QtWidgets.QPushButton()
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(icon_paths["reset"]), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.reset_button.setIcon(icon)
+        self.reset_button.setIconSize(QtCore.QSize(30, 30))
+        self.reset_button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        
+        # Add items to button layout
+        self.button_layout.addWidget(self.start_stop_button)
+        self.button_layout.addWidget(self.progress_bar)
+        self.button_layout.addWidget(self.reset_button)
+        
+        # Add widgets to main layout
+        layout.addWidget(self.label)
+        layout.addSpacing(10)
+        layout.addLayout(self.button_layout)
+
+        self.setLayout(layout)
 
 #========================
 # THREADS
@@ -156,14 +259,14 @@ class Functionality(QtWidgets.QMainWindow):
         
 
         self.ui.button_motors_home.clicked.connect(lambda: self.movement_homing(0))     # connect the signal to the slot 
-        #self.ui.button_experiment_route.clicked.connect(self.go_to_route2)             # connect the signal to the slot
+        self.ui.button_experiment_route.clicked.connect(self.go_to_route2)             # connect the signal to the slot
         self.ui.button_lights.clicked.connect(self.skakel_ligte)                        # connect the signal to the slot
-
+        self.ui.button_dashboard_route.clicked.connect(self.go_to_route1)             # connect the signal to the slot
         #===========================================================================================================================================================================
         # Edits made below are for the investors presentation: 
         #===========================================================================================================================================================================
 
-        self.ui.button_experiment_route.clicked.connect(self.start_demo)
+        #self.ui.button_experiment_route.clicked.connect(self.start_demo)
 
         #===========================================================================================================================================================================
         # Sucrose and Ethanol frame functionalities (with reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread for now)
@@ -314,6 +417,12 @@ class Functionality(QtWidgets.QMainWindow):
         self.serialThread.started.connect(self.serialWorker.run)  # start the workers run function when the thread starts
         if self.flag_connections[2]:
             self.serialThread.start() #start the thread so that the dashboard always reads incoming serial data from the esp32 
+
+        #================================================
+        # Start the thread that will read from the 3PAC
+        #================================================
+        self.experiment_choice_is_locked_in = False
+        self.ui.user_info_lockin_button.pressed.connect(self.lock_unlock_experiment_choice)
         
 
 # region : PLOTTING FUNCTIONS  
@@ -1111,5 +1220,215 @@ class Functionality(QtWidgets.QMainWindow):
 
 
 #endregion
+
+# region : Experiment Page Layouts 
+
+    def lock_unlock_experiment_choice(self): 
+        if not self.experiment_choice_is_locked_in: 
+
+            self.experiment_choice_is_locked_in=True
+            self.ui.user_info_lockin_button.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #0796FF;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 30px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+            """)
+            self.ui.application_combobox.setEnabled(False)
+
+            if self.ui.application_combobox.currentText() == "POCII":
+                self.create_POCII_experiment_page()
+                pass
+            elif self.ui.application_combobox.currentText() == "Ethanol to Sucrose Flush":
+                # Do something for Ethanol to Sucrose Flush
+                pass
+            elif self.ui.application_combobox.currentText() == "CG2 QC":
+                # Do something for CG2 QC
+                pass
+            elif self.ui.application_combobox.currentText() == "Autotune":
+                # Do something for Autotune
+                pass
+            elif self.ui.application_combobox.currentText() == "Demonstration":
+                # Do something for Demonstration
+                pass
+
+
+        else: 
+            self.experiment_choice_is_locked_in = False
+            self.ui.user_info_lockin_button.setStyleSheet("""
+                QPushButton {
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #222222;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: 30px;
+                }
+
+                QPushButton:hover {
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }
+
+                QPushButton:pressed {
+                    background-color: #0796FF;
+                }
+            """)
+            self.ui.application_combobox.setEnabled(True)
+
+            if self.ui.application_combobox.currentText() == "POCII":
+                self.destroy_POCII_experiment_page()
+                pass
+            elif self.ui.application_combobox.currentText() == "Ethanol to Sucrose Flush":
+                # Do something for Ethanol to Sucrose Flush
+                pass
+            elif self.ui.application_combobox.currentText() == "CG2 QC":
+                # Do something for CG2 QC
+                pass
+            elif self.ui.application_combobox.currentText() == "Autotune":
+                # Do something for Autotune
+                pass
+            elif self.ui.application_combobox.currentText() == "Demonstration":
+                # Do something for Demonstration
+                pass
+
+    def create_POCII_experiment_page(self):
+        # region : create the POCII frames
+
+        # region : System Sterilaty 
+        self.frame_POCII_system_sterilaty = CustomExperimentFrame("System Sterilaty Control", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        # region : Decontaminate Cartridge 
+        self.frame_POCII_decontaminate_cartridge = CustomExperimentFrame("Cartridge Decontamination", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        # region : High Voltage 
+        self.high_voltage_frame = CustomExperimentFrame("High Voltage", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        # region : Flush Out 
+        self.flush_out_frame = CustomExperimentFrame("Flush Out", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        # region : Low Voltage 
+        self.zero_volt_frame = CustomExperimentFrame("Zero Voltage", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        # region : Safe Disconnect 
+        self.safe_disconnect_frame = CustomExperimentFrame("Flush Out", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        # region : Save Your Data
+        self.save_experiment_data_frame = CustomExperimentFrame("Save Your Data", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        #endregion 
+
+        self.ui.experiment_page_main_content.addWidget(self.frame_POCII_system_sterilaty)
+            
+        self.spacing_placeholder1 = QtWidgets.QWidget()
+        self.spacing_placeholder1.setFixedHeight(5)
+        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder1)
+
+        self.ui.experiment_page_main_content.addWidget(self.frame_POCII_decontaminate_cartridge)
+
+        self.spacing_placeholder2 = QtWidgets.QWidget()
+        self.spacing_placeholder2.setFixedHeight(5)
+        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder2)
+
+        self.ui.experiment_page_main_content.addWidget(self.high_voltage_frame)
+            
+        self.spacing_placeholder3 = QtWidgets.QWidget()
+        self.spacing_placeholder3.setFixedHeight(5)
+        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder3)
+    
+        self.ui.experiment_page_main_content.addWidget(self.flush_out_frame)
+
+        self.spacing_placeholder4 = QtWidgets.QWidget()
+        self.spacing_placeholder4.setFixedHeight(5)
+        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder4)
+    
+        self.ui.experiment_page_main_content.addWidget(self.zero_volt_frame)
+
+        self.spacing_placeholder5 = QtWidgets.QWidget()
+        self.spacing_placeholder5.setFixedHeight(5)
+        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder5)
+    
+        self.ui.experiment_page_main_content.addWidget(self.safe_disconnect_frame)
+
+        self.spacing_placeholder6 = QtWidgets.QWidget()
+        self.spacing_placeholder6.setFixedHeight(5)
+        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder6)
+    
+        self.ui.experiment_page_main_content.addWidget(self.save_experiment_data_frame)
+    
+    def destroy_POCII_experiment_page(self): 
+        self.ui.experiment_page_main_content.removeWidget(self.frame_POCII_system_sterilaty)
+        self.frame_POCII_system_sterilaty.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.frame_POCII_decontaminate_cartridge)
+        self.frame_POCII_decontaminate_cartridge.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.high_voltage_frame)
+        self.high_voltage_frame.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.flush_out_frame)
+        self.flush_out_frame.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.zero_volt_frame)
+        self.zero_volt_frame.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.safe_disconnect_frame)
+        self.safe_disconnect_frame.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.save_experiment_data_frame)
+        self.save_experiment_data_frame.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder1)
+        self.spacing_placeholder1.deleteLater()
+        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder2)
+        self.spacing_placeholder2.deleteLater()
+        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder3)
+        self.spacing_placeholder3.deleteLater()
+        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder4)
+        self.spacing_placeholder4.deleteLater()
+        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder5)
+        self.spacing_placeholder5.deleteLater()
+        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder6)
+        self.spacing_placeholder6.deleteLater()
+        
+
+#endregion
+
+
+
 
 #endregion 
