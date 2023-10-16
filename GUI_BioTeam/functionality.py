@@ -1256,7 +1256,7 @@ class Functionality(QtWidgets.QMainWindow):
                 # Do something for Autotune
                 pass
             elif self.ui.application_combobox.currentText() == "Demonstration":
-                # Do something for Demonstration
+                self.create_DEMO_experiment_page()
                 pass
 
 
@@ -1295,7 +1295,7 @@ class Functionality(QtWidgets.QMainWindow):
                 # Do something for Autotune
                 pass
             elif self.ui.application_combobox.currentText() == "Demonstration":
-                # Do something for Demonstration
+                self.destroy_DEMO_experiment_page()
                 pass
 
     def create_POCII_experiment_page(self):
@@ -1425,7 +1425,133 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder6)
         self.spacing_placeholder6.deleteLater()
         
+    def create_DEMO_experiment_page(self):
+        # region : create the POCII frames
 
+        # region : System Sterilaty 
+        self.frame_DEMO_close_fluidic_circuit = CustomExperimentFrame("Close Fluidic Circuit", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        # region : Decontaminate Cartridge 
+        self.frame_DEMO_connect_waste_flask = CustomExperimentFrame("Waste Flask Connection", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        # region : High Voltage 
+        self.frame_DEMO_ethanol_flush = CustomExperimentFrame("Ethanol Flush", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        # region : Flush Out 
+        self.frame_DEMO_connect_to_harvest_flask = CustomExperimentFrame("Harvest Flask Connection", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        # region : Low Voltage 
+        self.frame_DEMO_blood_sucrose_mix = CustomExperimentFrame("Blood and Sucrose Delivery", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        # region : Safe Disconnect 
+        self.frame_DEMO_sample_retrieval = CustomExperimentFrame("Retrieve Sample", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        # region : Save Your Data
+        self.save_experiment_data_frame = CustomExperimentFrame("Save Your Data", {
+            "start_stop": ":/images/increase.png",
+            "reset": ":/images/undo.png"
+        })
+        #endregion
+
+        #endregion 
+
+        self.ui.experiment_page_main_content.addWidget(self.frame_DEMO_close_fluidic_circuit)
+            
+        self.spacing_placeholder1 = QtWidgets.QWidget()
+        self.spacing_placeholder1.setFixedHeight(5)
+        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder1)
+
+        self.ui.experiment_page_main_content.addWidget(self.frame_DEMO_connect_waste_flask)
+
+        self.spacing_placeholder2 = QtWidgets.QWidget()
+        self.spacing_placeholder2.setFixedHeight(5)
+        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder2)
+
+        self.ui.experiment_page_main_content.addWidget(self.frame_DEMO_ethanol_flush)
+            
+        self.spacing_placeholder3 = QtWidgets.QWidget()
+        self.spacing_placeholder3.setFixedHeight(5)
+        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder3)
+    
+        self.ui.experiment_page_main_content.addWidget(self.frame_DEMO_connect_to_harvest_flask)
+
+        self.spacing_placeholder4 = QtWidgets.QWidget()
+        self.spacing_placeholder4.setFixedHeight(5)
+        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder4)
+    
+        self.ui.experiment_page_main_content.addWidget(self.frame_DEMO_blood_sucrose_mix)
+
+        self.spacing_placeholder5 = QtWidgets.QWidget()
+        self.spacing_placeholder5.setFixedHeight(5)
+        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder5)
+    
+        self.ui.experiment_page_main_content.addWidget(self.frame_DEMO_sample_retrieval)
+
+        self.spacing_placeholder6 = QtWidgets.QWidget()
+        self.spacing_placeholder6.setFixedHeight(5)
+        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder6)
+    
+        self.ui.experiment_page_main_content.addWidget(self.save_experiment_data_frame)
+    
+    def destroy_DEMO_experiment_page(self): 
+        self.ui.experiment_page_main_content.removeWidget(self.frame_DEMO_close_fluidic_circuit)
+        self.frame_DEMO_close_fluidic_circuit.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.frame_DEMO_connect_waste_flask)
+        self.frame_DEMO_connect_waste_flask.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.frame_DEMO_ethanol_flush)
+        self.frame_DEMO_ethanol_flush.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.frame_DEMO_connect_to_harvest_flask)
+        self.frame_DEMO_connect_to_harvest_flask.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.frame_DEMO_blood_sucrose_mix)
+        self.frame_DEMO_blood_sucrose_mix.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.frame_DEMO_sample_retrieval)
+        self.frame_DEMO_sample_retrieval.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.save_experiment_data_frame)
+        self.save_experiment_data_frame.deleteLater()
+
+        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder1)
+        self.spacing_placeholder1.deleteLater()
+        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder2)
+        self.spacing_placeholder2.deleteLater()
+        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder3)
+        self.spacing_placeholder3.deleteLater()
+        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder4)
+        self.spacing_placeholder4.deleteLater()
+        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder5)
+        self.spacing_placeholder5.deleteLater()
+        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder6)
+        self.spacing_placeholder6.deleteLater()
+      
 #endregion
 
 
