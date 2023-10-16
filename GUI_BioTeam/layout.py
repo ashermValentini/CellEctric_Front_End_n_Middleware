@@ -9,6 +9,110 @@ from roundprogressBar import QRoundProgressBar
 from roundprogressBar import MainWindow
 import resources_rc
 
+#===============================
+# EXPERIMENT PAGE CLASSES
+#===============================
+class CustomExperimentFrame(QtWidgets.QFrame):
+    def __init__(self, title, icon_paths):
+        super().__init__()
+        
+        self.setStyleSheet("background-color: #222222; border-radius: 15px;")
+        
+        layout = QtWidgets.QVBoxLayout(self)
+        
+        # Label
+        self.label = QtWidgets.QLabel(title)
+        self.label.setStyleSheet("QLabel { color : #FFFFFF; font-family: Archivo; font-size: 25px;  }")
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        
+        # Action items layout
+        self.button_layout = QtWidgets.QHBoxLayout()
+        
+        # Start/stop button
+        self.start_stop_button = QtWidgets.QPushButton()
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(icon_paths["start_stop"]), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.start_stop_button.setIcon(icon)
+        self.start_stop_button.setIconSize(QtCore.QSize(30, 30))
+        self.start_stop_button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        
+        # Progress bar
+        self.progress_bar = QtWidgets.QProgressBar()
+        self.progress_bar.setStyleSheet(
+            """
+            QProgressBar {
+                border: 2px solid white;
+                border-radius: 3px;
+                background-color: #222222;
+                text-align: center;
+                height: 50px;  /* Adjust as necessary */
+            }
+
+            QProgressBar::chunk {
+                background-color: rgba(7, 150, 255, 0.7);
+            }
+            QProgressBar {
+                color: white;  /* Color of the text */
+                font-size: 15px;  /* Size of the text */
+            }
+            """
+        )
+            
+        self.progress_bar.setValue(0)
+        
+        # Reset button
+        self.reset_button = QtWidgets.QPushButton()
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(icon_paths["reset"]), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.reset_button.setIcon(icon)
+        self.reset_button.setIconSize(QtCore.QSize(30, 30))
+        self.reset_button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        
+        # Add items to button layout
+        self.button_layout.addWidget(self.start_stop_button)
+        self.button_layout.addWidget(self.progress_bar)
+        self.button_layout.addWidget(self.reset_button)
+        
+        # Add widgets to main layout
+        layout.addWidget(self.label)
+        layout.addSpacing(10)
+        layout.addLayout(self.button_layout)
+
+        self.setLayout(layout)
+
+#===============================
+# MAIN LAYOUT CLASS
+#===============================
 class Ui_MainWindow(object):
 
     def setupUi(self, MainWindow):
@@ -1335,8 +1439,6 @@ class Ui_MainWindow(object):
 #endregion
 
 
-
-
 #region : Experiment Page Layout    
 # 
         self.experiment_page_h_layout = QtWidgets.QHBoxLayout(self.experiment)
@@ -1630,18 +1732,211 @@ class Ui_MainWindow(object):
         layout_user_info.addWidget(self.user_info_lockin_button)
 
     # endregion
-
     # region : line separator 
         self.line = QtWidgets.QFrame()
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line.setStyleSheet("background-color: white;")
+    #endregion
+    # region : experiment steps (not shown only created)
+        
+        # region : create the POCII frames
+
+
+        self.frame_POCII_system_sterilaty = CustomExperimentFrame("System Sterilaty Control", {
+            "start_stop": ":/images/play_pause.png",
+            "reset": ":/images/undo.png"
+        })
+
+
+
+        self.frame_POCII_decontaminate_cartridge = CustomExperimentFrame("Cartridge Decontamination", {
+            "start_stop": ":/images/play_pause.png",
+            "reset": ":/images/undo.png"
+        })
+
+
+        self.high_voltage_frame = CustomExperimentFrame("High Voltage", {
+            "start_stop": ":/images/play_pause.png",
+            "reset": ":/images/undo.png"
+        })
+
+
+
+        self.flush_out_frame = CustomExperimentFrame("Flush Out", {
+            "start_stop": ":/images/play_pause.png",
+            "reset": ":/images/undo.png"
+        })
+
+
+ 
+        self.zero_volt_frame = CustomExperimentFrame("Zero Voltage", {
+            "start_stop": ":/images/play_pause.png",
+            "reset": ":/images/undo.png"
+        })
+
+
+
+        self.safe_disconnect_frame = CustomExperimentFrame("Flush Out", {
+            "start_stop": ":/images/play_pause.png",
+            "reset": ":/images/undo.png"
+        })
+
+
+
+        self.save_experiment_data_frame = CustomExperimentFrame("Save Your Data", {
+            "start_stop": ":/images/send.png",
+            "reset": ":/images/trash.png"
+        })
+
+
+        #endregion 
+        
+        # region : create the Demo frames
+
+        self.frame_DEMO_close_fluidic_circuit = CustomExperimentFrame("Close Fluidic Circuit", {
+            "start_stop": ":/images/play_pause.png",
+            "reset": ":/images/undo.png"
+        })
+
+
+
+        self.frame_DEMO_connect_waste_flask = CustomExperimentFrame("Waste Flask Connection", {
+            "start_stop": ":/images/play_pause.png",
+            "reset": ":/images/undo.png"
+        })
+
+
+        self.frame_DEMO_ethanol_flush = CustomExperimentFrame("Ethanol Flush", {
+            "start_stop": ":/images/play_pause.png",
+            "reset": ":/images/undo.png"
+        })
+
+
+
+        self.frame_DEMO_connect_to_harvest_flask = CustomExperimentFrame("Harvest Flask Connection", {
+            "start_stop": ":/images/play_pause.png",
+            "reset": ":/images/undo.png"
+        })
+
+
+
+        self.frame_DEMO_blood_sucrose_mix = CustomExperimentFrame("Blood and Sucrose Delivery", {
+            "start_stop": ":/images/play_pause.png",
+            "reset": ":/images/undo.png"
+        })
+
+
+
+        self.frame_DEMO_sample_retrieval = CustomExperimentFrame("Retrieve Sample", {
+            "start_stop": ":/images/play_pause.png",
+            "reset": ":/images/undo.png"
+        })
+
+
+
+        self.save_experiment_data_frame = CustomExperimentFrame("Save Your Data", {
+            "start_stop": ":/images/send.png",
+            "reset": ":/images/trash.png"
+        })
+
+
+        #endregion 
 
     #endregion
+
+        #Add the user info frame to the maincontent layout
         self.experiment_page_main_content.addWidget(self.frame_user_info, alignment=QtCore.Qt.AlignTop)
         self.experiment_page_main_content.addSpacing(20)
         self.experiment_page_main_content.addWidget(self.line)
         self.experiment_page_main_content.addSpacing(20)
+
+        #Add the POCII frames to the main content layout
+        self.experiment_page_main_content.addWidget(self.frame_POCII_system_sterilaty)
+        self.spacing_placeholder1 = QtWidgets.QWidget()
+        self.spacing_placeholder1.setFixedHeight(5)
+        self.experiment_page_main_content.addWidget(self.spacing_placeholder1)
+        self.experiment_page_main_content.addWidget(self.frame_POCII_decontaminate_cartridge)
+        self.spacing_placeholder2 = QtWidgets.QWidget()
+        self.spacing_placeholder2.setFixedHeight(5)
+        self.experiment_page_main_content.addWidget(self.spacing_placeholder2)
+        self.experiment_page_main_content.addWidget(self.high_voltage_frame)
+        self.spacing_placeholder3 = QtWidgets.QWidget()
+        self.spacing_placeholder3.setFixedHeight(5)
+        self.experiment_page_main_content.addWidget(self.spacing_placeholder3)
+        self.experiment_page_main_content.addWidget(self.flush_out_frame)
+        self.spacing_placeholder4 = QtWidgets.QWidget()
+        self.spacing_placeholder4.setFixedHeight(5)
+        self.experiment_page_main_content.addWidget(self.spacing_placeholder4)
+        self.experiment_page_main_content.addWidget(self.zero_volt_frame)
+        self.spacing_placeholder5 = QtWidgets.QWidget()
+        self.spacing_placeholder5.setFixedHeight(5)
+        self.experiment_page_main_content.addWidget(self.spacing_placeholder5)
+        self.experiment_page_main_content.addWidget(self.safe_disconnect_frame)
+        self.spacing_placeholder6 = QtWidgets.QWidget()
+        self.spacing_placeholder6.setFixedHeight(5)
+        self.experiment_page_main_content.addWidget(self.spacing_placeholder6)
+        self.experiment_page_main_content.addWidget(self.save_experiment_data_frame)
+
+        # Start the page as blank by hiding any widgets
+        self.frame_POCII_system_sterilaty.hide()
+        self.frame_POCII_decontaminate_cartridge.hide()
+        self.high_voltage_frame.hide()
+        self.flush_out_frame.hide()
+        self.zero_volt_frame.hide()
+        self.safe_disconnect_frame.hide()
+        self.save_experiment_data_frame.hide()
+
+        self.spacing_placeholder1.hide()
+        self.spacing_placeholder2.hide()
+        self.spacing_placeholder3.hide()
+        self.spacing_placeholder4.hide()
+        self.spacing_placeholder5.hide()
+        self.spacing_placeholder6.hide()
+
+        #Add the demo frames to the experiment pages main content layout 
+        self.experiment_page_main_content.addWidget(self.frame_DEMO_close_fluidic_circuit)
+        self.spacing_placeholder7 = QtWidgets.QWidget()
+        self.spacing_placeholder7.setFixedHeight(5)
+        self.experiment_page_main_content.addWidget(self.spacing_placeholder7)
+        self.experiment_page_main_content.addWidget(self.frame_DEMO_connect_waste_flask)
+        self.spacing_placeholder8 = QtWidgets.QWidget()
+        self.spacing_placeholder8.setFixedHeight(5)
+        self.experiment_page_main_content.addWidget(self.spacing_placeholder8)
+        self.experiment_page_main_content.addWidget(self.frame_DEMO_ethanol_flush)
+        self.spacing_placeholder9 = QtWidgets.QWidget()
+        self.spacing_placeholder9.setFixedHeight(5)
+        self.experiment_page_main_content.addWidget(self.spacing_placeholder9)
+        self.experiment_page_main_content.addWidget(self.frame_DEMO_connect_to_harvest_flask)
+        self.spacing_placeholder10 = QtWidgets.QWidget()
+        self.spacing_placeholder10.setFixedHeight(5)
+        self.experiment_page_main_content.addWidget(self.spacing_placeholder10)
+        self.experiment_page_main_content.addWidget(self.frame_DEMO_blood_sucrose_mix)
+        self.spacing_placeholder11 = QtWidgets.QWidget()
+        self.spacing_placeholder11.setFixedHeight(5)
+        self.experiment_page_main_content.addWidget(self.spacing_placeholder11)
+        self.experiment_page_main_content.addWidget(self.frame_DEMO_sample_retrieval)
+        self.spacing_placeholder12 = QtWidgets.QWidget()
+        self.spacing_placeholder12.setFixedHeight(5)
+        self.experiment_page_main_content.addWidget(self.spacing_placeholder12)
+        self.experiment_page_main_content.addWidget(self.save_experiment_data_frame)
+
+        # start the page blank by hiding any widgets
+        self.frame_DEMO_close_fluidic_circuit.hide()
+        self.frame_DEMO_connect_waste_flask.hide()
+        self.frame_DEMO_ethanol_flush.hide()
+        self.frame_DEMO_connect_to_harvest_flask.hide()
+        self.frame_DEMO_blood_sucrose_mix.hide()
+        self.frame_DEMO_sample_retrieval.hide()
+        self.save_experiment_data_frame.hide()
+
+        self.spacing_placeholder7.hide()
+        self.spacing_placeholder8.hide()
+        self.spacing_placeholder9.hide()
+        self.spacing_placeholder10.hide()
+        self.spacing_placeholder11.hide()
+        self.spacing_placeholder12.hide()
+
                 
 
 

@@ -16,7 +16,7 @@ import matplotlib.ticker as ticker
 import numpy as np
 
 #==============================
-#SERIAL MESSAGES
+#SERIAL MESSAGES FOR 3PAC
 #==============================
 
 VALVE1_OFF = "wVS-001\n"
@@ -26,7 +26,7 @@ PELTIER_OFF = "wCS-0\n"
 PUMPS_OFF ="wFO\n"
 
 #========================
-# DIRECTIONS
+# DIRECTIONS FOR MOTORS 
 #========================
 DIR_M1_UP = -1
 DIR_M1_DOWN = 1
@@ -38,110 +38,8 @@ DIR_M4_UP = 1
 DIR_M4_DOWN = -1
 
 
-
-#===============================
-# EXPERIMENT FUNCTINALITY FRAME
-#===============================
-class CustomExperimentFrame(QtWidgets.QFrame):
-    def __init__(self, title, icon_paths):
-        super().__init__()
-        
-        self.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        
-        layout = QtWidgets.QVBoxLayout(self)
-        
-        # Label
-        self.label = QtWidgets.QLabel(title)
-        self.label.setStyleSheet("QLabel { color : #FFFFFF; font-family: Archivo; font-size: 25px;  }")
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-        
-        # Action items layout
-        self.button_layout = QtWidgets.QHBoxLayout()
-        
-        # Start/stop button
-        self.start_stop_button = QtWidgets.QPushButton()
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(icon_paths["start_stop"]), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.start_stop_button.setIcon(icon)
-        self.start_stop_button.setIconSize(QtCore.QSize(30, 30))
-        self.start_stop_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
-        
-        # Progress bar
-        self.progress_bar = QtWidgets.QProgressBar()
-        self.progress_bar.setStyleSheet(
-            """
-            QProgressBar {
-                border: 2px solid white;
-                border-radius: 3px;
-                background-color: #222222;
-                text-align: center;
-                height: 50px;  /* Adjust as necessary */
-            }
-
-            QProgressBar::chunk {
-                background-color: rgba(7, 150, 255, 0.7);
-            }
-            QProgressBar {
-                color: white;  /* Color of the text */
-                font-size: 15px;  /* Size of the text */
-            }
-            """
-        )
-            
-        self.progress_bar.setValue(0)
-        
-        # Reset button
-        self.reset_button = QtWidgets.QPushButton()
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(icon_paths["reset"]), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.reset_button.setIcon(icon)
-        self.reset_button.setIconSize(QtCore.QSize(30, 30))
-        self.reset_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
-        
-        # Add items to button layout
-        self.button_layout.addWidget(self.start_stop_button)
-        self.button_layout.addWidget(self.progress_bar)
-        self.button_layout.addWidget(self.reset_button)
-        
-        # Add widgets to main layout
-        layout.addWidget(self.label)
-        layout.addSpacing(10)
-        layout.addLayout(self.button_layout)
-
-        self.setLayout(layout)
-
 #========================
-# THREADS
+# THREAD WORKERS 
 #========================
 #region : The matrix begins here -Thread Worker Classes 
 
@@ -210,7 +108,7 @@ class ReadSerialWorker(QObject):
 #endregion 
 
 #========================
-# MAIN
+# MAIN GUI THREAD
 #========================
 # region : Main functionality
 
@@ -262,11 +160,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.button_experiment_route.clicked.connect(self.go_to_route2)             # connect the signal to the slot
         self.ui.button_lights.clicked.connect(self.skakel_ligte)                        # connect the signal to the slot
         self.ui.button_dashboard_route.clicked.connect(self.go_to_route1)             # connect the signal to the slot
-        #===========================================================================================================================================================================
-        # Edits made below are for the investors presentation: 
-        #===========================================================================================================================================================================
 
-        #self.ui.button_experiment_route.clicked.connect(self.start_demo)
 
         #===========================================================================================================================================================================
         # Sucrose and Ethanol frame functionalities (with reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread for now)
@@ -423,7 +317,62 @@ class Functionality(QtWidgets.QMainWindow):
         #================================================
         self.experiment_choice_is_locked_in = False
         self.ui.user_info_lockin_button.pressed.connect(self.lock_unlock_experiment_choice)
-        
+
+        #================================================
+        # Experiment page Demo Automation Functionality (im trying to use dictionaries for the first time with an easy application, so yes i could be using intergers here with no real advantage loss but i need to learn dictionaries)
+        #================================================
+        # Experiment page Demo Automation Functionality
+        DEMO_frame_names = [
+            "frame_DEMO_close_fluidic_circuit",
+            "frame_DEMO_connect_waste_flask",
+            "frame_DEMO_ethanol_flush",
+            "frame_DEMO_connect_to_harvest_flask",
+            "frame_DEMO_blood_sucrose_mix",
+            "frame_DEMO_sample_retrieval",
+            "save_experiment_data_frame"
+        ]
+
+        self.DEMO_timers = {}
+
+        self.DEMO_counters = {frame_name: [0] for frame_name in DEMO_frame_names}
+
+        for DEMO_frame_name in DEMO_frame_names:
+            DEMO_timer = QtCore.QTimer(self)
+            self.DEMO_timers[DEMO_frame_name] = DEMO_timer
+            DEMO_timer.timeout.connect(
+                lambda frame_name=DEMO_frame_name: 
+                    self.update_experiment_step_progress_bar(
+                        self.DEMO_counters[frame_name], 
+                        self.DEMO_timers[frame_name], 
+                        self.DEMO_progress_bar_dict[frame_name],
+                        frame_name  # passing the frame name as an argument
+                    )
+            )
+
+        self.DEMO_progress_bar_dict = {
+            "frame_DEMO_close_fluidic_circuit": self.ui.frame_DEMO_close_fluidic_circuit.progress_bar,
+            "frame_DEMO_connect_waste_flask": self.ui.frame_DEMO_connect_waste_flask.progress_bar,
+            "frame_DEMO_ethanol_flush": self.ui.frame_DEMO_ethanol_flush.progress_bar,
+            "frame_DEMO_connect_to_harvest_flask": self.ui.frame_DEMO_connect_to_harvest_flask.progress_bar,
+            "frame_DEMO_blood_sucrose_mix": self.ui.frame_DEMO_blood_sucrose_mix.progress_bar,
+            "frame_DEMO_sample_retrieval": self.ui.frame_DEMO_sample_retrieval.progress_bar,
+            "save_experiment_data_frame": self.ui.save_experiment_data_frame.progress_bar
+        }
+
+        self.DEMO_time_intervals = { 
+
+            "frame_DEMO_close_fluidic_circuit": 5,
+            "frame_DEMO_connect_waste_flask": 6,
+            "frame_DEMO_ethanol_flush": 3,
+            "frame_DEMO_connect_to_harvest_flask": 26,
+            "frame_DEMO_blood_sucrose_mix": 67,
+            "frame_DEMO_sample_retrieval": 24,
+            "save_experiment_data_frame": 2
+        }
+
+        self.ui.frame_DEMO_close_fluidic_circuit.start_stop_button.pressed.connect(self.start_demo)
+
+
 
 # region : PLOTTING FUNCTIONS  
 
@@ -1151,69 +1100,117 @@ class Functionality(QtWidgets.QMainWindow):
 # region : Investors Presentation
 
     def start_demo(self):
-        self.step_two()                                         # start the automation sequence (AS)
+        self.step_two()                                             # start the automation sequence (AS)
 
     def step_two(self):
-        writeMotorDistance(self.device_serials[2], 2, 27.5, 2)  # connect fluidics to cartridge (move motor two down a distance 27.5mm)
-        writeLedStatus(self.device_serials[2], 0, 1, 0)         # syringe region LED on
-        QTimer.singleShot(5000, self.step_three)                # give the motor 5 seconds to reach its posistion before executing the next step in the AS 
- 
+        if self.flag_connections[2]: 
+            writeMotorDistance(self.device_serials[2], 2, 27.5, 2)  # connect fluidics to cartridge (move motor two down a distance 27.5mm)
+            writeLedStatus(self.device_serials[2], 0, 1, 0)         # syringe region LED on
+
+        frame_name = "frame_DEMO_close_fluidic_circuit"
+        self.DEMO_counters[frame_name][0] = 0
+        self.DEMO_timers[frame_name].start(1000)  
+
+        QTimer.singleShot(5000, self.step_three)
+
+
     def step_three(self):
-        writeMotorDistance(self.device_serials[2], 4, 37, 1)    # connect waste flask to cartridge (move motor 4 up a distance 38mm)
-        QTimer.singleShot(6500, self.step_four)                 # give the motor 6.5 seconds to reach its posistion before executing the next step in the AS
+        if self.flag_connections[2]: 
+            writeMotorDistance(self.device_serials[2], 4, 37, 1)    # connect waste flask to cartridge (move motor 4 up a distance 38mm)
+        
+        frame_name = "frame_DEMO_connect_waste_flask"
+        self.DEMO_counters[frame_name][0] = 0
+        self.DEMO_timers[frame_name].start(1000)    
+
+        QTimer.singleShot(6500, self.step_four)                     # give the motor 6.5 seconds to reach its posistion before executing the next step in the AS
+
 
     def step_four(self):
-        self.start_ethanol_pump()                               # flush ethanol
-        writeLedStatus(self.device_serials[2], 0, 0, 2)         # blink the resevoir region LED  
-        QTimer.singleShot(30000, self.step_four_part_two)       # let ethanol flush for 30 seconds 
+        if self.flag_connections[2]: 
+            self.start_ethanol_pump()                               # flush ethanol
+            writeLedStatus(self.device_serials[2], 0, 0, 2)         # blink the resevoir region LED  
+
+        frame_name = "frame_DEMO_ethanol_flush"
+        self.DEMO_counters[frame_name][0] = 0
+        self.DEMO_timers[frame_name].start(1000)    
+
+        QTimer.singleShot(30000, self.step_four_part_two)           # let ethanol flush for 30 seconds 
+
 
     def step_four_part_two(self):
-        self.start_ethanol_pump()                               # stop ethanol 
-        writeLedStatus(self.device_serials[2], 0, 0, 0)         # turn of all LEDs
-        QTimer.singleShot(3000, self.step_five)                 # wait 3 seconds before proceeding to next step (can reduce this time) 
+        if self.flag_connections[2]: 
+            self.start_ethanol_pump()                               # stop ethanol 
+            writeLedStatus(self.device_serials[2], 0, 0, 0)         # turn of all LEDs
+        QTimer.singleShot(3000, self.step_five)                     # wait 3 seconds before proceeding to next step (can reduce this time) 
 
     def step_five(self):
-        writeMotorDistance(self.device_serials[2], 4, 37, 2)    # disconnect waste flask (move motor 4 down a distance of 37mm)
-        writeLedStatus(self.device_serials[2], 1, 0, 0)         # flask region led on 
-        QTimer.singleShot(6500, self.step_five_part_two)        # give motor 4 6.5 seconds to get to its position before proceeding to the next step in the AS
+        if self.flag_connections[2]: 
+            writeMotorDistance(self.device_serials[2], 4, 37, 2)    # disconnect waste flask (move motor 4 down a distance of 37mm)
+            writeLedStatus(self.device_serials[2], 1, 0, 0)         # flask region led on 
+
+        frame_name = "frame_DEMO_connect_to_harvest_flask"
+        self.DEMO_counters[frame_name][0] = 0
+        self.DEMO_timers[frame_name].start(1000)    
+
+        QTimer.singleShot(6500, self.step_five_part_two)            # give motor 4 6.5 seconds to get to its position before proceeding to the next step in the AS
     
     def step_five_part_two(self):
-        writeMotorDistance(self.device_serials[2], 3, 60, 1)    # connect mixing flask to cartridge (move motor three left a distance of 60mm)
-        QTimer.singleShot(10000, self.step_five_part_three)     # give motor 3 10 seconds to get to its position before proceeding to the next step in the AS
+        if self.flag_connections[2]: 
+            writeMotorDistance(self.device_serials[2], 3, 60, 1)    # connect mixing flask to cartridge (move motor three left a distance of 60mm)
+        QTimer.singleShot(10000, self.step_five_part_three)         # give motor 3 10 seconds to get to its position before proceeding to the next step in the AS
     
     def step_five_part_three(self): 
-        writeMotorDistance(self.device_serials[2], 4, 37 , 1)   # connect mixing flask to cartridge (move motor 3 up a distance of 38mm)
-        QTimer.singleShot(7000, self.step_six)                  # give motor 4 7 seconds to get to its position before proceeding to the next step in the AS
+        if self.flag_connections[2]: 
+            writeMotorDistance(self.device_serials[2], 4, 37 , 1)   # connect mixing flask to cartridge (move motor 3 up a distance of 38mm)
+        QTimer.singleShot(7000, self.step_six)                      # give motor 4 7 seconds to get to its position before proceeding to the next step in the AS
     
     def step_six(self): 
-        writeBloodSyringe(self.device_serials[2], 0.115, 0.125) # flush blood 
-        writeLedStatus(self.device_serials[2], 0, 2, 0)         # blink syring region LED 
-        QTimer.singleShot(50, self.step_six_part_two)           # wait 50ms before proceeding to the next step in the AS to allow the serial coms to complete
+        if self.flag_connections[2]: 
+            writeBloodSyringe(self.device_serials[2], 0.115, 0.125) # flush blood 
+            writeLedStatus(self.device_serials[2], 0, 2, 0)         # blink syring region LED 
+
+        frame_name = "frame_DEMO_blood_sucrose_mix"
+        self.DEMO_counters[frame_name][0] = 0
+        self.DEMO_timers[frame_name].start(1000)    
+
+        QTimer.singleShot(50, self.step_six_part_two)               # wait 50ms before proceeding to the next step in the AS to allow the serial coms to complete
     
     def step_six_part_two(self): 
-        self.start_sucrose_pump()                               # flush sucrose (with blood running)
-        QTimer.singleShot(60000, self.step_six_part_three)      # let sucrose flush with blood for 60 seconds
+        if self.flag_connections[2]: 
+            self.start_sucrose_pump()                               # flush sucrose (with blood running)
+        QTimer.singleShot(60000, self.step_six_part_three)          # let sucrose flush with blood for 60 seconds
 
     def step_six_part_three(self): 
-        self.start_sucrose_pump()                               # stop sucrose
-        writeLedStatus(self.device_serials[2], 0, 0, 0)         # turn off all LEDs
+        if self.flag_connections[2]: 
+            self.start_sucrose_pump()                               # stop sucrose
+            writeLedStatus(self.device_serials[2], 0, 0, 0)         # turn off all LEDs
         QTimer.singleShot(7000, self.step_seven)                
 
     def step_seven(self): 
-        writeMotorDistance(self.device_serials[2], 4, 37, 2)    # disconnect mixing flask (move motor 4 down a distnace of 38 mm)
-        writeLedStatus(self.device_serials[2], 1, 0, 0)         # flask region led on 
-        QTimer.singleShot(7000, self.step_seven_part_two)       # give motor 4 7 seconds to get to its position before proceeding to the next step in the AS
+        if self.flag_connections[2]: 
+            writeMotorDistance(self.device_serials[2], 4, 37, 2)    # disconnect mixing flask (move motor 4 down a distnace of 38 mm)
+            writeLedStatus(self.device_serials[2], 1, 0, 0)         # flask region led on 
+
+        frame_name = "frame_DEMO_sample_retrieval"
+        self.DEMO_counters[frame_name][0] = 0
+        self.DEMO_timers[frame_name].start(1000)   
+        
+        QTimer.singleShot(7000, self.step_seven_part_two)           # give motor 4 7 seconds to get to its position before proceeding to the next step in the AS
 
     def step_seven_part_two(self): 
-        writeMotorDistance(self.device_serials[2], 3, 62, 1)    # retrieve mixing flask (move motor three a distance of 62 mm left)
-        QTimer.singleShot(7000, self.end_demo)                  # give motor 3 7 seconds to get to its posistion before proceeding to the next step
+        if self.flag_connections[2]: 
+            writeMotorDistance(self.device_serials[2], 3, 62, 1)    # retrieve mixing flask (move motor three a distance of 62 mm left)
+        QTimer.singleShot(7000, self.end_demo)                      # give motor 3 7 seconds to get to its posistion before proceeding to the next step
     
     def end_demo(self): 
-        writeLedStatus(self.device_serials[2], 2, 2, 2)         # blink lights to take the flask
-        QTimer.singleShot(10000, self.end_demo_part_two)        # let the lights blink for 10 seconds
+        if self.flag_connections[2]: 
+            writeLedStatus(self.device_serials[2], 2, 2, 2)         # blink lights to take the flask
+        QTimer.singleShot(10000, self.end_demo_part_two)            # let the lights blink for 10 seconds
     
     def end_demo_part_two(self):
-        writeLedStatus(self.device_serials[2], 1, 0, 0)         # turn light back on 
+        if self.flag_connections[2]: 
+            writeLedStatus(self.device_serials[2], 1, 0, 0)         # turn light back on 
+            
 
 
 
@@ -1299,262 +1296,91 @@ class Functionality(QtWidgets.QMainWindow):
                 pass
 
     def create_POCII_experiment_page(self):
-        # region : create the POCII frames
+        self.ui.frame_POCII_system_sterilaty.show()
+        self.ui.frame_POCII_decontaminate_cartridge.show()
+        self.ui.high_voltage_frame.show()
+        self.ui.flush_out_frame.show()
+        self.ui.zero_volt_frame.show()
+        self.ui.safe_disconnect_frame.show()
+        self.ui.save_experiment_data_frame.show()
 
-        # region : System Sterilaty 
-        self.frame_POCII_system_sterilaty = CustomExperimentFrame("System Sterilaty Control", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
-
-        # region : Decontaminate Cartridge 
-        self.frame_POCII_decontaminate_cartridge = CustomExperimentFrame("Cartridge Decontamination", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
-
-        # region : High Voltage 
-        self.high_voltage_frame = CustomExperimentFrame("High Voltage", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
-
-        # region : Flush Out 
-        self.flush_out_frame = CustomExperimentFrame("Flush Out", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
-
-        # region : Low Voltage 
-        self.zero_volt_frame = CustomExperimentFrame("Zero Voltage", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
-
-        # region : Safe Disconnect 
-        self.safe_disconnect_frame = CustomExperimentFrame("Flush Out", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
-
-        # region : Save Your Data
-        self.save_experiment_data_frame = CustomExperimentFrame("Save Your Data", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
-
-        #endregion 
-
-        self.ui.experiment_page_main_content.addWidget(self.frame_POCII_system_sterilaty)
-            
-        self.spacing_placeholder1 = QtWidgets.QWidget()
-        self.spacing_placeholder1.setFixedHeight(5)
-        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder1)
-
-        self.ui.experiment_page_main_content.addWidget(self.frame_POCII_decontaminate_cartridge)
-
-        self.spacing_placeholder2 = QtWidgets.QWidget()
-        self.spacing_placeholder2.setFixedHeight(5)
-        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder2)
-
-        self.ui.experiment_page_main_content.addWidget(self.high_voltage_frame)
-            
-        self.spacing_placeholder3 = QtWidgets.QWidget()
-        self.spacing_placeholder3.setFixedHeight(5)
-        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder3)
-    
-        self.ui.experiment_page_main_content.addWidget(self.flush_out_frame)
-
-        self.spacing_placeholder4 = QtWidgets.QWidget()
-        self.spacing_placeholder4.setFixedHeight(5)
-        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder4)
-    
-        self.ui.experiment_page_main_content.addWidget(self.zero_volt_frame)
-
-        self.spacing_placeholder5 = QtWidgets.QWidget()
-        self.spacing_placeholder5.setFixedHeight(5)
-        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder5)
-    
-        self.ui.experiment_page_main_content.addWidget(self.safe_disconnect_frame)
-
-        self.spacing_placeholder6 = QtWidgets.QWidget()
-        self.spacing_placeholder6.setFixedHeight(5)
-        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder6)
-    
-        self.ui.experiment_page_main_content.addWidget(self.save_experiment_data_frame)
+        self.ui.spacing_placeholder1.show()
+        self.ui.spacing_placeholder2.show()
+        self.ui.spacing_placeholder3.show()
+        self.ui.spacing_placeholder4.show()
+        self.ui.spacing_placeholder5.show()
+        self.ui.spacing_placeholder6.show()
     
     def destroy_POCII_experiment_page(self): 
-        self.ui.experiment_page_main_content.removeWidget(self.frame_POCII_system_sterilaty)
-        self.frame_POCII_system_sterilaty.deleteLater()
 
-        self.ui.experiment_page_main_content.removeWidget(self.frame_POCII_decontaminate_cartridge)
-        self.frame_POCII_decontaminate_cartridge.deleteLater()
+        self.ui.frame_POCII_system_sterilaty.hide()
+        self.ui.frame_POCII_decontaminate_cartridge.hide()
+        self.ui.high_voltage_frame.hide()
+        self.ui.flush_out_frame.hide()
+        self.ui.zero_volt_frame.hide()
+        self.ui.safe_disconnect_frame.hide()
+        self.ui.save_experiment_data_frame.hide()
 
-        self.ui.experiment_page_main_content.removeWidget(self.high_voltage_frame)
-        self.high_voltage_frame.deleteLater()
-
-        self.ui.experiment_page_main_content.removeWidget(self.flush_out_frame)
-        self.flush_out_frame.deleteLater()
-
-        self.ui.experiment_page_main_content.removeWidget(self.zero_volt_frame)
-        self.zero_volt_frame.deleteLater()
-
-        self.ui.experiment_page_main_content.removeWidget(self.safe_disconnect_frame)
-        self.safe_disconnect_frame.deleteLater()
-
-        self.ui.experiment_page_main_content.removeWidget(self.save_experiment_data_frame)
-        self.save_experiment_data_frame.deleteLater()
-
-        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder1)
-        self.spacing_placeholder1.deleteLater()
-        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder2)
-        self.spacing_placeholder2.deleteLater()
-        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder3)
-        self.spacing_placeholder3.deleteLater()
-        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder4)
-        self.spacing_placeholder4.deleteLater()
-        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder5)
-        self.spacing_placeholder5.deleteLater()
-        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder6)
-        self.spacing_placeholder6.deleteLater()
-        
+        self.ui.spacing_placeholder1.hide()
+        self.ui.spacing_placeholder2.hide()
+        self.ui.spacing_placeholder3.hide()
+        self.ui.spacing_placeholder4.hide()
+        self.ui.spacing_placeholder5.hide()
+        self.ui.spacing_placeholder6.hide()
+   
     def create_DEMO_experiment_page(self):
-        # region : create the POCII frames
 
-        # region : System Sterilaty 
-        self.frame_DEMO_close_fluidic_circuit = CustomExperimentFrame("Close Fluidic Circuit", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
+        self.ui.frame_DEMO_close_fluidic_circuit.show()
+        self.ui.frame_DEMO_connect_waste_flask.show()
+        self.ui.frame_DEMO_ethanol_flush.show()
+        self.ui.frame_DEMO_connect_to_harvest_flask.show()
+        self.ui.frame_DEMO_blood_sucrose_mix.show()
+        self.ui.frame_DEMO_sample_retrieval.show()
+        self.ui.save_experiment_data_frame.show()
 
-        # region : Decontaminate Cartridge 
-        self.frame_DEMO_connect_waste_flask = CustomExperimentFrame("Waste Flask Connection", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
 
-        # region : High Voltage 
-        self.frame_DEMO_ethanol_flush = CustomExperimentFrame("Ethanol Flush", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
-
-        # region : Flush Out 
-        self.frame_DEMO_connect_to_harvest_flask = CustomExperimentFrame("Harvest Flask Connection", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
-
-        # region : Low Voltage 
-        self.frame_DEMO_blood_sucrose_mix = CustomExperimentFrame("Blood and Sucrose Delivery", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
-
-        # region : Safe Disconnect 
-        self.frame_DEMO_sample_retrieval = CustomExperimentFrame("Retrieve Sample", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
-
-        # region : Save Your Data
-        self.save_experiment_data_frame = CustomExperimentFrame("Save Your Data", {
-            "start_stop": ":/images/increase.png",
-            "reset": ":/images/undo.png"
-        })
-        #endregion
-
-        #endregion 
-
-        self.ui.experiment_page_main_content.addWidget(self.frame_DEMO_close_fluidic_circuit)
-            
-        self.spacing_placeholder1 = QtWidgets.QWidget()
-        self.spacing_placeholder1.setFixedHeight(5)
-        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder1)
-
-        self.ui.experiment_page_main_content.addWidget(self.frame_DEMO_connect_waste_flask)
-
-        self.spacing_placeholder2 = QtWidgets.QWidget()
-        self.spacing_placeholder2.setFixedHeight(5)
-        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder2)
-
-        self.ui.experiment_page_main_content.addWidget(self.frame_DEMO_ethanol_flush)
-            
-        self.spacing_placeholder3 = QtWidgets.QWidget()
-        self.spacing_placeholder3.setFixedHeight(5)
-        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder3)
-    
-        self.ui.experiment_page_main_content.addWidget(self.frame_DEMO_connect_to_harvest_flask)
-
-        self.spacing_placeholder4 = QtWidgets.QWidget()
-        self.spacing_placeholder4.setFixedHeight(5)
-        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder4)
-    
-        self.ui.experiment_page_main_content.addWidget(self.frame_DEMO_blood_sucrose_mix)
-
-        self.spacing_placeholder5 = QtWidgets.QWidget()
-        self.spacing_placeholder5.setFixedHeight(5)
-        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder5)
-    
-        self.ui.experiment_page_main_content.addWidget(self.frame_DEMO_sample_retrieval)
-
-        self.spacing_placeholder6 = QtWidgets.QWidget()
-        self.spacing_placeholder6.setFixedHeight(5)
-        self.ui.experiment_page_main_content.addWidget(self.spacing_placeholder6)
-    
-        self.ui.experiment_page_main_content.addWidget(self.save_experiment_data_frame)
+        self.ui.spacing_placeholder7.show()
+        self.ui.spacing_placeholder8.show()
+        self.ui.spacing_placeholder9.show()
+        self.ui.spacing_placeholder10.show()
+        self.ui.spacing_placeholder11.show()
+        self.ui.spacing_placeholder12.show()
     
     def destroy_DEMO_experiment_page(self): 
-        self.ui.experiment_page_main_content.removeWidget(self.frame_DEMO_close_fluidic_circuit)
-        self.frame_DEMO_close_fluidic_circuit.deleteLater()
 
-        self.ui.experiment_page_main_content.removeWidget(self.frame_DEMO_connect_waste_flask)
-        self.frame_DEMO_connect_waste_flask.deleteLater()
+        self.ui.frame_DEMO_close_fluidic_circuit.hide()
+        self.ui.frame_DEMO_connect_waste_flask.hide()
+        self.ui.frame_DEMO_ethanol_flush.hide()
+        self.ui.frame_DEMO_connect_to_harvest_flask.hide()
+        self.ui.frame_DEMO_blood_sucrose_mix.hide()
+        self.ui.frame_DEMO_sample_retrieval.hide()
+        self.ui.save_experiment_data_frame.hide()
 
-        self.ui.experiment_page_main_content.removeWidget(self.frame_DEMO_ethanol_flush)
-        self.frame_DEMO_ethanol_flush.deleteLater()
-
-        self.ui.experiment_page_main_content.removeWidget(self.frame_DEMO_connect_to_harvest_flask)
-        self.frame_DEMO_connect_to_harvest_flask.deleteLater()
-
-        self.ui.experiment_page_main_content.removeWidget(self.frame_DEMO_blood_sucrose_mix)
-        self.frame_DEMO_blood_sucrose_mix.deleteLater()
-
-        self.ui.experiment_page_main_content.removeWidget(self.frame_DEMO_sample_retrieval)
-        self.frame_DEMO_sample_retrieval.deleteLater()
-
-        self.ui.experiment_page_main_content.removeWidget(self.save_experiment_data_frame)
-        self.save_experiment_data_frame.deleteLater()
-
-        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder1)
-        self.spacing_placeholder1.deleteLater()
-        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder2)
-        self.spacing_placeholder2.deleteLater()
-        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder3)
-        self.spacing_placeholder3.deleteLater()
-        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder4)
-        self.spacing_placeholder4.deleteLater()
-        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder5)
-        self.spacing_placeholder5.deleteLater()
-        self.ui.experiment_page_main_content.removeWidget(self.spacing_placeholder6)
-        self.spacing_placeholder6.deleteLater()
+        self.ui.spacing_placeholder7.hide()
+        self.ui.spacing_placeholder8.hide()
+        self.ui.spacing_placeholder9.hide()
+        self.ui.spacing_placeholder10.hide()
+        self.ui.spacing_placeholder11.hide()
+        self.ui.spacing_placeholder12.hide()
       
 #endregion
 
+# region : Experiment Page Progress Bar Update 
 
+    def update_experiment_step_progress_bar(self, counter, timer, progress_bar, frame_name):
+        interval = self.DEMO_time_intervals[frame_name]
+        
+        counter[0] += 1
+        if counter[0] <= interval:
+            progress_bar.setValue(int((counter[0] / interval) * 100))
+        else:
+            timer.stop()
+            counter[0] = 0
+            progress_bar.setValue(0)
+
+
+
+#endregion
 
 
 #endregion 
