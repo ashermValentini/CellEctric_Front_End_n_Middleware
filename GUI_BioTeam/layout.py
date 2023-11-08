@@ -390,7 +390,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_sucrose = QtWidgets.QLineEdit()
         self.line_edit_sucrose.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
-        self.line_edit_sucrose.setText("2.50")
+        self.line_edit_sucrose.setText("3.00")
 
         group_box_layout.addWidget(self.line_edit_sucrose)
         group_box_layout.addWidget(unit_label)
@@ -651,7 +651,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_ethanol = QtWidgets.QLineEdit()
         self.line_edit_ethanol.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
-        self.line_edit_ethanol.setText("2.50")
+        self.line_edit_ethanol.setText("3.00")
         group_box_layout.addWidget(self.line_edit_ethanol)
         group_box_layout.addWidget(unit_label)
         # endregion
