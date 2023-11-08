@@ -163,7 +163,7 @@ class Functionality(QtWidgets.QMainWindow):
 
 
         #===========================================================================================================================================================================
-        # Sucrose and Ethanol frame functionalities (with reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread for now)
+        # Sucrose and Ethanol frame functionalities (reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread)
         #===========================================================================================================================================================================
         self.serialWorker = ReadSerialWorker(self.device_serials)
         self.serialThread = QThread()
@@ -185,10 +185,13 @@ class Functionality(QtWidgets.QMainWindow):
         # Blood frame functionality
         #================================
 
-        self.blood_is_homing= False         # sucrose pumping button state flag (starts unclicked)
-        self.blood_is_jogging_down = False  # ethanol pumping button state flag (starts unclicked)
-        self.blood_is_jogging_up = False    # ethanol pumping button state flag (starts unclicked)
+        self.blood_is_homing= False         
+        self.blood_is_jogging_down = False  
+        self.blood_is_jogging_up = False    
         self.blood_is_pumping = False
+
+        self.blood_pump_timer = None  
+
 
         if self.flag_connections[2]: 
             self.ui.button_blood_top.clicked.connect(lambda: self.movement_homing(1))                       # connect the signal to the slot 
@@ -197,7 +200,8 @@ class Functionality(QtWidgets.QMainWindow):
 
             self.ui.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, True)) # connect the signal to the slot
             self.ui.button_blood_down.released.connect(lambda: self.movement_stopjogging(1))                    # connect the signal to the slot
-            self.ui.button_blood_play_pause.pressed.connect(self.start_blood_pump)
+        self.ui.button_blood_play_pause.pressed.connect(self.toggle_blood_pump)
+
 
 
         #================================
@@ -372,9 +376,6 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.ui.frame_DEMO_close_fluidic_circuit.start_stop_button.pressed.connect(self.start_demo)
         self.ui.save_experiment_data_frame.reset_button.pressed.connect(self.reset_all_DEMO_progress_bars)
-
-
-
 
 # region : PLOTTING FUNCTIONS  
 
@@ -710,51 +711,69 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion
 
 # region : BLOOD PUMP
-    def start_blood_pump(self):
-        if not self.blood_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
-            self.blood_is_pumping = True  
-            self.ui.button_blood_play_pause.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #0796FF;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
+    def toggle_blood_pump(self):
+        if not self.blood_is_pumping:
+            self.start_blood_pump()
+        else:
+            self.stop_blood_pump()
 
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-            """)
-            blood_volume= float(self.ui.line_edit_blood_2.text()) 
-            blood_speed = float(self.ui.line_edit_blood.text())
+    def start_blood_pump(self):  
+        self.blood_is_pumping = True  
+        
+        self.ui.button_blood_play_pause.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 10px;
+                background-color: #0796FF;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 30px;
+            }
 
-            writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+        """)
+        
+        blood_volume = float(self.ui.line_edit_blood_2.text()) 
+        blood_speed = float(self.ui.line_edit_blood.text())
+        print(f"Calculating pump time with volume = {blood_volume}ml and speed = {blood_speed}ml/min")
+        blood_pump_time = int((blood_volume / blood_speed) * 60000)  # Ensure this is the only place blood_pump_time is calculated
+        print(f"Calculated pump time: {blood_pump_time} ms")
 
-                
-        else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
-            self.ui.button_blood_play_pause.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #222222;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
 
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
+        #writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
+        if self.blood_pump_timer is None:
+            self.blood_pump_timer = QTimer()
+            self.blood_pump_timer.timeout.connect(self.stop_blood_pump)
 
-                QPushButton:pressed {
-                    background-color: #0796FF;
-                }
-            """)
-            self.blood_is_pumping = False 
-            writeBloodSyringe(self.device_serials[2], 0, 0) #cant remember the disable motor command so change at some point to that command 
+        self.blood_pump_timer.start(blood_pump_time)  # Start the timer
+            
+    def stop_blood_pump(self):
+        self.ui.button_blood_play_pause.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 10px;
+                background-color: #222222;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 30px;
+            }
 
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        if self.blood_pump_timer is not None:
+            self.blood_pump_timer.stop()  # Stop the timer
+
+        self.blood_is_pumping = False
+        #writeBloodSyringe(self.device_serials[2], 0, 0)
 
 #endregion
 
@@ -1099,7 +1118,7 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion
 
-# region : Investors Presentation
+# region : DEMO
 
     def start_demo(self):
         self.step_two()                                             # start the automation sequence (AS)
