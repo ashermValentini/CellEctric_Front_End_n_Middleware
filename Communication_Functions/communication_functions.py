@@ -954,17 +954,32 @@ def read_temperature(ser):
 
 
 #==================================================================
-#=============FETCH FLOWRATE DATA==================================
+#=============3PAC READ COMMANDS===================================
 #================================================================== 
 
 # SEND SIGNAL TO 3PAC TO SEND FLOWRATE BACK TO BACKEND
 def fetchFlowrate(ser):
-    # if volume == 0.00 --> STOP MOVEMENT
     msg = f'rP\n'
     #Write the message
     ser.write(msg.encode())  # encode the string to bytes before sending
 
-# DECONSTRUCTS THE RECEIVED MESSAGE
+
+
+# SEND SIGNAL TO 3PAC TO SEND PRESSURE DATA TO MIDDLEWARE
+def fetch_pressure(ser):
+    msg = f'rRS\n'
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
+
+# SEND SIGNAL TO 3PAC TO STOP SENDING PRESSURE DATA TO MIDDLEWARE
+def stop_fetching_pressure(ser):
+    msg = f'rRO\n'
+    #Write the message
+    ser.write(msg.encode())  # encode the string to bytes before sending
+
+
+#PROCESS DATA SENT FROM THE 3PAC
 def read_flowrate(ser):
     line = ''
     if ser.in_waiting: # Check if there is data waiting in the buffer
@@ -981,11 +996,18 @@ def read_flowrate(ser):
                 return flow_rate
             except ValueError:
                 print("Error: Couldn't convert string to float.")
+        elif received_line.startswith('rRP-'): # Check if the line starts with 'rRP-'
+            try:
+                # Extract the part of the line after 'rRP-', convert to float, and return
+                pressure = float(line[4:])
+                return pressure
+            except ValueError:
+                print("Error: Couldn't convert string to float.")
     else:
         return None
     
 #==================================================================
-#=============3PAC COMMANDS========================================
+#=============3PAC WRITE COMMANDS==================================
 #================================================================== 
 
 # HANDSHAKE FUNCTION
@@ -1028,7 +1050,6 @@ def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_c
 
       
 
-
 def turnOnPumpPID(ser):
     # Construct the message
     msg = f'wPS-22\n'
@@ -1043,29 +1064,31 @@ def writePumpFlowRate(ser, val1=2.50, val2=0.00):
     ser.write(msg.encode())  # encode the string to bytes before sending
 
 
-def writeMaxDutyCycle(ser):
+
+# Craft packages for the Write Resevoir Pressure Cases : 
+def writePressureCommandStart(ser):
     ser.flush()
-    # Construct the message
-    msg = f'wPD-1-230\n'
-    #Write the message
-    ser.write(msg.encode())  # encode the string to bytes before sending
+    msg = f'wRS\n'
+    ser.write(msg.encode())  
+
+def writePressureCommandStop(ser):
+    ser.flush()
+    msg = f'wRO\n'
+    ser.write(msg.encode()) 
     
- 
+
+#Craft packages for the Write Fluidics Cases: 
 def writeSucrosePumpFlowRate(ser, val1=2.50):
-    # Construct the message
     msg = f'wFS-{val1:.2f}\n'
-    #Write the message
-    ser.write(msg.encode())  # encode the string to bytes before sending
+    ser.write(msg.encode())  
     
 
 def writeEthanolPumpFlowRate(ser, val1=2.50):
-    # Construct the message
     msg = f'wFE-{val1:.2f}\n'
-    #Write the message
-    ser.write(msg.encode())  # encode the string to bytes before sending
+    ser.write(msg.encode()) 
     
    
-
+#Craft packages for the Write Motor Cases: 
 def writeMotorPosition(ser, motor_nr, position):
     # Construct the message
     msg = f'wMP-{motor_nr}-{position:06.2f}\n'
