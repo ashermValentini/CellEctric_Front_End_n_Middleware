@@ -363,14 +363,16 @@ class Functionality(QtWidgets.QMainWindow):
 
             "frame_DEMO_close_fluidic_circuit": 5,
             "frame_DEMO_connect_waste_flask": 6,
-            "frame_DEMO_ethanol_flush": 3,
+            "frame_DEMO_ethanol_flush": 33,
             "frame_DEMO_connect_to_harvest_flask": 26,
             "frame_DEMO_blood_sucrose_mix": 67,
-            "frame_DEMO_sample_retrieval": 24,
+            "frame_DEMO_sample_retrieval": 14,
             "save_experiment_data_frame": 2
         }
 
         self.ui.frame_DEMO_close_fluidic_circuit.start_stop_button.pressed.connect(self.start_demo)
+        self.ui.save_experiment_data_frame.reset_button.pressed.connect(self.reset_all_DEMO_progress_bars)
+
 
 
 
@@ -572,7 +574,7 @@ class Functionality(QtWidgets.QMainWindow):
                     }
                 """)
             
-                p1fr=2.50
+                p1fr=3.00
 
                 writeSucrosePumpFlowRate(self.device_serials[2], p1fr)
 
@@ -625,7 +627,7 @@ class Functionality(QtWidgets.QMainWindow):
                         background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
                     }
                 """)
-                p1fr=2.50
+                p1fr=3.00
 
                 #writeEthanolPumpFlowRate(self.device_serials[2], p1fr)
                 writeEthanolPumpFlowRate(self.device_serials[2], p1fr) #only for the investors presentation
@@ -1104,7 +1106,7 @@ class Functionality(QtWidgets.QMainWindow):
 
     def step_two(self):
         if self.flag_connections[2]: 
-            writeMotorDistance(self.device_serials[2], 2, 27.5, 2)  # connect fluidics to cartridge (move motor two down a distance 27.5mm)
+            writeMotorDistance(self.device_serials[2], 2, 31, 2)  # connect fluidics to cartridge (move motor two down a distance 27.5mm)
             writeLedStatus(self.device_serials[2], 0, 1, 0)         # syringe region LED on
 
         frame_name = "frame_DEMO_close_fluidic_circuit"
@@ -1376,8 +1378,10 @@ class Functionality(QtWidgets.QMainWindow):
         else:
             timer.stop()
             counter[0] = 0
-            progress_bar.setValue(0)
 
+    def reset_all_DEMO_progress_bars(self):
+        for progress_bar in self.DEMO_progress_bar_dict.values():
+            progress_bar.setValue(0)
 
 
 #endregion
