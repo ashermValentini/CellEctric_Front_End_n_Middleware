@@ -8,7 +8,7 @@ from Communication_Functions.communication_functions import *
 
 from PyQt5 import QtWidgets, QtCore, QtGui 
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTimer
-from PyQt5.QtWidgets import QProgressBar
+from PyQt5.QtWidgets import QProgressBar, QMessageBox
 from layout import Ui_MainWindow
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -28,6 +28,7 @@ PUMPS_OFF ="wFO\n"
 #========================
 # DIRECTIONS FOR MOTORS 
 #========================
+
 DIR_M1_UP = -1
 DIR_M1_DOWN = 1
 DIR_M2_UP = 1
@@ -37,10 +38,10 @@ DIR_M3_LEFT = 1
 DIR_M4_UP = 1
 DIR_M4_DOWN = -1
 
-
 #========================
 # THREAD WORKERS 
 #========================
+
 #region : The matrix begins here -Thread Worker Classes 
 
 class TempWorker(QObject):
@@ -110,26 +111,20 @@ class ReadSerialWorker(QObject):
 #========================
 # MAIN GUI THREAD
 #========================
+
 # region : Main functionality
 
 class Functionality(QtWidgets.QMainWindow):
     def __init__(self):
         super(Functionality, self).__init__()
 
-
-        # =====================================
-        # GLOBAL VARIABLES
-        # =====================================    
-        
-        self.accumulated_sucrose_volume = 0
-        self.accumulated_ethanol_volume = 0
-  
-        # =====================================
+        # =====================================================================================================================================================================================================================================================================================================================================================================================================================================================================
         # START SERIAL CONNECTION TO DEVICES
-        # =====================================
+        # =====================================================================================================================================================================================================================================================================================================================================================================================================================================
+        
         self.flag_connections = [False, False, False, False]
         self.device_serials = serial_start_connections() 
-        # CHECK CONNECTION STATUS
+        
         if self.device_serials[0].isOpen():
             self.flag_connections[0] = True
         if self.device_serials[1].isOpen():
@@ -142,29 +137,32 @@ class Functionality(QtWidgets.QMainWindow):
         if self.flag_connections[2]:
             handshake_3PAC(self.device_serials[2], print_handshake_message=True)
 
-        #==============================
+        #==============================================================================================================================================================================================================================
         # Set up the UI layout
-        #==============================
+        #==============================================================================================================================================================================================================================
+        
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        #================================
+        #================================================================================================================================================================================================================================
         # Side bar functionality 
-        #================================
+        #================================================================================================================================================================================================================================
 
         self.all_motors_are_home= False # sucrose pumping button state flag (starts unclicked)
         self.lights_are_on= False # sucrose pumping button state flag (starts unclicked)
         
+        if self.flag_connections[2]:
+            self.ui.button_lights.clicked.connect(self.skakel_ligte)
+            self.ui.button_motors_home.clicked.connect(lambda: self.movement_homing(0))     
 
-        self.ui.button_motors_home.clicked.connect(lambda: self.movement_homing(0))     # connect the signal to the slot 
-        self.ui.button_experiment_route.clicked.connect(self.go_to_route2)             # connect the signal to the slot
-        self.ui.button_lights.clicked.connect(self.skakel_ligte)                        # connect the signal to the slot
-        self.ui.button_dashboard_route.clicked.connect(self.go_to_route1)             # connect the signal to the slot
+       
+        self.ui.button_experiment_route.clicked.connect(self.go_to_route2)             
+        self.ui.button_dashboard_route.clicked.connect(self.go_to_route1)             
 
-
-        #===========================================================================================================================================================================
-        # Sucrose and Ethanol frame functionalities (with reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread for now)
-        #===========================================================================================================================================================================
+        #===========================================================================================================================================================================================================
+        # Sucrose and Ethanol frame functionalities (reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread)
+        #===========================================================================================================================================================================================================
+ 
         self.serialWorker = ReadSerialWorker(self.device_serials)
         self.serialThread = QThread()
         self.serialWorker.moveToThread(self.serialThread) 
@@ -172,6 +170,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.serialWorker.update_data.connect(self.updateEthanolProgressBar) # connect the worker signal to your progress bar update function
         self.serialWorker.update_data.connect(self.updateSucroseProgressBar) # connect the worker signal to your progress bar update function
 
+        self.accumulated_sucrose_volume = 0
+        self.accumulated_ethanol_volume = 0
 
         self.sucrose_is_pumping = False # sucrose pumping button state flag (starts unclicked)
         self.ethanol_is_pumping = False # ethanol pumping button state flag (starts unclicked)
@@ -180,15 +180,16 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump) # connect the signal to the slot 
             self.ui.button_ethanol.pressed.connect(self.start_ethanol_pump) # connect the signal to the slot 
 
-
-        #================================
+        #===============================================================================================================================================================================================
         # Blood frame functionality
-        #================================
+        #================================================================================================================================================================================================
 
-        self.blood_is_homing= False         # sucrose pumping button state flag (starts unclicked)
-        self.blood_is_jogging_down = False  # ethanol pumping button state flag (starts unclicked)
-        self.blood_is_jogging_up = False    # ethanol pumping button state flag (starts unclicked)
+        self.blood_is_homing= False         
+        self.blood_is_jogging_down = False  
+        self.blood_is_jogging_up = False    
         self.blood_is_pumping = False
+
+        self.blood_pump_timer = None  
 
         if self.flag_connections[2]: 
             self.ui.button_blood_top.clicked.connect(lambda: self.movement_homing(1))                       # connect the signal to the slot 
@@ -197,14 +198,14 @@ class Functionality(QtWidgets.QMainWindow):
 
             self.ui.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, True)) # connect the signal to the slot
             self.ui.button_blood_down.released.connect(lambda: self.movement_stopjogging(1))                    # connect the signal to the slot
-            self.ui.button_blood_play_pause.pressed.connect(self.start_blood_pump)
+            self.ui.button_blood_play_pause.pressed.connect(self.toggle_blood_pump)
 
-
-        #================================
+        #================================================================================================================================================================================================================================
         # Flask frame functionality
-        #================================
+        #================================================================================================================================================================================================================================
 
-        self.flask_vertical_gantry_is_home= False      
+        self.flask_vertical_gantry_is_home= False     
+
         if self.flag_connections[2]: 
             self.ui.button_flask_bottom.clicked.connect(lambda: self.movement_homing(4))                        # connect the signal to the slot 
             self.ui.button_flask_up.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, False))     # connect the signal to the slot    
@@ -212,7 +213,8 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.button_flask_down.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, False)) # connect the signal to the slot
             self.ui.button_flask_down.released.connect(lambda: self.movement_stopjogging(4))                    # connect the signal to the slot
 
-        self.flask_horizontal_gantry_is_home= False      
+        self.flask_horizontal_gantry_is_home= False    
+
         if self.flag_connections[2]:
             self.ui.button_flask_rightmost.clicked.connect(lambda: self.movement_homing(3))                           # connect the signal to the slot 
             self.ui.button_flask_right.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, False))     # connect the signal to the slot    
@@ -220,9 +222,9 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, False)) # connect the signal to the slot
             self.ui.button_flask_left.released.connect(lambda: self.movement_stopjogging(3))                    # connect the signal to the slot
 
-        #================================
+        #================================================================================================================================================================================================================================================================
         # Cartrige frame functionality
-        #================================
+        #================================================================================================================================================================================================================================================================
 
         self.cartrige_gantry_is_home= False 
 
@@ -233,39 +235,41 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.button_cartridge_down.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, False)) # connect the signal to the slot
             self.ui.button_cartridge_down.released.connect(lambda: self.movement_stopjogging(2))                    # connect the signal to the slot
 
-            
-        #====================================================
-        # Temp plotting frame functionality(with threads)
-        #====================================================
+        #====================================================================================================================================================================================================================================================================================
+        # Temp plotting frame functionality (with threads)
+        #====================================================================================================================================================================================================================================================================================
+        
         self.tempWorker = TempWorker(self.device_serials)
         self.tempThread = QThread()
-        
         self.tempWorker.moveToThread(self.tempThread) 
-        self.tempWorker.update_temp.connect(self.update_temp_plot)
-        
-        self.temp_is_plotting = False
-        self.tempThread.started.connect(self.tempWorker.run)
-        self.ui.temp_button.pressed.connect(self.start_stop_temp_plotting)
 
-                    
+        self.tempWorker.update_temp.connect(self.update_temp_plot)
+
+        self.temp_is_plotting = False
+
         self.xdata = np.linspace(0, 499, 500)  
         self.plotdata = np.zeros(500)
 
-        #====================================================
+        if self.flag_connections[3]:
+            self.ui.temp_button.pressed.connect(self.start_stop_temp_plotting)
+
+        #====================================================================================================================================================================================================================================================================================
         # Box plot frame functionality
-        #====================================================
+        #====================================================================================================================================================================================================================================================================================
+        
         self.max_temp = float('-inf')
         self.min_temp = float('inf')
 
         self.tempWorker.update_temp.connect(self.update_temperature_labels)
 
-
-
-        #======================================
+        #======================================================================================================================================================================================================================================================================================================
         # Voltage plotting frame functionality
-        #======================================
+        #======================================================================================================================================================================================================================================================================================================
+        
         self.voltage_is_plotting = False 
-        self.ui.voltage_button.pressed.connect(self.start_voltage_plotting)
+
+        if self.flag_connections[0] and self.flag_connections[1]:
+            self.ui.voltage_button.pressed.connect(self.start_voltage_plotting)
         
         self.voltageTimer = None        
         
@@ -277,25 +281,28 @@ class Functionality(QtWidgets.QMainWindow):
         self.maxval_pulse = 10  
         self.minval_pulse = -10
 
-        
-        #======================================
+        #======================================================================================================================================================================================================================================================================================================
         # Connections frame functionality
-        #======================================
+        #======================================================================================================================================================================================================================================================================
+        
         self.coms_timer = QtCore.QTimer()
         self.coms_timer.setInterval(10000)  # 10 seconds
         self.coms_timer.timeout.connect(self.check_coms)
         self.coms_timer.start()
     
-        #======================================
+        #======================================================================================================================================================================================================================================================================
         # Voltage signal frame functionality
-        #======================================
+        #======================================================================================================================================================================================================================================================================================================
     
         self.signal_is_enabled=False 
+        #if self.flag_connections[0] and self.flag_connections[1]:
+        
         self.ui.psu_button.pressed.connect(self.start_psu_pg)
 
-        #======================================
+        #======================================================================================================================================================================================================================================================================
         # Pressure frame functionality
-        #======================================
+        #======================================================================================================================================================================================================================================================================================================================================
+
         self.reading_pressure = False
         self.resetting_pressure = False 
 
@@ -305,23 +312,33 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.serialWorker.update_data.connect(self.update_pressure_line_edit) # connect the worker signal to your progress bar update function
 
-        #================================================
+        #================================================================================================================================================================================================================================================================================================================
         # Start the thread that will read from the 3PAC
-        #================================================
+        #================================================================================================================================================================================================================================================================================================================================================
+        
         self.serialThread.started.connect(self.serialWorker.run)  # start the workers run function when the thread starts
         if self.flag_connections[2]:
             self.serialThread.start() #start the thread so that the dashboard always reads incoming serial data from the esp32 
 
-        #================================================
-        # Start the thread that will read from the 3PAC
-        #================================================
+        #================================================================================================================================================================================================================================================================================================================
+        # Start the thread that will read from the Temp Sensor
+        #================================================================================================================================================================================================================================================================================================================================================
+        
+        self.tempThread.started.connect(self.tempWorker.run)
+        if self.flag_connections[3]:
+            self.tempThread.start()  # Start the existing thread
+
+        #================================================================================================================================================================================================================================================
+        # Experiment selection 
+        #================================================================================================================================================================================================================================================================================================
+        
         self.experiment_choice_is_locked_in = False
         self.ui.user_info_lockin_button.pressed.connect(self.lock_unlock_experiment_choice)
 
-        #================================================
+        #================================================================================================================================================================================================================================================================================================
         # Experiment page Demo Automation Functionality (im trying to use dictionaries for the first time with an easy application, so yes i could be using intergers here with no real advantage loss but i need to learn dictionaries)
-        #================================================
-        # Experiment page Demo Automation Functionality
+        #================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
+        
         DEMO_frame_names = [
             "frame_DEMO_close_fluidic_circuit",
             "frame_DEMO_connect_waste_flask",
@@ -373,16 +390,12 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.frame_DEMO_close_fluidic_circuit.start_stop_button.pressed.connect(self.start_demo)
         self.ui.save_experiment_data_frame.reset_button.pressed.connect(self.reset_all_DEMO_progress_bars)
 
-
-
-
 # region : PLOTTING FUNCTIONS  
 
     #region: Temperature Plot 
+
     def start_stop_temp_plotting(self):
         if not self.temp_is_plotting:  # If not currently plotting, start
-            self.tempThread.start()  # Start the existing thread
-
             self.temp_is_plotting = True
             self.ui.temp_button.setStyleSheet("""
                 QPushButton {
@@ -398,11 +411,9 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
                 }
             """)
+        
         else:  # If currently plotting, stop
-            self.tempWorker.stop()  # Ask the worker to stop
-            self.tempThread.quit()  # Ask the thread to stop
-            self.tempThread.wait()  # Wait for the thread to stop
-            
+
             self.temp_is_plotting = False
             self.ui.temp_button.setStyleSheet("""
                 QPushButton {
@@ -424,49 +435,53 @@ class Functionality(QtWidgets.QMainWindow):
             """)
     
     def update_temp_plot(self, temperature):
-        shift = 1
-        self.plotdata = np.roll(self.plotdata, -shift)
-        self.plotdata[-shift:] = temperature
-        self.ydata = self.plotdata[:]
 
-        self.xdata = np.roll(self.xdata, -shift)
-        self.xdata[-1] = self.xdata[-2] + 1  # This will keep increasing the count on the x-axis
+        if self.temp_is_plotting:
+            shift = 1
+            self.plotdata = np.roll(self.plotdata, -shift)
+            self.plotdata[-shift:] = temperature
+            self.ydata = self.plotdata[:]
 
-        self.ui.axes_voltage.clear()
-        self.ui.axes_voltage.plot(self.xdata, self.ydata, color='#FFFFFF')
-        self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
-        self.ui.axes_voltage.set_ylim(min(self.ydata) - 1, max(self.ydata) + 10)  # dynamically update y range
+            self.xdata = np.roll(self.xdata, -shift)
+            self.xdata[-1] = self.xdata[-2] + 1  # This will keep increasing the count on the x-axis
+
+            self.ui.axes_voltage.clear()
+            self.ui.axes_voltage.plot(self.xdata, self.ydata, color='#FFFFFF')
+            self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
+            self.ui.axes_voltage.set_ylim(min(self.ydata) - 1, max(self.ydata) + 10)  # dynamically update y range
 
 
-        # Get the Axes object from the Figure for voltage plot
-        self.ui.axes_voltage.grid(True, color='black', linestyle='--')
-        self.ui.axes_voltage.set_facecolor('#222222')
-        self.ui.axes_voltage.spines['bottom'].set_color('#FFFFFF')
-        self.ui.axes_voltage.spines['top'].set_color('#FFFFFF')
-        self.ui.axes_voltage.spines['right'].set_color('#FFFFFF')
-        self.ui.axes_voltage.spines['left'].set_color('#FFFFFF')
-        self.ui.axes_voltage.tick_params(colors='#FFFFFF')
+            # Get the Axes object from the Figure for voltage plot
+            self.ui.axes_voltage.grid(True, color='black', linestyle='--')
+            self.ui.axes_voltage.set_facecolor('#222222')
+            self.ui.axes_voltage.spines['bottom'].set_color('#FFFFFF')
+            self.ui.axes_voltage.spines['top'].set_color('#FFFFFF')
+            self.ui.axes_voltage.spines['right'].set_color('#FFFFFF')
+            self.ui.axes_voltage.spines['left'].set_color('#FFFFFF')
+            self.ui.axes_voltage.tick_params(colors='#FFFFFF')
 
-        # Increase the font size of the x-axis and y-axis labels
-        self.ui.axes_voltage.tick_params(axis='x', labelsize=14)  # You can adjust the font size (e.g., 12)
-        self.ui.axes_voltage.tick_params(axis='y', labelsize=14)  # You can adjust the font size (e.g., 12)
-        # Move the y-axis ticks and labels to the right
-        self.ui.axes_voltage.yaxis.tick_right()
-        # Adjust the position of the x-axis label
-        self.ui.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
+            # Increase the font size of the x-axis and y-axis labels
+            self.ui.axes_voltage.tick_params(axis='x', labelsize=14)  # You can adjust the font size (e.g., 12)
+            self.ui.axes_voltage.tick_params(axis='y', labelsize=14)  # You can adjust the font size (e.g., 12)
+            # Move the y-axis ticks and labels to the right
+            self.ui.axes_voltage.yaxis.tick_right()
+            # Adjust the position of the x-axis label
+            self.ui.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
 
-        # Adjust the position of the y-axis label to the left
-        self.ui.axes_voltage.yaxis.set_label_coords(-0.05, 0.5)  # Move the y-axis label to the left
+            # Adjust the position of the y-axis label to the left
+            self.ui.axes_voltage.yaxis.set_label_coords(-0.05, 0.5)  # Move the y-axis label to the left
 
-        # Set static labels
-        self.ui.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF', fontsize=15)
-        self.ui.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF',  fontsize=15)
-        self.ui.axes_voltage.set_title('Electrode Temperature', color='#FFFFFF', fontsize=20, fontweight='bold', y=1.05)
+            # Set static labels
+            self.ui.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF', fontsize=15)
+            self.ui.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF',  fontsize=15)
+            self.ui.axes_voltage.set_title('Electrode Temperature', color='#FFFFFF', fontsize=20, fontweight='bold', y=1.05)
 
-        self.ui.canvas_voltage.draw()
+            self.ui.canvas_voltage.draw()
+    
     #endregion
      
     #region: Voltage Plot
+
     def start_voltage_plotting(self):
         if not self.voltage_is_plotting:   #if voltage_is_plottingt is false (ie the button has just been pressed to start plotting) the change the color to blue
             # Change button color to blue
@@ -521,7 +536,6 @@ class Functionality(QtWidgets.QMainWindow):
 
     def update_voltage_plot(self):
         
-    
         self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1])  # READ NEXT PULSE
         
         self.voltage_y[:, 0] -= self.zerodata[0]        # ZERO THE VOLTAGE DATA
@@ -535,7 +549,6 @@ class Functionality(QtWidgets.QMainWindow):
             
         if minval_pulse_new < self.minval_pulse:        # CHECK MIN VALUE OVER TIME
             self.minval_pulse = minval_pulse_new
-        
         
         self.voltage_xdata = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0])
         
@@ -554,6 +567,7 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion
 
 # region : SUCROSE PUMPING 
+
     def start_sucrose_pump(self):
         if not self.ethanol_is_pumping and not self.reading_pressure:
             if not self.sucrose_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
@@ -573,15 +587,14 @@ class Functionality(QtWidgets.QMainWindow):
                         background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
                     }
                 """)
-            
-                p1fr=3.00
+        
+                FR= float(self.ui.line_edit_sucrose.text()) 
+                print(f"sent flow rate for sucrose: {FR} m//mn")
 
-                writeSucrosePumpFlowRate(self.device_serials[2], p1fr)
+                writeSucrosePumpFlowRate(self.device_serials[2], FR)
 
-
+            else: #Else if surcrose_is_pumping then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
                 
-            else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
-                # Change button color back to original
                 self.ui.button_sucrose.setStyleSheet("""
                     QPushButton {
                         border: 2px solid white;
@@ -600,7 +613,7 @@ class Functionality(QtWidgets.QMainWindow):
                         background-color: #0796FF;
                     }
                 """)
-                #Change the status of temp_is_plotting from true to False because we are about to stop plotting
+                
                 self.sucrose_is_pumping = False 
                 self.accumulated_sucrose_volume=0 
                 self.updateSucroseProgressBar(0)
@@ -609,6 +622,7 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion
 
 # region : ETHANOL PUMPING 
+
     def start_ethanol_pump(self):
         if not self.sucrose_is_pumping and not self.reading_pressure:
             if not self.ethanol_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
@@ -627,10 +641,12 @@ class Functionality(QtWidgets.QMainWindow):
                         background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
                     }
                 """)
-                p1fr=3.00
 
-                #writeEthanolPumpFlowRate(self.device_serials[2], p1fr)
-                writeEthanolPumpFlowRate(self.device_serials[2], p1fr) #only for the investors presentation
+
+                FR= float(self.ui.line_edit_ethanol.text())
+                print(f"sent flow rate for ethanol: {FR} m//mn")
+
+                writeEthanolPumpFlowRate(self.device_serials[2], FR)
                 
             else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
                 self.ui.button_ethanol.setStyleSheet("""
@@ -661,6 +677,7 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion 
 
 # region : START PRESSURE READING
+
     def start_stop_pressure_reading(self):
         if not self.ethanol_is_pumping and not self.sucrose_is_pumping: #if we are currently pumping ethanol or sucrose we will not let this pressure read function run
             if not self.reading_pressure:   #if reading pressure is false (ie the button has just been pressed to start reading pressure) then we need to:
@@ -710,59 +727,78 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion
 
 # region : BLOOD PUMP
-    def start_blood_pump(self):
-        if not self.blood_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
-            self.blood_is_pumping = True  
-            self.ui.button_blood_play_pause.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #0796FF;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
 
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-            """)
-            blood_volume= float(self.ui.line_edit_blood_2.text()) 
-            blood_speed = float(self.ui.line_edit_blood.text())
+    def toggle_blood_pump(self):
+        if not self.blood_is_pumping:
+            self.start_blood_pump()
+        else:
+            self.stop_blood_pump()
 
-            writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
+    def start_blood_pump(self):  
+        self.blood_is_pumping = True  
+        
+        self.ui.button_blood_play_pause.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 10px;
+                background-color: #0796FF;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 30px;
+            }
 
-                
-        else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
-            self.ui.button_blood_play_pause.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #222222;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+        """)
+        
+        blood_volume = float(self.ui.line_edit_blood_2.text()) 
+        blood_speed = float(self.ui.line_edit_blood.text())
+        
+        print(f"Calculating pump time with volume = {blood_volume}ml and speed = {blood_speed}ml/min")
+        blood_pump_time = int((blood_volume / blood_speed) * 60000)  # Ensure this is the only place blood_pump_time is calculated
+        print(f"Calculated pump time: {blood_pump_time} ms")
+        
+        writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
+        
+        if self.blood_pump_timer is None:
+            self.blood_pump_timer = QTimer()
+            self.blood_pump_timer.timeout.connect(self.stop_blood_pump)
 
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
+        self.blood_pump_timer.start(blood_pump_time)  # Start the timer
+            
+    def stop_blood_pump(self):
+        self.ui.button_blood_play_pause.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 10px;
+                background-color: #222222;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 30px;
+            }
 
-                QPushButton:pressed {
-                    background-color: #0796FF;
-                }
-            """)
-            self.blood_is_pumping = False 
-            writeBloodSyringe(self.device_serials[2], 0, 0) #cant remember the disable motor command so change at some point to that command 
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
 
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        if self.blood_pump_timer is not None:
+            self.blood_pump_timer.stop()  # Stop the timer
+
+        self.blood_is_pumping = False
+        writeBloodSyringe(self.device_serials[2], 0, 0)
 
 #endregion
 
-# region : CONNECTION CIRCLE FUNCTION           
+# region : CONNECTION CIRCLE FUNCTION     
+      
     def check_coms(self):
 
-        #temperature = find_serial_port(SERIAL_TEMPSENS_VENDOR_ID, SERIAL_TEMPSENS_PRODUCT_ID)
-    
         if self.flag_connections[3]:
             self.ui.circles["Temperature Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
         else:
@@ -772,10 +808,21 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.circles["3PAC"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
         else: 
             self.ui.circles["3PAC"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
+        
+        if self.flag_connections[0]:
+            self.ui.circles["Pulse Generator"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
+        else: 
+            self.ui.circles["Pulse Generator"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
+        
+        if self.flag_connections[1]:
+            self.ui.circles["PSU"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
+        else: 
+            self.ui.circles["PSU"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
 
 #endregion 
 
 # region : ROUND PROGRESS BAR FUNCTIONS 
+
     def updateSucroseProgressBar(self, value):
         if self.sucrose_is_pumping:
             if value:
@@ -806,8 +853,7 @@ class Functionality(QtWidgets.QMainWindow):
         else: 
             self.ui.progress_bar_sucrose.setValue(0)
 
-   
-               
+         
     def updateEthanolProgressBar(self, value):
         
         if self.ethanol_is_pumping:
@@ -841,6 +887,7 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion 
 
 # region : CLOSE EVENT FUNCTION
+
     def closeEvent(self, event):
         # Clean up resources and exit the application properly
         self.ui.progress_bar_sucrose.deleteLater()
@@ -853,6 +900,43 @@ class Functionality(QtWidgets.QMainWindow):
 
     def start_psu_pg(self): 
         if not self.signal_is_enabled:  
+            
+            pos_setpoint_text = self.ui.line_edit_max_signal.text().strip()
+            neg_setpoint_text = self.ui.line_edit_min_signal.text().strip()
+
+            # Validate positive setpoint
+            if not pos_setpoint_text:
+                QMessageBox.warning(self, "Input Error", "The positive setpoint cannot be blank. Please enter a value.")
+                self.ui.line_edit_max_signal.clear()
+                return
+
+            try:
+                pos_setpoint = int(pos_setpoint_text)
+                if not (20 <= pos_setpoint <= 90):
+                    raise ValueError("Positive setpoint out of range.")
+            except ValueError:
+                QMessageBox.warning(self, "Input Error", "Invalid positive setpoint. Please enter an integer between 20 and 90.")
+                self.ui.line_edit_max_signal.clear()
+                return
+
+            # Validate negative setpoint
+            if not neg_setpoint_text:
+                QMessageBox.warning(self, "Input Error", "The negative setpoint cannot be blank. Please enter a value.")
+                self.ui.line_edit_min_signal.clear()
+                return
+
+            try:
+                neg_setpoint = int(neg_setpoint_text)
+                if not (-90 <= neg_setpoint <= -20):
+                    raise ValueError("Negative setpoint out of range.")
+            except ValueError:
+                QMessageBox.warning(self, "Input Error", "Invalid negative setpoint. Please enter an integer between -90 and -20.")
+                self.ui.line_edit_min_signal.clear()
+                return
+
+            # If we reach this point, both inputs are valid.
+            print("Setpoints are valid.")
+
             self.ui.psu_button.setStyleSheet("""
                 QPushButton {
                     border: 2px solid white;
@@ -868,15 +952,21 @@ class Functionality(QtWidgets.QMainWindow):
                 }
             """)
             self.signal_is_enabled = True
+
+            neg_setpoint = abs(neg_setpoint)
+            
+            send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
             send_PSU_enable(self.device_serials[0], 1)
+            time.sleep(0.25)
             send_PG_pulsetimes(self.device_serials[1], 0)
             self.zerodata = send_PG_enable(self.device_serials[1], 1)
-            # CHECK IF DATA WAS SENT SUCESSFULLY
+
             if self.zerodata:                                         
                 self.maxval_pulse = 0   
                 self.minval_pulse = 0
 
         else: 
+            
             self.ui.psu_button.setStyleSheet("""
                 QPushButton {
                     border: 2px solid white;
@@ -896,13 +986,19 @@ class Functionality(QtWidgets.QMainWindow):
                 }
             """)
             self.signal_is_enabled = False #Change the status of temp_is_plotting from true to False because we are about to stop plotting        
+            
             send_PSU_disable(self.device_serials[0], 1)
             time.sleep(0.25)
             send_PG_disable(self.device_serials[1], 1)
-                 
+
+
+
+
+
 #endregion
 
 # region : CHANGING PAGES 
+
     def go_to_route1(self):
         # This is the slot that gets called when the button is clicked
         self.ui.stack.setCurrentIndex(0)
@@ -1099,7 +1195,7 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion
 
-# region : Investors Presentation
+# region : DEMO
 
     def start_demo(self):
         self.step_two()                                             # start the automation sequence (AS)
@@ -1220,7 +1316,7 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion
 
-# region : Experiment Page Layouts 
+# region : EXPERIMENT PAGE LAYOUTS 
 
     def lock_unlock_experiment_choice(self): 
         if not self.experiment_choice_is_locked_in: 
@@ -1367,7 +1463,7 @@ class Functionality(QtWidgets.QMainWindow):
       
 #endregion
 
-# region : Experiment Page Progress Bar Update 
+# region : EXPERIMENT PAGE LAYOUTS PROGRESS BARS 
 
     def update_experiment_step_progress_bar(self, counter, timer, progress_bar, frame_name):
         interval = self.DEMO_time_intervals[frame_name]
@@ -1385,6 +1481,5 @@ class Functionality(QtWidgets.QMainWindow):
 
 
 #endregion
-
 
 #endregion 

@@ -1118,12 +1118,11 @@ class Ui_MainWindow(object):
         frame_d_signal_layout.addWidget(label)   #Place SIGNAL at the top of the frame
         frame_d_signal_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
             
-            # Create a horizontal layout for group boxes and button
+        # Create a horizontal layout for group boxes and button
         inner_layout = QtWidgets.QHBoxLayout()     
         
-            # Create a vertical layout for JUST the group boxes 
+        # Create a vertical layout for JUST the group boxes 
         group_boxes_layout = QtWidgets.QVBoxLayout()
-
 
         # region : Create a QGroupBox for the line edit and label for max voltage
         group_box_max_voltage = QtWidgets.QGroupBox(frame_d_signal)
@@ -1144,6 +1143,7 @@ class Ui_MainWindow(object):
         # Create the QLineEdit for the value
         self.line_edit_max_signal = QtWidgets.QLineEdit()
         self.line_edit_max_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_max_signal.setText(" 75")
 
         # Add the line edit and label to the group box layout
         group_box_max_voltage_layout.addWidget(MAX_label)
@@ -1172,6 +1172,7 @@ class Ui_MainWindow(object):
         # Create the QLineEdit for the value
         self.line_edit_min_signal = QtWidgets.QLineEdit()
         self.line_edit_min_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_min_signal.setText("-75")
 
         # Add the line edit and label to the group box layout
         group_box_min_voltage_layout.addWidget(MIN_label)
