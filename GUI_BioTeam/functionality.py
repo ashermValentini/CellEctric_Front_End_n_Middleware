@@ -276,7 +276,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.plotdata = np.zeros(500)
         self.zerodata = [2000, 2000]
         
-        self.voltage_plot_interval = 500  # ms
+        self.voltage_plot_interval = 10  # ms
         self.maxval_pulse = 10  
         self.minval_pulse = -10
 
@@ -533,7 +533,7 @@ class Functionality(QtWidgets.QMainWindow):
         return voltageTimer
 
     def update_voltage_plot(self):
-        
+
         self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1])  
         
         self.voltage_y[:, 0] -= self.zerodata[0]            # voltage data
@@ -580,7 +580,7 @@ class Functionality(QtWidgets.QMainWindow):
         
         # Move the y-axis ticks and labels to the right
         self.ui.axes_voltage.yaxis.tick_right()
-       
+        
         # Adjust the position of the x-axis label
         self.ui.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
 
@@ -936,6 +936,10 @@ class Functionality(QtWidgets.QMainWindow):
             pos_setpoint_text = self.ui.line_edit_max_signal.text().strip()
             neg_setpoint_text = self.ui.line_edit_min_signal.text().strip()
 
+            self.ui.line_edit_max_signal.setEnabled(False)
+            self.ui.line_edit_min_signal.setEnabled(False)
+
+
             # Validate positive setpoint
             if not pos_setpoint_text:
                 QMessageBox.warning(self, "Input Error", "The positive setpoint cannot be blank. Please enter a value.")
@@ -966,7 +970,6 @@ class Functionality(QtWidgets.QMainWindow):
                 self.ui.line_edit_min_signal.clear()
                 return
 
-            # If we reach this point, both inputs are valid.
             print("Setpoints are valid.")
 
             self.ui.psu_button.setStyleSheet("""
@@ -983,6 +986,7 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
                 }
             """)
+            
             self.signal_is_enabled = True
 
             neg_setpoint = abs(neg_setpoint)
@@ -1020,8 +1024,11 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: #0796FF;
                 }
             """)
-            self.signal_is_enabled = False #Change the status of temp_is_plotting from true to False because we are about to stop plotting        
+            self.signal_is_enabled = False         
             
+            self.ui.line_edit_max_signal.setEnabled(True)
+            self.ui.line_edit_min_signal.setEnabled(True)
+
             send_PSU_disable(self.device_serials[0], 1)
             time.sleep(0.25)
             send_PG_disable(self.device_serials[1], 1)
