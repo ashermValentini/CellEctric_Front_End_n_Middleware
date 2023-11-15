@@ -276,7 +276,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.plotdata = np.zeros(500)
         self.zerodata = [2000, 2000]
         
-        self.voltage_plot_interval = 10  # ms
+        self.voltage_plot_interval = 500  # ms
         self.maxval_pulse = 10  
         self.minval_pulse = -10
 
@@ -534,11 +534,11 @@ class Functionality(QtWidgets.QMainWindow):
 
     def update_voltage_plot(self):
 
-        self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1])  
-        
+        self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1]) 
+
         self.voltage_y[:, 0] -= self.zerodata[0]            # voltage data
-        self.voltage_y[:, -1] -= self.zerodata[1]           # current data      
-        
+        self.voltage_y[:, -1] -= self.zerodata[1]           # current data  
+           
         maxval_pulse_new = self.voltage_y.max(axis=0)[0]    # voltage data    
         minval_pulse_new = self.voltage_y.min(axis=0)[0]    # current data    
 
@@ -548,7 +548,8 @@ class Functionality(QtWidgets.QMainWindow):
         if minval_pulse_new < self.minval_pulse:        
             self.minval_pulse = minval_pulse_new
         
-        self.voltage_xdata = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0])
+        scale_factor_x = 200 / 1000  # us per unit
+        self.voltage_xdata = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0]) * scale_factor_x
 
         # Data cleanup if the pulse is turned on
         if self.signal_is_enabled:
@@ -588,7 +589,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.axes_voltage.yaxis.set_label_coords(-0.05, 0.5)  # Move the y-axis label to the left
 
         # Set static labels
-        self.ui.axes_voltage.set_xlabel('Time (not scaled yet) (us)', color='#FFFFFF',  fontsize=15)
+        self.ui.axes_voltage.set_xlabel('Time (us)', color='#FFFFFF',  fontsize=15)
         self.ui.axes_voltage.set_ylabel('Voltage (V)', color='#FFFFFF',  fontsize=15)
         self.ui.axes_voltage.set_title('Voltage Signal', color='#FFFFFF',fontsize=20, fontweight='bold', y=1.05)
         
@@ -1516,5 +1517,6 @@ class Functionality(QtWidgets.QMainWindow):
 
 
 #endregion
+
 
 #endregion 
