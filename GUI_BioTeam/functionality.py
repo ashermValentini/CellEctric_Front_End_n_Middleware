@@ -557,10 +557,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
             scale_factor = self.correct_max_voltage/maxval_pulse_new
             self.voltage_y[:,0] *= scale_factor
-        else: 
-            self.correct_max_voltage = 0
-            self.correct_min_voltage = 0
-        
+
         self.ui.axes_voltage.clear()
         self.ui.axes_voltage.plot(self.voltage_xdata,self.voltage_y[:, 0], color='#FFFFFF')
         self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
