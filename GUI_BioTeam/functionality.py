@@ -105,6 +105,55 @@ class ReadSerialWorker(QObject):
         self._is_running = False
         self._lock.unlock()
 
+class PulseGeneratorSerialWorker(QObject):
+    update_pulse = pyqtSignal(np.ndarray)
+    update_zerodata = pyqtSignal(object)  
+    interval = 500   
+
+    def __init__(self, device_serials):
+        super(PulseGeneratorSerialWorker, self).__init__()
+        self.device_serials = device_serials[1]
+        self._is_running = False
+        self._lock = QMutex()
+
+    @pyqtSlot()
+    def run(self):
+        self._is_running = True
+        while True:
+            self._lock.lock()
+            if not self._is_running:
+                self._lock.unlock()
+                break
+            self._lock.unlock()
+            voltage_y, _ = read_next_PG_pulse(self.device_serials)
+            if voltage_y is not None:
+                self.update_pulse.emit(voltage_y)
+            QThread.msleep(self.interval)
+    
+    @pyqtSlot()
+    def start_pg(self): 
+        self._lock.lock()
+        try:
+            zerodata = send_PG_enable(self.device_serials, 0)
+            self.update_zerodata.emit(zerodata)         
+
+        finally:
+            self._lock.unlock()  # Ensure the lock is always released
+
+    @pyqtSlot()
+    def stop_pg(self): 
+        self._lock.lock()
+        try:
+            send_PG_disable(self.device_serials, 0)
+        finally:
+            self._lock.unlock()  # Ensure the lock is always released
+
+    @pyqtSlot()
+    def stop(self):
+        self._lock.lock()
+        self._is_running = False
+        self._lock.unlock()
+
 #endregion 
 
 #========================
@@ -135,6 +184,10 @@ class Functionality(QtWidgets.QMainWindow):
 
         if self.flag_connections[2]:
             handshake_3PAC(self.device_serials[2], print_handshake_message=True)
+
+        if self.flag_connections[1]: 
+            send_PG_pulsetimes(self.device_serials[1], 0)
+
 
         #==============================================================================================================================================================================================================================
         # Set up the UI layout
@@ -265,13 +318,15 @@ class Functionality(QtWidgets.QMainWindow):
         # Voltage plotting frame functionality
         #======================================================================================================================================================================================================================================================================================================
         
+        self.pgWorker = PulseGeneratorSerialWorker(self.device_serials)
+        self.pgThread = QThread()
+        self.pgWorker.moveToThread(self.pgThread)
+
+        self.pgWorker.update_pulse.connect(self.update_voltage_plot)
+        self.pgWorker.update_zerodata.connect(self.handleZeroDataUpdate)
+
         self.voltage_is_plotting = False 
 
-        if self.flag_connections[0] and self.flag_connections[1]:
-            self.ui.voltage_button.pressed.connect(self.start_voltage_plotting)
-        
-        self.voltageTimer = None        
-        
         self.voltage_xdata = np.linspace(0, 499, 500)  
         self.plotdata = np.zeros(500)
         self.zerodata = [2000, 2000]
@@ -279,6 +334,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.voltage_plot_interval = 500  # ms
         self.maxval_pulse = 10  
         self.minval_pulse = -10
+
+        if self.flag_connections[0] and self.flag_connections[1]:
+            self.ui.voltage_button.pressed.connect(self.start_voltage_plotting)
 
         #======================================================================================================================================================================================================================================================================================================
         # Connections frame functionality
@@ -325,6 +383,14 @@ class Functionality(QtWidgets.QMainWindow):
         self.tempThread.started.connect(self.tempWorker.run)
         if self.flag_connections[3]:
             self.tempThread.start()  # Start the existing thread
+
+        #================================================================================================================================================================================================================================================================================================================
+        # Start the thread that will read from the Pulse Generator
+        #================================================================================================================================================================================================================================================================================================================================================
+        
+        self.pgThread.started.connect(self.pgWorker.run)
+        if self.flag_connections[1]:
+            self.pgThread.start()  # Start the existing thread
 
         #================================================================================================================================================================================================================================================
         # Experiment selection 
@@ -482,6 +548,10 @@ class Functionality(QtWidgets.QMainWindow):
      
     #region: Voltage Plot
 
+    def handleZeroDataUpdate(self, zerodata):
+
+        self.zerodata = zerodata
+
     def start_voltage_plotting(self):
         if not self.voltage_is_plotting and not self.temp_is_plotting:   
             self.ui.voltage_button.setStyleSheet("""
@@ -498,9 +568,8 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
                 }
             """)
-            self.voltage_is_plotting = True         #Change the status of temp_is_plotting from false to true because we are about to begin plotting
-            if self.voltageTimer is None:           #If the time is none we can be sure that we were in a state of not plotting but now we should go into a state of plotting 
-                self.voltageTimer = self.start_voltage_timer() #we get into a stat of plotting by starting the timer for the temp plot (which has been poorly named timer-too generic must change it)
+            self.voltage_is_plotting = True         
+        
         else: 
             self.ui.voltage_button.setStyleSheet("""
                 QPushButton {
@@ -520,77 +589,62 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: #0796FF;
                 }
             """)
-            self.voltage_is_plotting = False        #Change the status of temp_is_plotting from true to False because we are about to stop plotting
-            if self.voltageTimer:                   #If the temp plot timer is true it means we were in a state of plotting and can be sure that we need to stop plotting
-                self.voltageTimer.stop()            #to stop plottng simply stop the timer
-                self.voltageTimer = None            #but remember to set the timer to none so that we can start the timer the next time we click the button
+            self.voltage_is_plotting = False        
 
-    def start_voltage_timer(self):
-        voltageTimer = QtCore.QTimer()
-        voltageTimer.setInterval(self.voltage_plot_interval)
-        voltageTimer.timeout.connect(self.update_voltage_plot)
-        voltageTimer.start()
-        return voltageTimer
+    def update_voltage_plot(self, voltage_y):
+        
+        if self.voltage_is_plotting: 
 
-    def update_voltage_plot(self):
+            print(f"Data type: {type(voltage_y)}, Shape: {getattr(voltage_y, 'shape', 'N/A')}")
 
-        self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1]) 
+            voltage_y[:, 0] -= self.zerodata[0]            # voltage data
+            voltage_y[:, -1] -= self.zerodata[1]           # current data  
+                
+            maxval_pulse_new = voltage_y.max(axis=0)[0]    # voltage data    
 
-        self.voltage_y[:, 0] -= self.zerodata[0]            # voltage data
-        self.voltage_y[:, -1] -= self.zerodata[1]           # current data  
-           
-        maxval_pulse_new = self.voltage_y.max(axis=0)[0]    # voltage data    
-        minval_pulse_new = self.voltage_y.min(axis=0)[0]    # current data    
+            scale_factor_x = 200 / 1000  # us per unit
+            self.voltage_xdata = np.linspace(0, voltage_y.shape[0]-1, voltage_y.shape[0]) * scale_factor_x
 
-        if maxval_pulse_new > self.maxval_pulse:        
-            self.maxval_pulse = maxval_pulse_new
+            # Data cleanup if the pulse is turned on
+            if self.signal_is_enabled:
+                self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
+                self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
+                scale_factor = self.correct_max_voltage/maxval_pulse_new
+                voltage_y[:,0] *= scale_factor
+
+            self.ui.axes_voltage.clear()
+            self.ui.axes_voltage.plot(self.voltage_xdata, voltage_y[:, 0], color='#FFFFFF')
+            self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
+            self.ui.axes_voltage.set_ylim(-90, 90) #+-90 are the PG voltage limits
             
-        if minval_pulse_new < self.minval_pulse:        
-            self.minval_pulse = minval_pulse_new
-        
-        scale_factor_x = 200 / 1000  # us per unit
-        self.voltage_xdata = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0]) * scale_factor_x
+            # Get the Axes object from the Figure for voltage plot
+            self.ui.axes_voltage.grid(True, color='black', linestyle='--')
+            self.ui.axes_voltage.set_facecolor('#222222')
+            self.ui.axes_voltage.spines['bottom'].set_color('#FFFFFF')
+            self.ui.axes_voltage.spines['top'].set_color('#FFFFFF')
+            self.ui.axes_voltage.spines['right'].set_color('#FFFFFF')
+            self.ui.axes_voltage.spines['left'].set_color('#FFFFFF')
+            self.ui.axes_voltage.tick_params(colors='#FFFFFF')
+            
+            # Increase the font size of the x-axis and y-axis labels
+            self.ui.axes_voltage.tick_params(axis='x', labelsize=14)  # You can adjust the font size (e.g., 12)
+            self.ui.axes_voltage.tick_params(axis='y', labelsize=14)  # You can adjust the font size (e.g., 12)
+            
+            # Move the y-axis ticks and labels to the right
+            self.ui.axes_voltage.yaxis.tick_right()
+            
+            # Adjust the position of the x-axis label
+            self.ui.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
 
-        # Data cleanup if the pulse is turned on
-        if self.signal_is_enabled:
-            self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
-            self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
-            scale_factor = self.correct_max_voltage/maxval_pulse_new
-            self.voltage_y[:,0] *= scale_factor
+            # Adjust the position of the y-axis label to the left
+            self.ui.axes_voltage.yaxis.set_label_coords(-0.05, 0.5)  # Move the y-axis label to the left
 
-        self.ui.axes_voltage.clear()
-        self.ui.axes_voltage.plot(self.voltage_xdata,self.voltage_y[:, 0], color='#FFFFFF')
-        self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
-        self.ui.axes_voltage.set_ylim(-90, 90) #+-90 are the PG voltage limits
-        
-        # Get the Axes object from the Figure for voltage plot
-        self.ui.axes_voltage.grid(True, color='black', linestyle='--')
-        self.ui.axes_voltage.set_facecolor('#222222')
-        self.ui.axes_voltage.spines['bottom'].set_color('#FFFFFF')
-        self.ui.axes_voltage.spines['top'].set_color('#FFFFFF')
-        self.ui.axes_voltage.spines['right'].set_color('#FFFFFF')
-        self.ui.axes_voltage.spines['left'].set_color('#FFFFFF')
-        self.ui.axes_voltage.tick_params(colors='#FFFFFF')
-        
-        # Increase the font size of the x-axis and y-axis labels
-        self.ui.axes_voltage.tick_params(axis='x', labelsize=14)  # You can adjust the font size (e.g., 12)
-        self.ui.axes_voltage.tick_params(axis='y', labelsize=14)  # You can adjust the font size (e.g., 12)
-        
-        # Move the y-axis ticks and labels to the right
-        self.ui.axes_voltage.yaxis.tick_right()
-        
-        # Adjust the position of the x-axis label
-        self.ui.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
-
-        # Adjust the position of the y-axis label to the left
-        self.ui.axes_voltage.yaxis.set_label_coords(-0.05, 0.5)  # Move the y-axis label to the left
-
-        # Set static labels
-        self.ui.axes_voltage.set_xlabel('Time (us)', color='#FFFFFF',  fontsize=15)
-        self.ui.axes_voltage.set_ylabel('Voltage (V)', color='#FFFFFF',  fontsize=15)
-        self.ui.axes_voltage.set_title('Voltage Signal', color='#FFFFFF',fontsize=20, fontweight='bold', y=1.05)
-        
-        self.ui.canvas_voltage.draw()
+            # Set static labels
+            self.ui.axes_voltage.set_xlabel('Time (us)', color='#FFFFFF',  fontsize=15)
+            self.ui.axes_voltage.set_ylabel('Voltage (V)', color='#FFFFFF',  fontsize=15)
+            self.ui.axes_voltage.set_title('Voltage Signal', color='#FFFFFF',fontsize=20, fontweight='bold', y=1.05)
+            
+            self.ui.canvas_voltage.draw()
    
     #endregion
 
@@ -995,12 +1049,7 @@ class Functionality(QtWidgets.QMainWindow):
             send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
             time.sleep(0.25)
 
-            send_PG_pulsetimes(self.device_serials[1], 0)
-            self.zerodata = send_PG_enable(self.device_serials[1], 1)
-
-            if self.zerodata:                                         
-                self.maxval_pulse = 0   
-                self.minval_pulse = 0
+            self.pgWorker.start_pg()
 
         else: 
             
@@ -1028,8 +1077,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.line_edit_min_signal.setEnabled(True)
 
             send_PSU_disable(self.device_serials[0], 1)
-            time.sleep(0.25)
-            send_PG_disable(self.device_serials[1], 1)
+            self.pgWorker.stop_pg()
 
 #endregion
 
@@ -1514,6 +1562,5 @@ class Functionality(QtWidgets.QMainWindow):
 
 
 #endregion
-
 
 #endregion 
