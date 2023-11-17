@@ -907,7 +907,6 @@ def read_next_PG_pulse(ser, timeout=0, verbose=0):
 
     return pulseData, pulseDataLength
 
-
 #endregion
 
 # =============================================================================================

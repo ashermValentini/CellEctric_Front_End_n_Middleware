@@ -95,7 +95,6 @@ class ReadSerialWorker(QObject):
                 break
             self._lock.unlock()
             data = read_flowrate(self.device_serials)
-            print(data)
             if data is not None:
                 self.update_data.emit(data)
             QThread.msleep(self.interval)
@@ -295,9 +294,8 @@ class Functionality(QtWidgets.QMainWindow):
         #======================================================================================================================================================================================================================================================================================================
     
         self.signal_is_enabled=False 
-        #if self.flag_connections[0] and self.flag_connections[1]:
-        
-        self.ui.psu_button.pressed.connect(self.start_psu_pg)
+        if self.flag_connections[0] and self.flag_connections[1]:
+            self.ui.psu_button.pressed.connect(self.start_psu_pg)
 
         #======================================================================================================================================================================================================================================================================
         # Pressure frame functionality
@@ -362,7 +360,7 @@ class Functionality(QtWidgets.QMainWindow):
                         self.DEMO_counters[frame_name], 
                         self.DEMO_timers[frame_name], 
                         self.DEMO_progress_bar_dict[frame_name],
-                        frame_name  # passing the frame name as an argument
+                        frame_name  
                     )
             )
 
@@ -395,7 +393,7 @@ class Functionality(QtWidgets.QMainWindow):
     #region: Temperature Plot 
 
     def start_stop_temp_plotting(self):
-        if not self.temp_is_plotting:  # If not currently plotting, start
+        if not self.temp_is_plotting and not self.voltage_is_plotting:  
             self.temp_is_plotting = True
             self.ui.temp_button.setStyleSheet("""
                 QPushButton {
@@ -463,8 +461,10 @@ class Functionality(QtWidgets.QMainWindow):
             # Increase the font size of the x-axis and y-axis labels
             self.ui.axes_voltage.tick_params(axis='x', labelsize=14)  # You can adjust the font size (e.g., 12)
             self.ui.axes_voltage.tick_params(axis='y', labelsize=14)  # You can adjust the font size (e.g., 12)
+            
             # Move the y-axis ticks and labels to the right
             self.ui.axes_voltage.yaxis.tick_right()
+
             # Adjust the position of the x-axis label
             self.ui.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
 
@@ -483,8 +483,7 @@ class Functionality(QtWidgets.QMainWindow):
     #region: Voltage Plot
 
     def start_voltage_plotting(self):
-        if not self.voltage_is_plotting:   #if voltage_is_plottingt is false (ie the button has just been pressed to start plotting) the change the color to blue
-            # Change button color to blue
+        if not self.voltage_is_plotting and not self.temp_is_plotting:   
             self.ui.voltage_button.setStyleSheet("""
                 QPushButton {
                     border: 2px solid white;
@@ -499,11 +498,10 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
                 }
             """)
-            self.voltage_is_plotting = True  #Change the status of temp_is_plotting from false to true because we are about to begin plotting
-            if self.voltageTimer is None:        #If the time is none we can be sure that we were in a state of not plotting but now we should go into a state of plotting 
+            self.voltage_is_plotting = True         #Change the status of temp_is_plotting from false to true because we are about to begin plotting
+            if self.voltageTimer is None:           #If the time is none we can be sure that we were in a state of not plotting but now we should go into a state of plotting 
                 self.voltageTimer = self.start_voltage_timer() #we get into a stat of plotting by starting the timer for the temp plot (which has been poorly named timer-too generic must change it)
-        else: #Else if temp_is_plotting is true then it means the button was pressed during a state of plotting and the user would like to stop plotting which means we need to:
-            # Change button color back to original
+        else: 
             self.ui.voltage_button.setStyleSheet("""
                 QPushButton {
                     border: 2px solid white;
@@ -522,10 +520,10 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: #0796FF;
                 }
             """)
-            self.voltage_is_plotting = False #Change the status of temp_is_plotting from true to False because we are about to stop plotting
-            if self.voltageTimer:                #If the temp plot timer is true it means we were indeed in a state of plotting and can therefore be sure that we need to stop plotting
-                self.voltageTimer.stop()         #to stop plottng simply stop the timer
-                self.voltageTimer = None         #but remember to set the timer to none so that we can start the timer the next time we click the button
+            self.voltage_is_plotting = False        #Change the status of temp_is_plotting from true to False because we are about to stop plotting
+            if self.voltageTimer:                   #If the temp plot timer is true it means we were in a state of plotting and can be sure that we need to stop plotting
+                self.voltageTimer.stop()            #to stop plottng simply stop the timer
+                self.voltageTimer = None            #but remember to set the timer to none so that we can start the timer the next time we click the button
 
     def start_voltage_timer(self):
         voltageTimer = QtCore.QTimer()
@@ -535,30 +533,65 @@ class Functionality(QtWidgets.QMainWindow):
         return voltageTimer
 
     def update_voltage_plot(self):
-        
-        self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1])  # READ NEXT PULSE
-        
-        self.voltage_y[:, 0] -= self.zerodata[0]        # ZERO THE VOLTAGE DATA
-        self.voltage_y[:, -1] -= self.zerodata[1]       # ZERO THE CURRENT DATA
-        
-        maxval_pulse_new = self.voltage_y.max(axis=0)[0]    # GET MAX VALUE FROM VOLTAGE PULSE
-        minval_pulse_new = self.voltage_y.min(axis=0)[0]    # GET MIN VALUE FROM VOLTAGE PULSE
 
-        if maxval_pulse_new > self.maxval_pulse:        # CHECK MAX VALUE OVER TIME
+        self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1]) 
+
+        self.voltage_y[:, 0] -= self.zerodata[0]            # voltage data
+        self.voltage_y[:, -1] -= self.zerodata[1]           # current data  
+           
+        maxval_pulse_new = self.voltage_y.max(axis=0)[0]    # voltage data    
+        minval_pulse_new = self.voltage_y.min(axis=0)[0]    # current data    
+
+        if maxval_pulse_new > self.maxval_pulse:        
             self.maxval_pulse = maxval_pulse_new
             
-        if minval_pulse_new < self.minval_pulse:        # CHECK MIN VALUE OVER TIME
+        if minval_pulse_new < self.minval_pulse:        
             self.minval_pulse = minval_pulse_new
         
-        self.voltage_xdata = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0])
+        scale_factor_x = 200 / 1000  # us per unit
+        self.voltage_xdata = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0]) * scale_factor_x
+
+        # Data cleanup if the pulse is turned on
+        if self.signal_is_enabled:
+            self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
+            self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
+            scale_factor = self.correct_max_voltage/maxval_pulse_new
+            self.voltage_y[:,0] *= scale_factor
+        else: 
+            self.correct_max_voltage = 0
+            self.correct_min_voltage = 0
         
         self.ui.axes_voltage.clear()
-        self.ui.axes_voltage.plot(self.voltage_xdata,self.voltage_y[:, 0], color='#0796FF')
-        self.ui.axes_voltage.set_ylim(self.minval_pulse-10, self.maxval_pulse+10)  
+        self.ui.axes_voltage.plot(self.voltage_xdata,self.voltage_y[:, 0], color='#FFFFFF')
+        self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
+        self.ui.axes_voltage.set_ylim(-90, 90) #+-90 are the PG voltage limits
+        
+        # Get the Axes object from the Figure for voltage plot
+        self.ui.axes_voltage.grid(True, color='black', linestyle='--')
+        self.ui.axes_voltage.set_facecolor('#222222')
+        self.ui.axes_voltage.spines['bottom'].set_color('#FFFFFF')
+        self.ui.axes_voltage.spines['top'].set_color('#FFFFFF')
+        self.ui.axes_voltage.spines['right'].set_color('#FFFFFF')
+        self.ui.axes_voltage.spines['left'].set_color('#FFFFFF')
+        self.ui.axes_voltage.tick_params(colors='#FFFFFF')
+        
+        # Increase the font size of the x-axis and y-axis labels
+        self.ui.axes_voltage.tick_params(axis='x', labelsize=14)  # You can adjust the font size (e.g., 12)
+        self.ui.axes_voltage.tick_params(axis='y', labelsize=14)  # You can adjust the font size (e.g., 12)
+        
+        # Move the y-axis ticks and labels to the right
+        self.ui.axes_voltage.yaxis.tick_right()
+        
+        # Adjust the position of the x-axis label
+        self.ui.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
 
-        self.ui.axes_voltage.set_xlabel('Time (not scaled yet) (us)', color='#FFFFFF',  fontsize=15)
+        # Adjust the position of the y-axis label to the left
+        self.ui.axes_voltage.yaxis.set_label_coords(-0.05, 0.5)  # Move the y-axis label to the left
+
+        # Set static labels
+        self.ui.axes_voltage.set_xlabel('Time (us)', color='#FFFFFF',  fontsize=15)
         self.ui.axes_voltage.set_ylabel('Voltage (V)', color='#FFFFFF',  fontsize=15)
-        self.ui.axes_voltage.set_title('Voltage Signal', color='#FFFFFF',fontsize=20, fontweight='bold')
+        self.ui.axes_voltage.set_title('Voltage Signal', color='#FFFFFF',fontsize=20, fontweight='bold', y=1.05)
         
         self.ui.canvas_voltage.draw()
    
@@ -904,6 +937,10 @@ class Functionality(QtWidgets.QMainWindow):
             pos_setpoint_text = self.ui.line_edit_max_signal.text().strip()
             neg_setpoint_text = self.ui.line_edit_min_signal.text().strip()
 
+            self.ui.line_edit_max_signal.setEnabled(False)
+            self.ui.line_edit_min_signal.setEnabled(False)
+
+
             # Validate positive setpoint
             if not pos_setpoint_text:
                 QMessageBox.warning(self, "Input Error", "The positive setpoint cannot be blank. Please enter a value.")
@@ -934,7 +971,6 @@ class Functionality(QtWidgets.QMainWindow):
                 self.ui.line_edit_min_signal.clear()
                 return
 
-            # If we reach this point, both inputs are valid.
             print("Setpoints are valid.")
 
             self.ui.psu_button.setStyleSheet("""
@@ -951,13 +987,17 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
                 }
             """)
+            
             self.signal_is_enabled = True
 
             neg_setpoint = abs(neg_setpoint)
             
-            send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
             send_PSU_enable(self.device_serials[0], 1)
             time.sleep(0.25)
+
+            send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
+            time.sleep(0.25)
+
             send_PG_pulsetimes(self.device_serials[1], 0)
             self.zerodata = send_PG_enable(self.device_serials[1], 1)
 
@@ -985,15 +1025,14 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: #0796FF;
                 }
             """)
-            self.signal_is_enabled = False #Change the status of temp_is_plotting from true to False because we are about to stop plotting        
+            self.signal_is_enabled = False         
             
+            self.ui.line_edit_max_signal.setEnabled(True)
+            self.ui.line_edit_min_signal.setEnabled(True)
+
             send_PSU_disable(self.device_serials[0], 1)
             time.sleep(0.25)
             send_PG_disable(self.device_serials[1], 1)
-
-
-
-
 
 #endregion
 
@@ -1082,7 +1121,7 @@ class Functionality(QtWidgets.QMainWindow):
    
 #endregion
 
-#region : TEMPERATURE FRAME
+# region : TEMPERATURE FRAME
 
     @pyqtSlot(float)
     def update_temperature_labels(self, temperature):
@@ -1096,7 +1135,7 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion
 
-#region : UPDATE PRESSURE PROGRESS BAR 
+# region : UPDATE PRESSURE PROGRESS BAR 
 
     def update_pressure_progress_bar(self):
         if not self.resetting_pressure:
@@ -1184,14 +1223,11 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion
 
-#region : UPDATE PRESSURE LINE EDIT VALUE
+# region : UPDATE PRESSURE LINE EDIT VALUE
 
     def update_pressure_line_edit(self, value):
         if self.reading_pressure and value is not None:
             self.ui.pressure_data.setText(f"{value} Bar")
-
-
-
 
 #endregion
 
@@ -1481,5 +1517,6 @@ class Functionality(QtWidgets.QMainWindow):
 
 
 #endregion
+
 
 #endregion 
