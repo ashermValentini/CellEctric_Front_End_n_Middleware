@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QProgressBar
+from PyQt5.QtWidgets import QProgressBar, QDialog, QVBoxLayout, QLabel
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.patches import FancyBboxPatch
@@ -12,6 +12,7 @@ import resources_rc
 #===============================
 # EXPERIMENT PAGE CLASSES
 #===============================
+
 class CustomExperimentFrame(QtWidgets.QFrame):
     def __init__(self, title, icon_paths):
         super().__init__()
@@ -111,13 +112,37 @@ class CustomExperimentFrame(QtWidgets.QFrame):
         self.setLayout(layout)
 
 #===============================
+# EXPERIMENT PAGE CLASSES
+#===============================
+
+class PopupWindow(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        
+        title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px; font-weight: bold; }"
+
+        main_layout = QVBoxLayout()
+
+        self.label = QLabel("SUCROSE")
+        self.label.setStyleSheet(title_style)
+
+
+
+        main_layout.addWidget(self.label)
+
+        self.setLayout(main_layout)
+        self.setStyleSheet("background-color: #222222;")
+
+#===============================
 # MAIN LAYOUT CLASS
 #===============================
+
 class Ui_MainWindow(object):
 
     def setupUi(self, MainWindow):
-        # Load custom font
-        QtGui.QFontDatabase.addApplicationFont(":/fonts/static/Archivo-Regular.ttf")
 
         # Set up styles for labels
         title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px; font-weight: bold; }"
@@ -153,8 +178,6 @@ class Ui_MainWindow(object):
                 }
          """)
     
-
-        
 #region : Dashboard Page Layout     
         self.h_layout = QtWidgets.QHBoxLayout(self.dashboard)
         self.h_layout.setContentsMargins(0, 0, 0, 0)   
@@ -168,7 +191,6 @@ class Ui_MainWindow(object):
         self.frame_d_sidebar.setStyleSheet("background-color: #222222;")
         self.frame_d_sidebar.setObjectName("frame_d_sidebar")
 
-        
         # Create layout for sidebar 
         self.side_bar_layout = QtWidgets.QVBoxLayout(self.frame_d_sidebar)
 
@@ -254,6 +276,30 @@ class Ui_MainWindow(object):
                 background-color: #0796FF;
             }
         """)
+
+        # Create the button for dashboard data recording  
+        self.button_dashboard_data_recording  = QtWidgets.QPushButton() 
+        buffer = 10  
+        self.button_dashboard_data_recording.setGeometry(buffer, buffer, self.frame_d_sidebar.width() - 3 * buffer, int(MainWindow.height() * 0.2))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/record_button.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_dashboard_data_recording.setIcon(icon)
+        self.button_dashboard_data_recording.setIconSize(QtCore.QSize(40, 40))  # Adjust size as needed
+        self.button_dashboard_data_recording.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
         
         # Add widgets to the layout  
         self.side_bar_layout.addWidget(self.sidebar_logo)
@@ -261,6 +307,7 @@ class Ui_MainWindow(object):
         self.side_bar_layout.addWidget(self.button_lights)
         self.side_bar_layout.addWidget(self.button_motors_home)
         self.side_bar_layout.addWidget(self.button_experiment_route)
+        self.side_bar_layout.addWidget(self.button_dashboard_data_recording)
         self.side_bar_layout.addStretch(1)
         
 
@@ -1439,9 +1486,8 @@ class Ui_MainWindow(object):
         self.main_content.setStretchFactor(self.plot_layout, 50)    
 #endregion
 
-
 #region : Experiment Page Layout    
-# 
+ 
         self.experiment_page_h_layout = QtWidgets.QHBoxLayout(self.experiment)
         self.experiment_page_h_layout.setContentsMargins(0, 0, 0, 0)    
     
@@ -1938,13 +1984,9 @@ class Ui_MainWindow(object):
         self.spacing_placeholder11.hide()
         self.spacing_placeholder12.hide()
 
-                
-
-
     #endregion
     
 #endregion    
-    
     
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

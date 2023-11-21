@@ -10,6 +10,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTimer
 from PyQt5.QtWidgets import QProgressBar, QMessageBox
 from layout import Ui_MainWindow
+from layout import PopupWindow
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.ticker as ticker
@@ -166,6 +167,13 @@ class Functionality(QtWidgets.QMainWindow):
     def __init__(self):
         super(Functionality, self).__init__()
 
+        #==============================================================================================================================================================================================================================
+        # Set up the UI layout
+        #==============================================================================================================================================================================================================================
+        
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+
         # =====================================================================================================================================================================================================================================================================================================================================================================================================================================================================
         # START SERIAL CONNECTION TO DEVICES
         # =====================================================================================================================================================================================================================================================================================================================================================================================================================================
@@ -188,14 +196,6 @@ class Functionality(QtWidgets.QMainWindow):
         if self.flag_connections[1]: 
             send_PG_pulsetimes(self.device_serials[1], 0)
 
-
-        #==============================================================================================================================================================================================================================
-        # Set up the UI layout
-        #==============================================================================================================================================================================================================================
-        
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
-
         #================================================================================================================================================================================================================================
         # Side bar functionality 
         #================================================================================================================================================================================================================================
@@ -206,10 +206,11 @@ class Functionality(QtWidgets.QMainWindow):
         if self.flag_connections[2]:
             self.ui.button_lights.clicked.connect(self.skakel_ligte)
             self.ui.button_motors_home.clicked.connect(lambda: self.movement_homing(0))     
-
        
         self.ui.button_experiment_route.clicked.connect(self.go_to_route2)             
         self.ui.button_dashboard_route.clicked.connect(self.go_to_route1)             
+        #self.ui.button_dashboard_data_recording.clicked.connect(self.showPopup)
+        self.ui.button_dashboard_data_recording.clicked.connect(self.go_live)
 
         #===========================================================================================================================================================================================================
         # Sucrose and Ethanol frame functionalities (reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread)
@@ -331,7 +332,6 @@ class Functionality(QtWidgets.QMainWindow):
         self.plotdata = np.zeros(500)
         self.zerodata = [2000, 2000]
         
-        self.voltage_plot_interval = 500  # ms
         self.maxval_pulse = 10  
         self.minval_pulse = -10
 
@@ -549,7 +549,6 @@ class Functionality(QtWidgets.QMainWindow):
     #region: Voltage Plot
 
     def handleZeroDataUpdate(self, zerodata):
-
         self.zerodata = zerodata
 
     def start_voltage_plotting(self):
@@ -936,7 +935,6 @@ class Functionality(QtWidgets.QMainWindow):
                 self.ui.progress_bar_sucrose.setValue(0)
         else: 
             self.ui.progress_bar_sucrose.setValue(0)
-
          
     def updateEthanolProgressBar(self, value):
         
@@ -1435,7 +1433,6 @@ class Functionality(QtWidgets.QMainWindow):
                 self.create_DEMO_experiment_page()
                 pass
 
-
         else: 
             self.experiment_choice_is_locked_in = False
             self.ui.user_info_lockin_button.setStyleSheet("""
@@ -1562,5 +1559,22 @@ class Functionality(QtWidgets.QMainWindow):
 
 
 #endregion
+
+# region : DASHBOARD POP UP 
+
+    def showPopup(self):
+        self.popup = PopupWindow()
+        self.popup.exec_()
+
+#endregion 
+
+# region : DASHBOARD LIVE DATA AQUISITION 
+
+    def go_live(self):
+        # Apply a stylesheet with a green border only to the centralwidget
+        border_style = "#centralwidget { border: 7px solid green; }"
+        self.ui.centralwidget.setStyleSheet(border_style)
+
+#endregion 
 
 #endregion 
