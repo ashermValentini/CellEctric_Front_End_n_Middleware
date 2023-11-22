@@ -209,8 +209,8 @@ class Functionality(QtWidgets.QMainWindow):
        
         self.ui.button_experiment_route.clicked.connect(self.go_to_route2)             
         self.ui.button_dashboard_route.clicked.connect(self.go_to_route1)             
-        #self.ui.button_dashboard_data_recording.clicked.connect(self.showPopup)
-        self.ui.button_dashboard_data_recording.clicked.connect(self.go_live)
+        self.ui.button_dashboard_data_recording.clicked.connect(self.showPopup)
+        #self.ui.button_dashboard_data_recording.clicked.connect(self.go_live)
 
         #===========================================================================================================================================================================================================
         # Sucrose and Ethanol frame functionalities (reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread)
@@ -1399,7 +1399,6 @@ class Functionality(QtWidgets.QMainWindow):
 
     def lock_unlock_experiment_choice(self): 
         if not self.experiment_choice_is_locked_in: 
-
             self.experiment_choice_is_locked_in=True
             self.ui.user_info_lockin_button.setStyleSheet("""
                 QPushButton {

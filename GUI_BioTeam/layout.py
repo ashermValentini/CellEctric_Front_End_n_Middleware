@@ -122,18 +122,116 @@ class PopupWindow(QDialog):
 
     def initUI(self):
         
-        title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px; font-weight: bold; }"
+        title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 40px; font-weight: bold; }"
+        subtitle_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px;  }"
+        input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 23px;  }"
+        combobox_button_style = """
+        QComboBox, QPushButton {
+            color: #FFFFFF;
+            background-color: rgba(255, 255, 255, 0.1);
+            font-family: Archivo;
+            font-size: 20px;   /* adjust this as needed */
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 5px;
+            padding: 5px 15px;
+        }
+        QComboBox::drop-down, QPushButton {
+            border: none;
+        }
+        QComboBox:hover, QPushButton:hover {
+            background-color: rgba(7, 150, 255, 0.7);  
+        }
+        QComboBox QAbstractItemView {
+        color: #FFFFFF;
+        background-color: rgba(255, 255, 255, 0.1);
+        font-family: Archivo;
+        font-size: 20px;   /* adjust this as needed */
+        border: 2px solid rgba(255, 255, 255, 0.7);
+        border-radius: 5px;
+        selection-background-color: rgba(7, 150, 255, 0.5);  
+        }
+        """   
+        
+        main_vertical_layout = QVBoxLayout()
 
-        main_layout = QVBoxLayout()
+        self.label_LDA_title = QLabel("Live Data Aquisiton Information: ")
+        self.label_LDA_title.setStyleSheet(title_style)
+        
+        self.label_LDA_instructions = QLabel("Live data aquisition will allow you to save work done outside of traditional workflows. Please populate the fields below and save your changes before going live.")
+        self.label_LDA_instructions.setStyleSheet(input_style)
+        self.label_LDA_instructions.setFixedWidth(800)  
+        self.label_LDA_instructions.setWordWrap(True)
 
-        self.label = QLabel("SUCROSE")
-        self.label.setStyleSheet(title_style)
+        self.label_LDA_user_information= QLabel("User Information: ")
+        self.label_LDA_user_information.setStyleSheet(subtitle_style)
 
+        #region : user information
 
+        layout_LDA_user_information = QtWidgets.QHBoxLayout()
 
-        main_layout.addWidget(self.label)
+        layout_LDA_user_name = QtWidgets.QVBoxLayout()
+        self.label_LDA_user_name = QLabel("Name: ")
+        self.label_LDA_user_name.setStyleSheet(input_style)
+        self.combobox_LDA_user_name = QtWidgets.QComboBox()
+        self.combobox_LDA_user_name.setStyleSheet(combobox_button_style)
+        self.combobox_LDA_user_name.addItems(["","Dora", "Julia"]) 
+        layout_LDA_user_name.addWidget(self.label_LDA_user_name) 
+        layout_LDA_user_name.addWidget(self.combobox_LDA_user_name)
 
-        self.setLayout(main_layout)
+        layout_LDA_user_email = QtWidgets.QVBoxLayout()
+        self.label_LDA_user_email = QLabel("Email")
+        self.label_LDA_user_email.setStyleSheet(input_style)
+        self.combobox_LDA_user_email = QtWidgets.QComboBox()
+        self.combobox_LDA_user_email.setStyleSheet(combobox_button_style)
+        self.combobox_LDA_user_email.addItems(["","email@email", "email@email"])     
+        layout_LDA_user_email.addWidget(self.label_LDA_user_email)
+        layout_LDA_user_email.addWidget(self.combobox_LDA_user_email)
+
+        layout_LDA_user_information.addLayout(layout_LDA_user_name)
+        layout_LDA_user_information.addLayout(layout_LDA_user_email)
+        
+        #endregion
+
+        #region : experimentation information
+
+        layout_LDA_experiment_information = QtWidgets.QHBoxLayout()
+
+        layout_LDA_experiment_purpose = QtWidgets.QVBoxLayout()
+        self.label_LDA_experiment_purpose = QLabel("Purpose: ")
+        self.label_LDA_experiment_purpose.setStyleSheet(input_style)
+        self.line_edit_LDA_experiment_purpose = QtWidgets.QLineEdit()
+        self.line_edit_LDA_experiment_purpose.setStyleSheet("QLineEdit { border: 2px solid white; border-radius: 10px; color: white; background-color: #222222; font-size: 25px;}")
+        layout_LDA_experiment_information.addWidget(self.label_LDA_experiment_purpose) 
+        layout_LDA_experiment_information.addWidget(self.line_edit_LDA_experiment_purpose)
+
+        layout_LDA_experiment_number = QtWidgets.QVBoxLayout()
+        self.label_LDA_experiment_number = QLabel("Experiment Number")
+        self.label_LDA_experiment_number.setStyleSheet(input_style)
+        self.line_edit_LDA_experiment_number = QtWidgets.QLineEdit()
+        self.line_edit_LDA_experiment_number.setStyleSheet("QLineEdit { border: 2px solid white; border-radius: 10px; color: white; background-color: #222222; font-size: 25px;}")
+        layout_LDA_experiment_number.addWidget(self.label_LDA_experiment_number) 
+        layout_LDA_experiment_number.addWidget(self.line_edit_LDA_experiment_purpose)
+        
+        layout_LDA_experiment_information.addLayout(layout_LDA_experiment_purpose)
+        layout_LDA_experiment_information.addLayout(layout_LDA_experiment_number)
+        
+        #endregion
+
+        self.label_LDA_experiment_information= QLabel("Experiment Details: ")
+        self.label_LDA_experiment_information.setStyleSheet(input_style)
+
+        self.label_LDA_variable_information= QLabel("Data to Track: ")
+        self.label_LDA_variable_information.setStyleSheet(input_style)
+
+        main_vertical_layout.addWidget(self.label_LDA_title)
+        main_vertical_layout.addWidget(self.label_LDA_instructions)
+        main_vertical_layout.addSpacing(20) 
+        #main_vertical_layout.addWidget(self.label_LDA_user_information)
+        main_vertical_layout.addLayout(layout_LDA_user_information)
+        main_vertical_layout.addWidget(self.label_LDA_experiment_information)
+        main_vertical_layout.addWidget(self.label_LDA_variable_information)
+
+        self.setLayout(main_vertical_layout)
         self.setStyleSheet("background-color: #222222;")
 
 #===============================
