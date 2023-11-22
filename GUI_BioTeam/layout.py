@@ -151,6 +151,17 @@ class PopupWindow(QDialog):
         selection-background-color: rgba(7, 150, 255, 0.5);  
         }
         """   
+        line_edit_style = """
+            QLineEdit {
+                border: 2px solid white;
+                border-radius: 5px;
+                color: white;
+                background-color: rgba(255, 255, 255, 0.1);
+                font-size: 20px;
+                padding: 7px;
+            }
+        """
+
         
         main_vertical_layout = QVBoxLayout()
 
@@ -200,20 +211,42 @@ class PopupWindow(QDialog):
         self.label_LDA_experiment_purpose = QLabel("Purpose: ")
         self.label_LDA_experiment_purpose.setStyleSheet(input_style)
         self.line_edit_LDA_experiment_purpose = QtWidgets.QLineEdit()
-        self.line_edit_LDA_experiment_purpose.setStyleSheet("QLineEdit { border: 2px solid white; border-radius: 10px; color: white; background-color: #222222; font-size: 25px;}")
-        layout_LDA_experiment_information.addWidget(self.label_LDA_experiment_purpose) 
-        layout_LDA_experiment_information.addWidget(self.line_edit_LDA_experiment_purpose)
+        self.line_edit_LDA_experiment_purpose.setStyleSheet(line_edit_style)
+        layout_LDA_experiment_purpose.addWidget(self.label_LDA_experiment_purpose) 
+        layout_LDA_experiment_purpose.addWidget(self.line_edit_LDA_experiment_purpose)
 
         layout_LDA_experiment_number = QtWidgets.QVBoxLayout()
-        self.label_LDA_experiment_number = QLabel("Experiment Number")
+        self.label_LDA_experiment_number = QLabel("ID")
         self.label_LDA_experiment_number.setStyleSheet(input_style)
         self.line_edit_LDA_experiment_number = QtWidgets.QLineEdit()
-        self.line_edit_LDA_experiment_number.setStyleSheet("QLineEdit { border: 2px solid white; border-radius: 10px; color: white; background-color: #222222; font-size: 25px;}")
+        self.line_edit_LDA_experiment_number.setStyleSheet(line_edit_style)
         layout_LDA_experiment_number.addWidget(self.label_LDA_experiment_number) 
-        layout_LDA_experiment_number.addWidget(self.line_edit_LDA_experiment_purpose)
+        layout_LDA_experiment_number.addWidget(self.line_edit_LDA_experiment_number)
+
+        layout_LDA_strain = QtWidgets.QVBoxLayout()
+        self.label_LDA_strain = QLabel("Strain Name: ")
+        self.label_LDA_strain.setStyleSheet(input_style)
+        self.combobox_LDA_strain = QtWidgets.QComboBox()
+        self.combobox_LDA_strain.setStyleSheet(combobox_button_style)
+        self.combobox_LDA_strain.addItems(["","Pathogen x", "Pathogen y", "Pathogen z", "N/A"]) 
+        layout_LDA_strain.addWidget(self.label_LDA_strain) 
+        layout_LDA_strain.addWidget(self.combobox_LDA_strain)
+
+        layout_LDA_fresh_sucrose = QtWidgets.QVBoxLayout()
+        self.label_LDA_fresh_sucrose = QLabel("Fresh Sucrose: ")
+        self.label_LDA_fresh_sucrose.setStyleSheet(input_style)
+        self.combobox_LDA_fresh_sucrose = QtWidgets.QComboBox()
+        self.combobox_LDA_fresh_sucrose.setStyleSheet(combobox_button_style)
+        self.combobox_LDA_fresh_sucrose.addItems(["","Yes", "No", "N/A"]) 
+        layout_LDA_fresh_sucrose.addWidget(self.label_LDA_fresh_sucrose) 
+        layout_LDA_fresh_sucrose.addWidget(self.combobox_LDA_fresh_sucrose)
         
         layout_LDA_experiment_information.addLayout(layout_LDA_experiment_purpose)
+        layout_LDA_experiment_information.addStretch(1)
         layout_LDA_experiment_information.addLayout(layout_LDA_experiment_number)
+        layout_LDA_experiment_information.addStretch(1)
+        layout_LDA_experiment_information.addLayout(layout_LDA_strain)
+        layout_LDA_experiment_information.addLayout(layout_LDA_fresh_sucrose)
         
         #endregion
 
@@ -226,9 +259,11 @@ class PopupWindow(QDialog):
         main_vertical_layout.addWidget(self.label_LDA_title)
         main_vertical_layout.addWidget(self.label_LDA_instructions)
         main_vertical_layout.addSpacing(20) 
-        #main_vertical_layout.addWidget(self.label_LDA_user_information)
+        #main_vertical_layout.addWidget(self.label_LDA_user_information) #maybe the bio teamn wants clearer pop up titles. leave in for now. 
         main_vertical_layout.addLayout(layout_LDA_user_information)
-        main_vertical_layout.addWidget(self.label_LDA_experiment_information)
+        main_vertical_layout.addSpacing(20) 
+        main_vertical_layout.addLayout(layout_LDA_experiment_information)
+        #main_vertical_layout.addWidget(self.label_LDA_experiment_information) 
         main_vertical_layout.addWidget(self.label_LDA_variable_information)
 
         self.setLayout(main_vertical_layout)
