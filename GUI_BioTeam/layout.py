@@ -112,7 +112,7 @@ class CustomExperimentFrame(QtWidgets.QFrame):
         self.setLayout(layout)
 
 #===============================
-# EXPERIMENT PAGE CLASSES
+# LIVE DATA POP UPS
 #===============================
 
 class PopupWindow(QDialog):
@@ -161,8 +161,6 @@ class PopupWindow(QDialog):
                 padding: 7px;
             }
         """
-
-        
         main_vertical_layout = QVBoxLayout()
 
         self.label_LDA_title = QLabel("Live Data Aquisiton Information: ")
@@ -173,9 +171,6 @@ class PopupWindow(QDialog):
         self.label_LDA_instructions.setFixedWidth(800)  
         self.label_LDA_instructions.setWordWrap(True)
 
-        self.label_LDA_user_information= QLabel("User Information: ")
-        self.label_LDA_user_information.setStyleSheet(subtitle_style)
-
         #region : user information
 
         layout_LDA_user_information = QtWidgets.QHBoxLayout()
@@ -185,7 +180,7 @@ class PopupWindow(QDialog):
         self.label_LDA_user_name.setStyleSheet(input_style)
         self.combobox_LDA_user_name = QtWidgets.QComboBox()
         self.combobox_LDA_user_name.setStyleSheet(combobox_button_style)
-        self.combobox_LDA_user_name.addItems(["","Dora", "Julia"]) 
+        self.combobox_LDA_user_name.addItems(["","Dora", "Julia", "Asher Valentini"]) 
         layout_LDA_user_name.addWidget(self.label_LDA_user_name) 
         layout_LDA_user_name.addWidget(self.combobox_LDA_user_name)
 
@@ -194,12 +189,14 @@ class PopupWindow(QDialog):
         self.label_LDA_user_email.setStyleSheet(input_style)
         self.combobox_LDA_user_email = QtWidgets.QComboBox()
         self.combobox_LDA_user_email.setStyleSheet(combobox_button_style)
-        self.combobox_LDA_user_email.addItems(["","email@email", "email@email"])     
+        self.combobox_LDA_user_email.addItems(["","email@email", "hotdoghotdoghotdiggidydog"])     
         layout_LDA_user_email.addWidget(self.label_LDA_user_email)
         layout_LDA_user_email.addWidget(self.combobox_LDA_user_email)
 
         layout_LDA_user_information.addLayout(layout_LDA_user_name)
+        layout_LDA_user_information.addStretch(1)
         layout_LDA_user_information.addLayout(layout_LDA_user_email)
+        layout_LDA_user_information.addStretch(1)
         
         #endregion
 
@@ -243,31 +240,364 @@ class PopupWindow(QDialog):
         
         layout_LDA_experiment_information.addLayout(layout_LDA_experiment_purpose)
         layout_LDA_experiment_information.addStretch(1)
+
         layout_LDA_experiment_information.addLayout(layout_LDA_experiment_number)
         layout_LDA_experiment_information.addStretch(1)
+
         layout_LDA_experiment_information.addLayout(layout_LDA_strain)
+        layout_LDA_experiment_information.addStretch(1)
+
         layout_LDA_experiment_information.addLayout(layout_LDA_fresh_sucrose)
+        layout_LDA_experiment_information.addStretch(1)
+
         
         #endregion
-
-        self.label_LDA_experiment_information= QLabel("Experiment Details: ")
-        self.label_LDA_experiment_information.setStyleSheet(input_style)
 
         self.label_LDA_variable_information= QLabel("Data to Track: ")
         self.label_LDA_variable_information.setStyleSheet(input_style)
 
+        #region : variable options 
+
+        layout_variable_options = QtWidgets.QHBoxLayout()
+
+        #region : c1-c2
+        layout_variable_options_c1 = QtWidgets.QVBoxLayout()
+        self.label_LDA_temperature= QLabel("Temperature: ")
+        self.label_LDA_temperature.setStyleSheet(input_style)
+        self.label_LDA_pressure= QLabel("Pressure: ")
+        self.label_LDA_pressure.setStyleSheet(input_style)
+        layout_variable_options_c1.addWidget(self.label_LDA_temperature)
+        layout_variable_options_c1.addWidget(self.label_LDA_pressure)
+
+        layout_variable_options_c2 = QtWidgets.QVBoxLayout()
+
+        self.button_LDA_temperature = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/check.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_LDA_temperature.setIcon(icon)
+        self.button_LDA_temperature.setIconSize(QtCore.QSize(20, 20)) 
+        self.button_LDA_temperature.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        self.button_LDA_pressure = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/check.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_LDA_pressure.setIcon(icon)
+        self.button_LDA_pressure.setIconSize(QtCore.QSize(20, 20)) 
+        self.button_LDA_pressure.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        layout_variable_options_c2.addWidget(self.button_LDA_temperature)
+        layout_variable_options_c2.addWidget(self.button_LDA_pressure)
+
+        #endregion 
+
+        #region : c3-c4
+        layout_variable_options_c3 = QtWidgets.QVBoxLayout()
+        self.label_LDA_current= QLabel("Current: ")
+        self.label_LDA_current.setStyleSheet(input_style)
+        self.label_LDA_voltage= QLabel("Voltage: ")
+        self.label_LDA_voltage.setStyleSheet(input_style)
+        layout_variable_options_c3.addWidget(self.label_LDA_current)
+        layout_variable_options_c3.addWidget(self.label_LDA_voltage)
+
+        layout_variable_options_c4 = QtWidgets.QVBoxLayout()
+
+        self.button_LDA_current = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/check.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_LDA_current.setIcon(icon)
+        self.button_LDA_current.setIconSize(QtCore.QSize(20, 20)) 
+        self.button_LDA_current.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        self.button_LDA_voltage = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/check.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_LDA_voltage.setIcon(icon)
+        self.button_LDA_voltage.setIconSize(QtCore.QSize(20, 20)) 
+        self.button_LDA_voltage.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        layout_variable_options_c4.addWidget(self.button_LDA_current)
+        layout_variable_options_c4.addWidget(self.button_LDA_voltage)
+
+        #endregion
+
+        #region : c5-c6
+        layout_variable_options_c5 = QtWidgets.QVBoxLayout()
+        self.label_LDA_Ethanol_FR= QLabel("Ethanol Flowrate: ")
+        self.label_LDA_Ethanol_FR.setStyleSheet(input_style)
+        self.label_LDA_Sucrose_FR= QLabel("Sucrose Flowrate: ")
+        self.label_LDA_Sucrose_FR.setStyleSheet(input_style)
+        layout_variable_options_c5.addWidget(self.label_LDA_Ethanol_FR)
+        layout_variable_options_c5.addWidget(self.label_LDA_Sucrose_FR)
+
+        layout_variable_options_c6 = QtWidgets.QVBoxLayout()
+
+        self.button_LDA_Sucrose = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/check.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_LDA_Sucrose.setIcon(icon)
+        self.button_LDA_Sucrose.setIconSize(QtCore.QSize(20, 20)) 
+        self.button_LDA_Sucrose.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        self.button_LDA_Ethanol = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/check.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.button_LDA_Ethanol.setIcon(icon)
+        self.button_LDA_Ethanol.setIconSize(QtCore.QSize(20, 20)) 
+        self.button_LDA_Ethanol.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        layout_variable_options_c6.addWidget(self.button_LDA_Ethanol)
+        layout_variable_options_c6.addWidget(self.button_LDA_Sucrose)
+
+        #endregion
+
+        layout_variable_options.addLayout(layout_variable_options_c1)
+        layout_variable_options.addLayout(layout_variable_options_c2)
+        layout_variable_options.addStretch(1)
+        layout_variable_options.addLayout(layout_variable_options_c3)
+        layout_variable_options.addLayout(layout_variable_options_c4)
+        layout_variable_options.addStretch(1)
+        layout_variable_options.addLayout(layout_variable_options_c5)
+        layout_variable_options.addLayout(layout_variable_options_c6)
+        layout_variable_options.addStretch(1)
+
+
+        #endregion
+
+        layout_LDA_apply_live = QtWidgets.QHBoxLayout()
+
+        self.button_LDA_apply = QtWidgets.QPushButton("Apply")  # Set the text to empty since we are using an image
+        self.button_LDA_apply.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 5px;
+                background-color: #222222;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 23px;
+                padding: 7px;
+
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+        self.button_LDA_go_live = QtWidgets.QPushButton("Go Live")  # Set the text to empty since we are using an image
+        self.button_LDA_go_live.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 5px;
+                background-color: #222222;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 23px;
+                padding: 7px;
+
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+        layout_LDA_apply_live.addWidget(self.button_LDA_apply)
+        layout_LDA_apply_live.addStretch(1)
+        layout_LDA_apply_live.addWidget(self.button_LDA_go_live)
+        layout_LDA_apply_live.addSpacing(10)
+        
         main_vertical_layout.addWidget(self.label_LDA_title)
         main_vertical_layout.addWidget(self.label_LDA_instructions)
         main_vertical_layout.addSpacing(20) 
-        #main_vertical_layout.addWidget(self.label_LDA_user_information) #maybe the bio teamn wants clearer pop up titles. leave in for now. 
         main_vertical_layout.addLayout(layout_LDA_user_information)
         main_vertical_layout.addSpacing(20) 
         main_vertical_layout.addLayout(layout_LDA_experiment_information)
-        #main_vertical_layout.addWidget(self.label_LDA_experiment_information) 
+        main_vertical_layout.addSpacing(20)
         main_vertical_layout.addWidget(self.label_LDA_variable_information)
+        main_vertical_layout.addSpacing(20) 
+        main_vertical_layout.addLayout(layout_variable_options)
+        main_vertical_layout.addSpacing(40) 
+        main_vertical_layout.addLayout(layout_LDA_apply_live)
 
         self.setLayout(main_vertical_layout)
         self.setStyleSheet("background-color: #222222;")
+
+
+class EndPopupWindow(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+
+        title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 40px; font-weight: bold; }"
+        subtitle_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px;  }"
+        input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 23px;  }"
+        combobox_button_style = """
+        QComboBox, QPushButton {
+            color: #FFFFFF;
+            background-color: rgba(255, 255, 255, 0.1);
+            font-family: Archivo;
+            font-size: 20px;   /* adjust this as needed */
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 5px;
+            padding: 5px 15px;
+        }
+        QComboBox::drop-down, QPushButton {
+            border: none;
+        }
+        QComboBox:hover, QPushButton:hover {
+            background-color: rgba(7, 150, 255, 0.7);  
+        }
+        QComboBox QAbstractItemView {
+        color: #FFFFFF;
+        background-color: rgba(255, 255, 255, 0.1);
+        font-family: Archivo;
+        font-size: 20px;   /* adjust this as needed */
+        border: 2px solid rgba(255, 255, 255, 0.7);
+        border-radius: 5px;
+        selection-background-color: rgba(7, 150, 255, 0.5);  
+        }
+        """   
+        line_edit_style = """
+            QLineEdit {
+                border: 2px solid white;
+                border-radius: 5px;
+                color: white;
+                background-color: rgba(255, 255, 255, 0.1);
+                font-size: 20px;
+                padding: 7px;
+            }
+        """
+        
+        main_vertical_layout = QtWidgets.QVBoxLayout()
+        self.label_end_LDA_title = QLabel("Click Confirm to end this live data aquisiton session: ")
+        self.label_end_LDA_title.setStyleSheet(subtitle_style)
+
+        layout_confirm_button = QtWidgets.QHBoxLayout()
+        self.button_end_LDA = QtWidgets.QPushButton("Confirm")  # Set the text to empty since we are using an image
+        self.button_end_LDA.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 5px;
+                background-color: #222222;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 23px;
+                padding: 7px;
+
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+        layout_confirm_button.addWidget(self.button_end_LDA)
+        layout_confirm_button.addStretch(1)
+        
+        main_vertical_layout.addWidget(self.label_end_LDA_title)
+        main_vertical_layout.addSpacing(20)
+        main_vertical_layout.addLayout(layout_confirm_button)
+
+
+        self.setLayout(main_vertical_layout)
+        self.setStyleSheet("background-color: #222222;")
+
 
 #===============================
 # MAIN LAYOUT CLASS
@@ -1183,7 +1513,6 @@ class Ui_MainWindow(object):
         pressure_layout.addWidget(title_label)
         pressure_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
 
-
         #region : pressure check button and data
         pressure_details_layout = QtWidgets.QHBoxLayout()
         pressure_layout.addLayout(pressure_details_layout)
@@ -1215,7 +1544,6 @@ class Ui_MainWindow(object):
         #pressure_details_layout.addSpacing(110)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
 
         pressure_details_layout.addStretch(1) 
-        # Add pressure statistics next to labels
         self.pressure_data = QtWidgets.QLabel("- Bar")
         self.pressure_data.setStyleSheet(temperature_number_style)
         pressure_details_layout.addWidget(self.pressure_data, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
