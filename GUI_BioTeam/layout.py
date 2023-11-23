@@ -563,7 +563,7 @@ class EndPopupWindow(QDialog):
         
         main_vertical_layout = QtWidgets.QVBoxLayout()
         self.label_end_LDA_title = QLabel("Click Confirm to end this live data aquisiton session: ")
-        self.label_end_LDA_title.setStyleSheet(subtitle_style)
+        self.label_end_LDA_title.setStyleSheet(input_style)
 
         layout_confirm_button = QtWidgets.QHBoxLayout()
         self.button_end_LDA = QtWidgets.QPushButton("Confirm")  # Set the text to empty since we are using an image

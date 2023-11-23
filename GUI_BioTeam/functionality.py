@@ -203,7 +203,7 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         self.all_motors_are_home= False # sucrose pumping button state flag (starts unclicked)
         self.lights_are_on= False # sucrose pumping button state flag (starts unclicked)
-        self.live_data_is_logging = False
+        self.starting_a_live_data_session = False
         
         if self.flag_connections[2]:
             self.ui.button_lights.clicked.connect(self.skakel_ligte)
@@ -454,6 +454,15 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.ui.frame_DEMO_close_fluidic_circuit.start_stop_button.pressed.connect(self.start_demo)
         self.ui.save_experiment_data_frame.reset_button.pressed.connect(self.reset_all_DEMO_progress_bars)
+        #endregion
+        #================================================================================================================================================================================================================================================================================================
+        # Live data logging
+        #================================================================================================================================================================================================================================================================================================
+        #region : 
+        self.live_data_is_logging = False
+        self.timer_live_data_logging = QTimer(self)
+        self.timer_live_data_logging.timeout.connect(self.save_experiment_data)
+        self.timer_live_data_logging_interval = 10000  # 10 seconds in milliseconds
         #endregion
 
 # region : PLOTTING FUNCTIONS  
@@ -1564,12 +1573,12 @@ class Functionality(QtWidgets.QMainWindow):
 # region : DASHBOARD POP UP 
 
     def toggle_LDA_popup(self):
-        if not self.live_data_is_logging:
+        if not self.starting_a_live_data_session:
             self.showLDAPopup()
-            self.live_data_is_logging = True
+            self.starting_a_live_data_session = True
         else:
             self.showEndLDAPopup()
-            self.live_data_is_logging = False
+            self.starting_a_live_data_session = False
 
     def showLDAPopup(self):
         self.popup = PopupWindow()
@@ -1590,12 +1599,19 @@ class Functionality(QtWidgets.QMainWindow):
         border_style = "#centralwidget { border: 7px solid green; }"
         self.live_data_is_logging = True
         self.ui.centralwidget.setStyleSheet(border_style)
-        print("going live")
+        self.timer_live_data_logging.start(self.timer_live_data_logging_interval)
+        print("Going live and starting data saving...")
     
     def end_go_live(self):
         border_style = "#centralwidget { border: 0px solid green; }"
         self.live_data_is_logging = False
         self.ui.centralwidget.setStyleSheet(border_style)
+        self.timer.stop()
+        print("Ending live data saving...")
+
+    def save_experiment_data(self):
+        # Implement the logic to save data here
+        print("Saving experiment data...")
 
 
 
