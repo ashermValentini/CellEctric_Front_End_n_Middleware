@@ -2,6 +2,8 @@ import time
 import sys
 import os
 import serial
+import pandas as pd
+import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Communication_Functions.communication_functions import *
@@ -324,7 +326,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.pgThread = QThread()
         self.pgWorker.moveToThread(self.pgThread)
 
-        self.pgWorker.update_pulse.connect(self.update_voltage_plot)
+        #self.pgWorker.update_pulse.connect(self.update_voltage_plot)
+        self.pgWorker.update_pulse.connect(self.process_voltage_data)
         self.pgWorker.update_zerodata.connect(self.handleZeroDataUpdate)
 
         self.voltage_is_plotting = False 
@@ -460,9 +463,8 @@ class Functionality(QtWidgets.QMainWindow):
         #================================================================================================================================================================================================================================================================================================
         #region : 
         self.live_data_is_logging = False
-        self.timer_live_data_logging = QTimer(self)
-        self.timer_live_data_logging.timeout.connect(self.save_experiment_data)
-        self.timer_live_data_logging_interval = 10000  # 10 seconds in milliseconds
+        self.last_save_time = None
+        self.save_interval = 10  # seconds
         #endregion
 
 # region : PLOTTING FUNCTIONS  
@@ -601,61 +603,69 @@ class Functionality(QtWidgets.QMainWindow):
             """)
             self.voltage_is_plotting = False        
 
-    def update_voltage_plot(self, voltage_y):
+    def update_voltage_plot(self):
         
-        if self.voltage_is_plotting: 
+        self.ui.axes_voltage.clear()
+        self.ui.axes_voltage.plot(self.voltage_xdata, self.voltage_y[:, 0], color='#FFFFFF')
+        self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
+        self.ui.axes_voltage.set_ylim(-90, 90) #+-90 are the PG voltage limits
+        
+        # Get the Axes object from the Figure for voltage plot
+        self.ui.axes_voltage.grid(True, color='black', linestyle='--')
+        self.ui.axes_voltage.set_facecolor('#222222')
+        self.ui.axes_voltage.spines['bottom'].set_color('#FFFFFF')
+        self.ui.axes_voltage.spines['top'].set_color('#FFFFFF')
+        self.ui.axes_voltage.spines['right'].set_color('#FFFFFF')
+        self.ui.axes_voltage.spines['left'].set_color('#FFFFFF')
+        self.ui.axes_voltage.tick_params(colors='#FFFFFF')
+        
+        # Increase the font size of the x-axis and y-axis labels
+        self.ui.axes_voltage.tick_params(axis='x', labelsize=14)  # You can adjust the font size (e.g., 12)
+        self.ui.axes_voltage.tick_params(axis='y', labelsize=14)  # You can adjust the font size (e.g., 12)
+        
+        # Move the y-axis ticks and labels to the right
+        self.ui.axes_voltage.yaxis.tick_right()
+        
+        # Adjust the position of the x-axis label
+        self.ui.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
 
-            print(f"Data type: {type(voltage_y)}, Shape: {getattr(voltage_y, 'shape', 'N/A')}")
+        # Adjust the position of the y-axis label to the left
+        self.ui.axes_voltage.yaxis.set_label_coords(-0.05, 0.5)  # Move the y-axis label to the left
 
-            voltage_y[:, 0] -= self.zerodata[0]            # voltage data
-            voltage_y[:, -1] -= self.zerodata[1]           # current data  
-                
-            maxval_pulse_new = voltage_y.max(axis=0)[0]    # voltage data    
-
-            scale_factor_x = 200 / 1000  # us per unit
-            self.voltage_xdata = np.linspace(0, voltage_y.shape[0]-1, voltage_y.shape[0]) * scale_factor_x
-
-            # Data cleanup if the pulse is turned on
-            if self.signal_is_enabled:
-                self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
-                self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
-                scale_factor = self.correct_max_voltage/maxval_pulse_new
-                voltage_y[:,0] *= scale_factor
-
-            self.ui.axes_voltage.clear()
-            self.ui.axes_voltage.plot(self.voltage_xdata, voltage_y[:, 0], color='#FFFFFF')
-            self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
-            self.ui.axes_voltage.set_ylim(-90, 90) #+-90 are the PG voltage limits
-            
-            # Get the Axes object from the Figure for voltage plot
-            self.ui.axes_voltage.grid(True, color='black', linestyle='--')
-            self.ui.axes_voltage.set_facecolor('#222222')
-            self.ui.axes_voltage.spines['bottom'].set_color('#FFFFFF')
-            self.ui.axes_voltage.spines['top'].set_color('#FFFFFF')
-            self.ui.axes_voltage.spines['right'].set_color('#FFFFFF')
-            self.ui.axes_voltage.spines['left'].set_color('#FFFFFF')
-            self.ui.axes_voltage.tick_params(colors='#FFFFFF')
-            
-            # Increase the font size of the x-axis and y-axis labels
-            self.ui.axes_voltage.tick_params(axis='x', labelsize=14)  # You can adjust the font size (e.g., 12)
-            self.ui.axes_voltage.tick_params(axis='y', labelsize=14)  # You can adjust the font size (e.g., 12)
-            
-            # Move the y-axis ticks and labels to the right
-            self.ui.axes_voltage.yaxis.tick_right()
-            
-            # Adjust the position of the x-axis label
-            self.ui.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
-
-            # Adjust the position of the y-axis label to the left
-            self.ui.axes_voltage.yaxis.set_label_coords(-0.05, 0.5)  # Move the y-axis label to the left
-
-            # Set static labels
-            self.ui.axes_voltage.set_xlabel('Time (us)', color='#FFFFFF',  fontsize=15)
-            self.ui.axes_voltage.set_ylabel('Voltage (V)', color='#FFFFFF',  fontsize=15)
-            self.ui.axes_voltage.set_title('Voltage Signal', color='#FFFFFF',fontsize=20, fontweight='bold', y=1.05)
-            
-            self.ui.canvas_voltage.draw()
+        # Set static labels
+        self.ui.axes_voltage.set_xlabel('Time (us)', color='#FFFFFF',  fontsize=15)
+        self.ui.axes_voltage.set_ylabel('Voltage (V)', color='#FFFFFF',  fontsize=15)
+        self.ui.axes_voltage.set_title('Voltage Signal', color='#FFFFFF',fontsize=20, fontweight='bold', y=1.05)
+        
+        self.ui.canvas_voltage.draw()
    
+    def process_voltage_data(self, voltage_y):
+        # Process the data here
+        voltage_y[:, 0] -= self.zerodata[0]            # voltage data
+        voltage_y[:, -1] -= self.zerodata[1]           # current data  
+        
+        maxval_pulse_new = voltage_y.max(axis=0)[0]    # voltage data    
+
+        scale_factor_x = 200 / 1000  # us per unit
+        voltage_xdata = np.linspace(0, voltage_y.shape[0]-1, voltage_y.shape[0]) * scale_factor_x
+
+        if self.signal_is_enabled:
+            self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
+            self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
+            scale_factor = self.correct_max_voltage/maxval_pulse_new
+            voltage_y[:,0] *= scale_factor
+
+        current_time = time.time()
+        if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
+            self.save_data_to_csv(voltage_y)
+            self.last_save_time = current_time
+        
+        self.voltage_xdata = voltage_xdata
+        self.voltage_y = voltage_y
+        if self.voltage_is_plotting: 
+            self.update_voltage_plot()
+
+    
     #endregion
 
 #endregion
@@ -1599,20 +1609,45 @@ class Functionality(QtWidgets.QMainWindow):
         border_style = "#centralwidget { border: 7px solid green; }"
         self.live_data_is_logging = True
         self.ui.centralwidget.setStyleSheet(border_style)
-        self.timer_live_data_logging.start(self.timer_live_data_logging_interval)
         print("Going live and starting data saving...")
     
     def end_go_live(self):
         border_style = "#centralwidget { border: 0px solid green; }"
         self.live_data_is_logging = False
         self.ui.centralwidget.setStyleSheet(border_style)
-        self.timer.stop()
         print("Ending live data saving...")
 
-    def save_experiment_data(self):
-        # Implement the logic to save data here
-        print("Saving experiment data...")
+    def save_data_to_csv(self, y_data):
+        # Construct the file name based on the current date and time
+        current_time = datetime.datetime.now()
+        filename = current_time.strftime("%Y%m%d_%H%M%S") + "_experiment_data.csv"
+        
+        # Calculate the pulse number (assuming the method is called every 10 seconds)
+        pulse_number = int(current_time.timestamp() / 10)  # Adjust logic if needed
 
+        # Create a DataFrame for the header information
+        header_info = {
+            'Info': [
+                current_time.strftime("%Y-%m-%d %H:%M:%S"),
+                f"#Pulse Number: {pulse_number}",
+                f"#Voltage Pos: {self.ui.line_edit_max_signal.text()}",
+                f"#Voltage Neg: {self.ui.line_edit_min_signal.text()}",
+                "#Pulse Length: 75,00",
+                "#Transistor on time: 75",
+                "#Rate: 200"
+            ]
+        }
+        header_df = pd.DataFrame(header_info)
+
+        # Create a DataFrame for the data
+        data_df = pd.DataFrame({'Voltage (V)': y_data[:, 0]})
+
+        # Combine the header and data DataFrames
+        combined_df = pd.concat([header_df, data_df], ignore_index=True)
+
+        # Save to CSV
+        combined_df.to_csv(filename, index=False, header=False)
+        print(f"Saving experiment data to {filename}...")
 
 
 #endregion 
