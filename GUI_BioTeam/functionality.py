@@ -2,6 +2,8 @@ import time
 import sys
 import os
 import serial
+import pandas as pd
+import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Communication_Functions.communication_functions import *
@@ -10,6 +12,8 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTimer
 from PyQt5.QtWidgets import QProgressBar, QMessageBox
 from layout import Ui_MainWindow
+from layout import PopupWindow
+from layout import EndPopupWindow
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.ticker as ticker
@@ -105,6 +109,55 @@ class ReadSerialWorker(QObject):
         self._is_running = False
         self._lock.unlock()
 
+class PulseGeneratorSerialWorker(QObject):
+    update_pulse = pyqtSignal(np.ndarray)
+    update_zerodata = pyqtSignal(object)  
+    interval = 500   
+
+    def __init__(self, device_serials):
+        super(PulseGeneratorSerialWorker, self).__init__()
+        self.device_serials = device_serials[1]
+        self._is_running = False
+        self._lock = QMutex()
+
+    @pyqtSlot()
+    def run(self):
+        self._is_running = True
+        while True:
+            self._lock.lock()
+            if not self._is_running:
+                self._lock.unlock()
+                break
+            self._lock.unlock()
+            voltage_y, _ = read_next_PG_pulse(self.device_serials)
+            if voltage_y is not None:
+                self.update_pulse.emit(voltage_y)
+            QThread.msleep(self.interval)
+    
+    @pyqtSlot()
+    def start_pg(self): 
+        self._lock.lock()
+        try:
+            zerodata = send_PG_enable(self.device_serials, 0)
+            self.update_zerodata.emit(zerodata)         
+
+        finally:
+            self._lock.unlock()  # Ensure the lock is always released
+
+    @pyqtSlot()
+    def stop_pg(self): 
+        self._lock.lock()
+        try:
+            send_PG_disable(self.device_serials, 0)
+        finally:
+            self._lock.unlock()  # Ensure the lock is always released
+
+    @pyqtSlot()
+    def stop(self):
+        self._lock.lock()
+        self._is_running = False
+        self._lock.unlock()
+
 #endregion 
 
 #========================
@@ -117,10 +170,17 @@ class Functionality(QtWidgets.QMainWindow):
     def __init__(self):
         super(Functionality, self).__init__()
 
+        #==============================================================================================================================================================================================================================
+        # Initialize the main UI windows
+        #==============================================================================================================================================================================================================================
+        #region:
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        #endregion
         # =====================================================================================================================================================================================================================================================================================================================================================================================================================================================================
         # START SERIAL CONNECTION TO DEVICES
         # =====================================================================================================================================================================================================================================================================================================================================================================================================================================
-        
+        #region: 
         self.flag_connections = [False, False, False, False]
         self.device_serials = serial_start_connections() 
         
@@ -136,32 +196,29 @@ class Functionality(QtWidgets.QMainWindow):
         if self.flag_connections[2]:
             handshake_3PAC(self.device_serials[2], print_handshake_message=True)
 
-        #==============================================================================================================================================================================================================================
-        # Set up the UI layout
-        #==============================================================================================================================================================================================================================
-        
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
-
+        if self.flag_connections[1]: 
+            send_PG_pulsetimes(self.device_serials[1], 0)
+        #endregion
         #================================================================================================================================================================================================================================
         # Side bar functionality 
         #================================================================================================================================================================================================================================
-
+        #region:
         self.all_motors_are_home= False # sucrose pumping button state flag (starts unclicked)
         self.lights_are_on= False # sucrose pumping button state flag (starts unclicked)
+        self.starting_a_live_data_session = False
         
         if self.flag_connections[2]:
             self.ui.button_lights.clicked.connect(self.skakel_ligte)
             self.ui.button_motors_home.clicked.connect(lambda: self.movement_homing(0))     
-
        
         self.ui.button_experiment_route.clicked.connect(self.go_to_route2)             
         self.ui.button_dashboard_route.clicked.connect(self.go_to_route1)             
-
+        self.ui.button_dashboard_data_recording.clicked.connect(self.toggle_LDA_popup)
+        #endregion
         #===========================================================================================================================================================================================================
         # Sucrose and Ethanol frame functionalities (reading flow rate as ReadSerialWorker thread and sending serial commands are done within the main thread)
         #===========================================================================================================================================================================================================
- 
+        #region:
         self.serialWorker = ReadSerialWorker(self.device_serials)
         self.serialThread = QThread()
         self.serialWorker.moveToThread(self.serialThread) 
@@ -178,11 +235,11 @@ class Functionality(QtWidgets.QMainWindow):
         if self.flag_connections[2]:
             self.ui.button_sucrose.pressed.connect(self.start_sucrose_pump) # connect the signal to the slot 
             self.ui.button_ethanol.pressed.connect(self.start_ethanol_pump) # connect the signal to the slot 
-
+        #endregion
         #===============================================================================================================================================================================================
         # Blood frame functionality
         #================================================================================================================================================================================================
-
+        #region:
         self.blood_is_homing= False         
         self.blood_is_jogging_down = False  
         self.blood_is_jogging_up = False    
@@ -198,11 +255,11 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, True)) # connect the signal to the slot
             self.ui.button_blood_down.released.connect(lambda: self.movement_stopjogging(1))                    # connect the signal to the slot
             self.ui.button_blood_play_pause.pressed.connect(self.toggle_blood_pump)
-
+        #endregion
         #================================================================================================================================================================================================================================
         # Flask frame functionality
         #================================================================================================================================================================================================================================
-
+        #region:
         self.flask_vertical_gantry_is_home= False     
 
         if self.flag_connections[2]: 
@@ -220,11 +277,11 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.button_flask_right.released.connect(lambda: self.movement_stopjogging(3))                      # connect the signal to the slot              
             self.ui.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, False)) # connect the signal to the slot
             self.ui.button_flask_left.released.connect(lambda: self.movement_stopjogging(3))                    # connect the signal to the slot
-
+        #endregion
         #================================================================================================================================================================================================================================================================
         # Cartrige frame functionality
         #================================================================================================================================================================================================================================================================
-
+        #region:
         self.cartrige_gantry_is_home= False 
 
         if self.flag_connections[2]:
@@ -233,11 +290,11 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.button_cartridge_up.released.connect(lambda: self.movement_stopjogging(2))                      # connect the signal to the slot              
             self.ui.button_cartridge_down.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, False)) # connect the signal to the slot
             self.ui.button_cartridge_down.released.connect(lambda: self.movement_stopjogging(2))                    # connect the signal to the slot
-
+        #endregion
         #====================================================================================================================================================================================================================================================================================
         # Temp plotting frame functionality (with threads)
         #====================================================================================================================================================================================================================================================================================
-        
+        #region:
         self.tempWorker = TempWorker(self.device_serials)
         self.tempThread = QThread()
         self.tempWorker.moveToThread(self.tempThread) 
@@ -251,56 +308,61 @@ class Functionality(QtWidgets.QMainWindow):
 
         if self.flag_connections[3]:
             self.ui.temp_button.pressed.connect(self.start_stop_temp_plotting)
-
+        #endregion
         #====================================================================================================================================================================================================================================================================================
         # Box plot frame functionality
         #====================================================================================================================================================================================================================================================================================
-        
+        #region:
         self.max_temp = float('-inf')
         self.min_temp = float('inf')
 
         self.tempWorker.update_temp.connect(self.update_temperature_labels)
-
+        #endregion
         #======================================================================================================================================================================================================================================================================================================
         # Voltage plotting frame functionality
         #======================================================================================================================================================================================================================================================================================================
-        
+        #region:
+        self.pgWorker = PulseGeneratorSerialWorker(self.device_serials)
+        self.pgThread = QThread()
+        self.pgWorker.moveToThread(self.pgThread)
+
+        #self.pgWorker.update_pulse.connect(self.update_voltage_plot)
+        self.pgWorker.update_pulse.connect(self.process_voltage_data)
+        self.pgWorker.update_zerodata.connect(self.handleZeroDataUpdate)
+
         self.voltage_is_plotting = False 
 
-        if self.flag_connections[0] and self.flag_connections[1]:
-            self.ui.voltage_button.pressed.connect(self.start_voltage_plotting)
-        
-        self.voltageTimer = None        
-        
         self.voltage_xdata = np.linspace(0, 499, 500)  
         self.plotdata = np.zeros(500)
         self.zerodata = [2000, 2000]
         
-        self.voltage_plot_interval = 500  # ms
         self.maxval_pulse = 10  
         self.minval_pulse = -10
 
+        if self.flag_connections[0] and self.flag_connections[1]:
+            self.ui.voltage_button.pressed.connect(self.start_voltage_plotting)
+        #endregion
         #======================================================================================================================================================================================================================================================================================================
         # Connections frame functionality
         #======================================================================================================================================================================================================================================================================
-        
+        #region:
         self.coms_timer = QtCore.QTimer()
         self.coms_timer.setInterval(10000)  # 10 seconds
         self.coms_timer.timeout.connect(self.check_coms)
         self.coms_timer.start()
-    
+        #endregion
         #======================================================================================================================================================================================================================================================================
         # Voltage signal frame functionality
         #======================================================================================================================================================================================================================================================================================================
-    
+        #region:
         self.signal_is_enabled=False 
         if self.flag_connections[0] and self.flag_connections[1]:
             self.ui.psu_button.pressed.connect(self.start_psu_pg)
-
+        #endregion
         #======================================================================================================================================================================================================================================================================
         # Pressure frame functionality
         #======================================================================================================================================================================================================================================================================================================================================
-
+        #region:
         self.reading_pressure = False
         self.resetting_pressure = False 
 
@@ -309,34 +371,42 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.pressure_reset_button.pressed.connect(self.update_pressure_progress_bar)
 
         self.serialWorker.update_data.connect(self.update_pressure_line_edit) # connect the worker signal to your progress bar update function
-
+        #endregion
         #================================================================================================================================================================================================================================================================================================================
         # Start the thread that will read from the 3PAC
         #================================================================================================================================================================================================================================================================================================================================================
-        
+        #region:
         self.serialThread.started.connect(self.serialWorker.run)  # start the workers run function when the thread starts
         if self.flag_connections[2]:
             self.serialThread.start() #start the thread so that the dashboard always reads incoming serial data from the esp32 
-
+        #endregion
         #================================================================================================================================================================================================================================================================================================================
         # Start the thread that will read from the Temp Sensor
         #================================================================================================================================================================================================================================================================================================================================================
-        
+        #region:
         self.tempThread.started.connect(self.tempWorker.run)
         if self.flag_connections[3]:
             self.tempThread.start()  # Start the existing thread
-
+        #endregion
+        #================================================================================================================================================================================================================================================================================================================
+        # Start the thread that will read from the Pulse Generator
+        #================================================================================================================================================================================================================================================================================================================================================
+        #region:
+        self.pgThread.started.connect(self.pgWorker.run)
+        if self.flag_connections[1]:
+            self.pgThread.start()  # Start the existing thread
+        #endregion
         #================================================================================================================================================================================================================================================
         # Experiment selection 
         #================================================================================================================================================================================================================================================================================================
-        
+        #region:
         self.experiment_choice_is_locked_in = False
         self.ui.user_info_lockin_button.pressed.connect(self.lock_unlock_experiment_choice)
-
+        #endregion
         #================================================================================================================================================================================================================================================================================================
         # Experiment page Demo Automation Functionality (im trying to use dictionaries for the first time with an easy application, so yes i could be using intergers here with no real advantage loss but i need to learn dictionaries)
         #================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
-        
+        #region:
         DEMO_frame_names = [
             "frame_DEMO_close_fluidic_circuit",
             "frame_DEMO_connect_waste_flask",
@@ -387,6 +457,15 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.ui.frame_DEMO_close_fluidic_circuit.start_stop_button.pressed.connect(self.start_demo)
         self.ui.save_experiment_data_frame.reset_button.pressed.connect(self.reset_all_DEMO_progress_bars)
+        #endregion
+        #================================================================================================================================================================================================================================================================================================
+        # Live data logging
+        #================================================================================================================================================================================================================================================================================================
+        #region : 
+        self.live_data_is_logging = False
+        self.last_save_time = None
+        self.save_interval = 10  # seconds
+        #endregion
 
 # region : PLOTTING FUNCTIONS  
 
@@ -482,6 +561,9 @@ class Functionality(QtWidgets.QMainWindow):
      
     #region: Voltage Plot
 
+    def handleZeroDataUpdate(self, zerodata):
+        self.zerodata = zerodata
+
     def start_voltage_plotting(self):
         if not self.voltage_is_plotting and not self.temp_is_plotting:   
             self.ui.voltage_button.setStyleSheet("""
@@ -498,9 +580,8 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
                 }
             """)
-            self.voltage_is_plotting = True         #Change the status of temp_is_plotting from false to true because we are about to begin plotting
-            if self.voltageTimer is None:           #If the time is none we can be sure that we were in a state of not plotting but now we should go into a state of plotting 
-                self.voltageTimer = self.start_voltage_timer() #we get into a stat of plotting by starting the timer for the temp plot (which has been poorly named timer-too generic must change it)
+            self.voltage_is_plotting = True         
+        
         else: 
             self.ui.voltage_button.setStyleSheet("""
                 QPushButton {
@@ -520,46 +601,12 @@ class Functionality(QtWidgets.QMainWindow):
                     background-color: #0796FF;
                 }
             """)
-            self.voltage_is_plotting = False        #Change the status of temp_is_plotting from true to False because we are about to stop plotting
-            if self.voltageTimer:                   #If the temp plot timer is true it means we were in a state of plotting and can be sure that we need to stop plotting
-                self.voltageTimer.stop()            #to stop plottng simply stop the timer
-                self.voltageTimer = None            #but remember to set the timer to none so that we can start the timer the next time we click the button
-
-    def start_voltage_timer(self):
-        voltageTimer = QtCore.QTimer()
-        voltageTimer.setInterval(self.voltage_plot_interval)
-        voltageTimer.timeout.connect(self.update_voltage_plot)
-        voltageTimer.start()
-        return voltageTimer
+            self.voltage_is_plotting = False        
 
     def update_voltage_plot(self):
-
-        self.voltage_y, _ = read_next_PG_pulse(self.device_serials[1]) 
-
-        self.voltage_y[:, 0] -= self.zerodata[0]            # voltage data
-        self.voltage_y[:, -1] -= self.zerodata[1]           # current data  
-           
-        maxval_pulse_new = self.voltage_y.max(axis=0)[0]    # voltage data    
-        minval_pulse_new = self.voltage_y.min(axis=0)[0]    # current data    
-
-        if maxval_pulse_new > self.maxval_pulse:        
-            self.maxval_pulse = maxval_pulse_new
-            
-        if minval_pulse_new < self.minval_pulse:        
-            self.minval_pulse = minval_pulse_new
         
-        scale_factor_x = 200 / 1000  # us per unit
-        self.voltage_xdata = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0]) * scale_factor_x
-
-        # Data cleanup if the pulse is turned on
-        if self.signal_is_enabled:
-            self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
-            self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
-            scale_factor = self.correct_max_voltage/maxval_pulse_new
-            self.voltage_y[:,0] *= scale_factor
-
         self.ui.axes_voltage.clear()
-        self.ui.axes_voltage.plot(self.voltage_xdata,self.voltage_y[:, 0], color='#FFFFFF')
+        self.ui.axes_voltage.plot(self.voltage_xdata, self.voltage_y[:, 0], color='#FFFFFF')
         self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
         self.ui.axes_voltage.set_ylim(-90, 90) #+-90 are the PG voltage limits
         
@@ -592,6 +639,33 @@ class Functionality(QtWidgets.QMainWindow):
         
         self.ui.canvas_voltage.draw()
    
+    def process_voltage_data(self, voltage_y):
+        # Process the data here
+        voltage_y[:, 0] -= self.zerodata[0]            # voltage data
+        voltage_y[:, -1] -= self.zerodata[1]           # current data  
+        
+        maxval_pulse_new = voltage_y.max(axis=0)[0]    # voltage data    
+
+        scale_factor_x = 200 / 1000  # us per unit
+        voltage_xdata = np.linspace(0, voltage_y.shape[0]-1, voltage_y.shape[0]) * scale_factor_x
+
+        if self.signal_is_enabled:
+            self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
+            self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
+            scale_factor = self.correct_max_voltage/maxval_pulse_new
+            voltage_y[:,0] *= scale_factor
+
+        current_time = time.time()
+        if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
+            self.save_data_to_csv(voltage_y)
+            self.last_save_time = current_time
+        
+        self.voltage_xdata = voltage_xdata
+        self.voltage_y = voltage_y
+        if self.voltage_is_plotting: 
+            self.update_voltage_plot()
+
+    
     #endregion
 
 #endregion
@@ -882,7 +956,6 @@ class Functionality(QtWidgets.QMainWindow):
                 self.ui.progress_bar_sucrose.setValue(0)
         else: 
             self.ui.progress_bar_sucrose.setValue(0)
-
          
     def updateEthanolProgressBar(self, value):
         
@@ -995,12 +1068,7 @@ class Functionality(QtWidgets.QMainWindow):
             send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
             time.sleep(0.25)
 
-            send_PG_pulsetimes(self.device_serials[1], 0)
-            self.zerodata = send_PG_enable(self.device_serials[1], 1)
-
-            if self.zerodata:                                         
-                self.maxval_pulse = 0   
-                self.minval_pulse = 0
+            self.pgWorker.start_pg()
 
         else: 
             
@@ -1028,8 +1096,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.line_edit_min_signal.setEnabled(True)
 
             send_PSU_disable(self.device_serials[0], 1)
-            time.sleep(0.25)
-            send_PG_disable(self.device_serials[1], 1)
+            self.pgWorker.stop_pg()
 
 #endregion
 
@@ -1353,7 +1420,6 @@ class Functionality(QtWidgets.QMainWindow):
 
     def lock_unlock_experiment_choice(self): 
         if not self.experiment_choice_is_locked_in: 
-
             self.experiment_choice_is_locked_in=True
             self.ui.user_info_lockin_button.setStyleSheet("""
                 QPushButton {
@@ -1386,7 +1452,6 @@ class Functionality(QtWidgets.QMainWindow):
             elif self.ui.application_combobox.currentText() == "Demonstration":
                 self.create_DEMO_experiment_page()
                 pass
-
 
         else: 
             self.experiment_choice_is_locked_in = False
@@ -1515,5 +1580,76 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion
 
+# region : DASHBOARD POP UP 
+
+    def toggle_LDA_popup(self):
+        if not self.starting_a_live_data_session:
+            self.showLDAPopup()
+            self.starting_a_live_data_session = True
+        else:
+            self.showEndLDAPopup()
+            self.starting_a_live_data_session = False
+
+    def showLDAPopup(self):
+        self.popup = PopupWindow()
+        self.popup.button_LDA_go_live.clicked.connect(self.go_live)
+        self.popup.exec_()
+
+    def showEndLDAPopup(self):
+        self.endpopup = EndPopupWindow()
+        self.endpopup.button_end_LDA.clicked.connect(self.end_go_live)
+        self.endpopup.exec_()
+    
+
+#endregion 
+
+# region : DASHBOARD LIVE DATA AQUISITION 
+
+    def go_live(self):
+        border_style = "#centralwidget { border: 7px solid green; }"
+        self.live_data_is_logging = True
+        self.ui.centralwidget.setStyleSheet(border_style)
+        print("Going live and starting data saving...")
+    
+    def end_go_live(self):
+        border_style = "#centralwidget { border: 0px solid green; }"
+        self.live_data_is_logging = False
+        self.ui.centralwidget.setStyleSheet(border_style)
+        print("Ending live data saving...")
+
+    def save_data_to_csv(self, y_data):
+        # Construct the file name based on the current date and time
+        current_time = datetime.datetime.now()
+        filename = current_time.strftime("%Y%m%d_%H%M%S") + "_experiment_data.csv"
+        
+        # Calculate the pulse number (assuming the method is called every 10 seconds)
+        pulse_number = int(current_time.timestamp() / 10)  # Adjust logic if needed
+
+        # Create a DataFrame for the header information
+        header_info = {
+            'Info': [
+                current_time.strftime("%Y-%m-%d %H:%M:%S"),
+                f"#Pulse Number: {pulse_number}",
+                f"#Voltage Pos: {self.ui.line_edit_max_signal.text()}",
+                f"#Voltage Neg: {self.ui.line_edit_min_signal.text()}",
+                "#Pulse Length: 75,00",
+                "#Transistor on time: 75",
+                "#Rate: 200"
+            ]
+        }
+        header_df = pd.DataFrame(header_info)
+
+        # Create a DataFrame for the data
+        data_df = pd.DataFrame({'Voltage (V)': y_data[:, 0]})
+
+        # Combine the header and data DataFrames
+        combined_df = pd.concat([header_df, data_df], ignore_index=True)
+
+        # Save to CSV
+        combined_df.to_csv(filename, index=False, header=False)
+        print(f"Saving experiment data to {filename}...")
+
+
+#endregion 
 
 #endregion 
