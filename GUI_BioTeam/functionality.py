@@ -11,9 +11,16 @@ from Communication_Functions.communication_functions import *
 from PyQt5 import QtWidgets, QtCore, QtGui 
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTimer
 from PyQt5.QtWidgets import QProgressBar, QMessageBox
+
 from layout import Ui_MainWindow
 from layout import PopupWindow
 from layout import EndPopupWindow
+
+from serial_connections import SerialConnections
+from serial_connections import TemperatureSensorSerial
+
+from serial_workers import TempWorker
+
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.ticker as ticker
@@ -42,42 +49,20 @@ DIR_M3_LEFT = 1
 DIR_M4_UP = 1
 DIR_M4_DOWN = -1
 
+#==========================
+# IDS FOR THE BSG2 DEVICES
+#==========================
+PG_PSU_VENDOR_ID = 0x6666     
+PSU_PRODUCT_ID = 0x0100      
+PG_PRODUCT_ID = 0x0200       
+TEMPERATURE_SENSOR_VENDOR_ID = 0x0403  
+TEMPERATURE_SENSOR_PRODUCT_ID = 0x6015
+
 #========================
 # THREAD WORKERS 
 #========================
 
 #region : The matrix begins here -Thread Worker Classes 
-
-class TempWorker(QObject):
-    update_temp = pyqtSignal(float)
-    interval = 250
-    
-    def __init__(self, device_serials):
-        super(TempWorker, self).__init__()
-        self.device_serials = device_serials[3]
-        self._is_running = False
-        self._lock = QMutex()
-
-    @pyqtSlot()
-    def run(self):
-        self._is_running = True
-        while True:
-            self._lock.lock()
-            if not self._is_running:
-                self._lock.unlock()
-                break
-            self._lock.unlock()
-            
-            temperature = read_temperature(self.device_serials)
-            if temperature is not None:
-                self.update_temp.emit(temperature)
-            QThread.msleep(self.interval)
-
-    @pyqtSlot()
-    def stop(self):
-        self._lock.lock()
-        self._is_running = False
-        self._lock.unlock()
 
 class ReadSerialWorker(QObject):
     update_data = pyqtSignal(float)
@@ -182,17 +167,13 @@ class Functionality(QtWidgets.QMainWindow):
         # =====================================================================================================================================================================================================================================================================================================================================================================================================================================
         #region: 
         self.flag_connections = [False, False, False, False]
-        self.device_serials = serial_start_connections() 
         
-        if self.device_serials[0].isOpen():
-            self.flag_connections[0] = True
-        if self.device_serials[1].isOpen():
-            self.flag_connections[1] = True
-        if self.device_serials[2].isOpen():
-            self.flag_connections[2] = True
-        if self.device_serials[3] is not None:
-            self.flag_connections[3] = True
+        self.device_serials = serial_start_connections() 
 
+        temperature_sensor_serial = TemperatureSensorSerial(TEMPERATURE_SENSOR_VENDOR_ID, TEMPERATURE_SENSOR_PRODUCT_ID)
+        
+        self.flag_connections[3] = temperature_sensor_serial.establish_connection()
+ 
         if self.flag_connections[2]:
             handshake_3PAC(self.device_serials[2], print_handshake_message=True)
 
@@ -295,7 +276,7 @@ class Functionality(QtWidgets.QMainWindow):
         # Temp plotting frame functionality (with threads)
         #====================================================================================================================================================================================================================================================================================
         #region:
-        self.tempWorker = TempWorker(self.device_serials)
+        self.tempWorker = TempWorker(temperature_sensor_serial)
         self.tempThread = QThread()
         self.tempWorker.moveToThread(self.tempThread) 
 
@@ -326,7 +307,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.pgThread = QThread()
         self.pgWorker.moveToThread(self.pgThread)
 
-        #self.pgWorker.update_pulse.connect(self.update_voltage_plot)
+        self.pgWorker.update_pulse.connect(self.update_voltage_plot)
         self.pgWorker.update_pulse.connect(self.process_voltage_data)
         self.pgWorker.update_zerodata.connect(self.handleZeroDataUpdate)
 
@@ -376,7 +357,7 @@ class Functionality(QtWidgets.QMainWindow):
         # Start the thread that will read from the 3PAC
         #================================================================================================================================================================================================================================================================================================================================================
         #region:
-        self.serialThread.started.connect(self.serialWorker.run)  # start the workers run function when the thread starts
+        #self.serialThread.started.connect(self.serialWorker.run)  # start the workers run function when the thread starts
         if self.flag_connections[2]:
             self.serialThread.start() #start the thread so that the dashboard always reads incoming serial data from the esp32 
         #endregion
@@ -1409,11 +1390,6 @@ class Functionality(QtWidgets.QMainWindow):
         if self.flag_connections[2]: 
             writeLedStatus(self.device_serials[2], 1, 0, 0)         # turn light back on 
             
-
-
-
-
-
 #endregion
 
 # region : EXPERIMENT PAGE LAYOUTS 
