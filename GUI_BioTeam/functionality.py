@@ -455,43 +455,12 @@ class Functionality(QtWidgets.QMainWindow):
     def start_stop_temp_plotting(self):
         if not self.temp_is_plotting and not self.voltage_is_plotting:  
             self.temp_is_plotting = True
-            self.ui.temp_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #0796FF;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
+            self.set_button_style(self.ui.temp_button)
 
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-            """)
-        
-        else:  # If currently plotting, stop
-
+        else:  
             self.temp_is_plotting = False
-            self.ui.temp_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #222222;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
+            self.reset_button_style(self.ui.temp_button)
 
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-
-                QPushButton:pressed {
-                    background-color: #0796FF;
-                }
-            """)
-    
     def update_temp_plot(self, temperature):
 
         if self.temp_is_plotting:
@@ -547,42 +516,12 @@ class Functionality(QtWidgets.QMainWindow):
 
     def start_voltage_plotting(self):
         if not self.voltage_is_plotting and not self.temp_is_plotting:   
-            self.ui.voltage_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #0796FF;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
-
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-            """)
-            self.voltage_is_plotting = True         
+            self.voltage_is_plotting = True  
+            self.set_button_style(self.ui.voltage_button)       
         
         else: 
-            self.ui.voltage_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #222222;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
-
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-
-                QPushButton:pressed {
-                    background-color: #0796FF;
-                }
-            """)
-            self.voltage_is_plotting = False        
+            self.voltage_is_plotting = False  
+            self.reset_button_style(self.ui.voltage_button)     
 
     def update_voltage_plot(self):
         
@@ -656,49 +595,16 @@ class Functionality(QtWidgets.QMainWindow):
     def start_sucrose_pump(self):
         if not self.ethanol_is_pumping and not self.reading_pressure:
             if not self.sucrose_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
-                self.sucrose_is_pumping = True  
-                # Change button color to blue
-                self.ui.button_sucrose.setStyleSheet("""
-                    QPushButton {
-                        border: 2px solid white;
-                        border-radius: 10px;
-                        background-color: #0796FF;
-                        color: #FFFFFF;
-                        font-family: Archivo;
-                        font-size: 30px;
-                    }
-
-                    QPushButton:hover {
-                        background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                    }
-                """)
-        
+                
+                self.sucrose_is_pumping = True 
+                self.set_button_style(self.ui.button_sucrose)
                 FR= float(self.ui.line_edit_sucrose.text()) 
                 print(f"sent flow rate for sucrose: {FR} m//mn")
-
                 writeSucrosePumpFlowRate(self.device_serials[2], FR)
 
             else: #Else if surcrose_is_pumping then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
                 
-                self.ui.button_sucrose.setStyleSheet("""
-                    QPushButton {
-                        border: 2px solid white;
-                        border-radius: 10px;
-                        background-color: #222222;
-                        color: #FFFFFF;
-                        font-family: Archivo;
-                        font-size: 30px;
-                    }
-
-                    QPushButton:hover {
-                        background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                    }
-
-                    QPushButton:pressed {
-                        background-color: #0796FF;
-                    }
-                """)
-                
+                self.reset_button_style(self.ui.button_sucrose)
                 self.sucrose_is_pumping = False 
                 self.accumulated_sucrose_volume=0 
                 self.updateSucroseProgressBar(0)
@@ -711,49 +617,16 @@ class Functionality(QtWidgets.QMainWindow):
     def start_ethanol_pump(self):
         if not self.sucrose_is_pumping and not self.reading_pressure:
             if not self.ethanol_is_pumping:   #if surcrose is pumping is false (ie the button has just been pressed to start plotting) then we need to:
+                
                 self.ethanol_is_pumping = True  
-                self.ui.button_ethanol.setStyleSheet("""
-                    QPushButton {
-                        border: 2px solid white;
-                        border-radius: 10px;
-                        background-color: #0796FF;
-                        color: #FFFFFF;
-                        font-family: Archivo;
-                        font-size: 30px;
-                    }
-
-                    QPushButton:hover {
-                        background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                    }
-                """)
-
-
+                self.set_button_style(self.ui.button_ethanol)
                 FR= float(self.ui.line_edit_ethanol.text())
                 print(f"sent flow rate for ethanol: {FR} m//mn")
-
                 writeEthanolPumpFlowRate(self.device_serials[2], FR)
                 
             else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
-                self.ui.button_ethanol.setStyleSheet("""
-                    QPushButton {
-                        border: 2px solid white;
-                        border-radius: 10px;
-                        background-color: #222222;
-                        color: #FFFFFF;
-                        font-family: Archivo;
-                        font-size: 30px;
-                    }
-
-                    QPushButton:hover {
-                        background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                    }
-
-                    QPushButton:pressed {
-                        background-color: #0796FF;
-                    }
-                """)
                 
-                #print("MESSAGE: Stop Ethanol")
+                self.reset_button_style(self.ui.button_ethanol)
                 self.ethanol_is_pumping = False 
                 self.accumulated_ethanol_volume = 0
                 self.device_serials[2].write(PUMPS_OFF.encode())
@@ -766,46 +639,15 @@ class Functionality(QtWidgets.QMainWindow):
     def start_stop_pressure_reading(self):
         if not self.ethanol_is_pumping and not self.sucrose_is_pumping: #if we are currently pumping ethanol or sucrose we will not let this pressure read function run
             if not self.reading_pressure:   #if reading pressure is false (ie the button has just been pressed to start reading pressure) then we need to:
+                
                 self.reading_pressure = True  
-                # Change button color to blue
-                self.ui.pressure_check_button.setStyleSheet("""
-                    QPushButton {
-                        border: 2px solid white;
-                        border-radius: 10px;
-                        background-color: #0796FF;
-                        color: #FFFFFF;
-                        font-family: Archivo;
-                        font-size: 30px;
-                    }
-
-                    QPushButton:hover {
-                        background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                    }
-                """)
-
+                self.set_button_style(self.ui.pressure_check_button)
                 fetch_pressure(self.device_serials[2])
             
             else: #Else if reading pressure is true then it means the button was pressed during a state of reading pressure and the user would like to stop reading pressure which means we need to:
-                # Change button color back to original
+
                 self.reading_pressure=False
-                self.ui.pressure_check_button.setStyleSheet("""
-                    QPushButton {
-                        border: 2px solid white;
-                        border-radius: 10px;
-                        background-color: #222222;
-                        color: #FFFFFF;
-                        font-family: Archivo;
-                        font-size: 30px;
-                    }
-
-                    QPushButton:hover {
-                        background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                    }
-
-                    QPushButton:pressed {
-                        background-color: #0796FF;
-                    }
-                """)
+                self.reset_button_style(self.ui.pressure_check_button)
                 stop_fetching_pressure(self.device_serials[2])
                 self.ui.pressure_data.setText("-       Bar")
 
@@ -820,30 +662,14 @@ class Functionality(QtWidgets.QMainWindow):
             self.stop_blood_pump()
 
     def start_blood_pump(self):  
+        
         self.blood_is_pumping = True  
-        
-        self.ui.button_blood_play_pause.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 10px;
-                background-color: #0796FF;
-                color: #FFFFFF;
-                font-family: Archivo;
-                font-size: 30px;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-        """)
-        
+        self.set_button_style(self.ui.button_blood_play_pause)
         blood_volume = float(self.ui.line_edit_blood_2.text()) 
         blood_speed = float(self.ui.line_edit_blood.text())
-        
         print(f"Calculating pump time with volume = {blood_volume}ml and speed = {blood_speed}ml/min")
         blood_pump_time = int((blood_volume / blood_speed) * 60000)  # Ensure this is the only place blood_pump_time is calculated
         print(f"Calculated pump time: {blood_pump_time} ms")
-        
         writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
         
         if self.blood_pump_timer is None:
@@ -853,24 +679,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.blood_pump_timer.start(blood_pump_time)  # Start the timer
             
     def stop_blood_pump(self):
-        self.ui.button_blood_play_pause.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 10px;
-                background-color: #222222;
-                color: #FFFFFF;
-                font-family: Archivo;
-                font-size: 30px;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
+        
+        self.reset_button_style(self.ui.button_blood_play_pause)
 
         if self.blood_pump_timer is not None:
             self.blood_pump_timer.stop()  # Stop the timer
@@ -1024,20 +834,7 @@ class Functionality(QtWidgets.QMainWindow):
 
             print("Setpoints are valid.")
 
-            self.ui.psu_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #0796FF;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 15px;
-                }
-
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-            """)
+            self.set_button_style(self.ui.psu_button)
             
             self.signal_is_enabled = True
 
@@ -1053,24 +850,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         else: 
             
-            self.ui.psu_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #222222;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 15px;
-                }
-
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-
-                QPushButton:pressed {
-                    background-color: #0796FF;
-                }
-            """)
+            self.reset_button_style(self.ui.psu_button)
             self.signal_is_enabled = False         
             
             self.ui.line_edit_max_signal.setEnabled(True)
@@ -1123,44 +903,14 @@ class Functionality(QtWidgets.QMainWindow):
     def skakel_ligte(self): 
         if not self.lights_are_on: 
             self.lights_are_on = True  
-            self.ui.button_lights.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #0796FF;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
-
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-            """)
+            self.set_button_style(self.ui.button_lights)
 
             writeLedStatus(self.device_serials[2], 1, 1, 1)
             writeLogoStatus(self.device_serials[2], 1)
 
         else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
             self.lights_are_on = False 
-            self.ui.button_lights.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #222222;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
-
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-
-                QPushButton:pressed {
-                    background-color: #0796FF;
-                }
-            """)
+            self.reset_button_style(self.ui.button_lights)
             writeLogoStatus(self.device_serials[2], 0)
             writeLedStatus(self.device_serials[2], 0, 0, 0)
    
@@ -1187,20 +937,7 @@ class Functionality(QtWidgets.QMainWindow):
 
             self.resetting_pressure = True 
 
-            self.ui.pressure_reset_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #0796FF;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
-
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-            """)
+            self.set_button_style(self.ui.pressure_reset_button)
 
             # Reset progress bar
             self.ui.pressure_progress_bar.setValue(0)
@@ -1215,24 +952,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.counter = 0
 
         else: 
-            self.ui.pressure_reset_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #222222;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
-
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-
-                QPushButton:pressed {
-                    background-color: #0796FF;
-                }
-            """)
+            self.reset_button_style(self.ui.pressure_reset_button)
             self.resetting_pressure = False
         
     def update_pressure_progress(self):
@@ -1245,24 +965,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.timer.stop()
             self.counter = 0
             self.ui.pressure_progress_bar.setValue(0)  # Reset the progress bar to 0%
-            self.ui.pressure_reset_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #222222;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
-
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-
-                QPushButton:pressed {
-                    background-color: #0796FF;
-                }
-            """)
+            self.reset_button_style(self.ui.pressure_reset_button)
             writePressureCommandStop(self.device_serials[2]); 
 
 
@@ -1397,20 +1100,7 @@ class Functionality(QtWidgets.QMainWindow):
     def lock_unlock_experiment_choice(self): 
         if not self.experiment_choice_is_locked_in: 
             self.experiment_choice_is_locked_in=True
-            self.ui.user_info_lockin_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #0796FF;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
-
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-            """)
+            self.set_button_style(self.ui.user_info_lockin_button)
             self.ui.application_combobox.setEnabled(False)
 
             if self.ui.application_combobox.currentText() == "POCII":
@@ -1431,24 +1121,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         else: 
             self.experiment_choice_is_locked_in = False
-            self.ui.user_info_lockin_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 10px;
-                    background-color: #222222;
-                    color: #FFFFFF;
-                    font-family: Archivo;
-                    font-size: 30px;
-                }
-
-                QPushButton:hover {
-                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-                }
-
-                QPushButton:pressed {
-                    background-color: #0796FF;
-                }
-            """)
+            self.reset_button_style(self.ui.user_info_lockin_button)
             self.ui.application_combobox.setEnabled(True)
 
             if self.ui.application_combobox.currentText() == "POCII":
@@ -1627,5 +1300,45 @@ class Functionality(QtWidgets.QMainWindow):
 
 
 #endregion 
+
+# region : GENERIC UI LAYOUT UPDATES 
+
+    def set_button_style(self, button):
+        button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 10px;
+                background-color: #0796FF;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 30px;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+        """)
+
+    def reset_button_style(self, button):
+        button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 10px;
+                background-color: #222222;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 30px;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+
+#endregion
 
 #endregion 
