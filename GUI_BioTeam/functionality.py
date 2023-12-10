@@ -156,29 +156,66 @@ class Functionality(QtWidgets.QMainWindow):
         super(Functionality, self).__init__()
 
         #==============================================================================================================================================================================================================================
-        # Initialize the main UI windows
+        # Initialize the main UI window
         #==============================================================================================================================================================================================================================
         #region:
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         #endregion
-        # =====================================================================================================================================================================================================================================================================================================================================================================================================================================================================
-        # START SERIAL CONNECTION TO DEVICES
-        # =====================================================================================================================================================================================================================================================================================================================================================================================================================================
-        #region: 
+        #==============================================================================================================================================================================================================================
+        # Initialize the connections flag array for serial objects
+        #==============================================================================================================================================================================================================================
+        #region:
         self.flag_connections = [False, False, False, False]
         
         self.device_serials = serial_start_connections() 
-
-        temperature_sensor_serial = TemperatureSensorSerial(TEMPERATURE_SENSOR_VENDOR_ID, TEMPERATURE_SENSOR_PRODUCT_ID)
         
-        self.flag_connections[3] = temperature_sensor_serial.establish_connection()
- 
+        if self.device_serials[0].isOpen():
+            self.flag_connections[0] = True
+        if self.device_serials[1].isOpen():
+            self.flag_connections[1] = True
+        if self.device_serials[2].isOpen():
+            self.flag_connections[2] = True
+
         if self.flag_connections[2]:
             handshake_3PAC(self.device_serials[2], print_handshake_message=True)
 
         if self.flag_connections[1]: 
             send_PG_pulsetimes(self.device_serials[1], 0)
+        #endregion
+        # =====================================================================================================================================================================================================================================================================================================================================================================================================================================================================
+        # Temperature (refer to Temperature Logic draw.io for documentation)
+        # =====================================================================================================================================================================================================================================================================================================================================================================================================================================
+        #region: 
+        self.temp_is_plotting = False           # Flag to control if update_temp_plot()'s content executes 
+
+        self.xdata = np.linspace(0, 499, 500)   # Initialize the x data array for update_temp_plot()
+        self.plotdata = np.zeros(500)           # Initialize the y data array for update_temp_plot()
+
+        self.max_temp = float('-inf')           # Initialize the max temp data for max temp QLabel 
+        self.min_temp = float('inf')            # Initialize the min temp data for min temp QLabel 
+
+        temperature_sensor_serial = TemperatureSensorSerial(TEMPERATURE_SENSOR_VENDOR_ID, TEMPERATURE_SENSOR_PRODUCT_ID)  
+        
+        self.flag_connections[3] = temperature_sensor_serial.establish_connection()
+
+        if self.flag_connections[3]:
+
+            self.tempWorker = TempWorker(temperature_sensor_serial)
+
+            self.tempThread = QThread()
+
+            self.tempWorker.moveToThread(self.tempThread) 
+
+            self.tempWorker.update_temp.connect(self.update_temp_plot)
+
+            self.tempWorker.update_temp.connect(self.update_temperature_labels)
+
+            self.tempThread.started.connect(self.tempWorker.run)
+
+            self.tempThread.start() 
+
+            self.ui.temp_button.pressed.connect(self.start_stop_temp_plotting)
         #endregion
         #================================================================================================================================================================================================================================
         # Side bar functionality 
@@ -272,33 +309,6 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.button_cartridge_down.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, False)) # connect the signal to the slot
             self.ui.button_cartridge_down.released.connect(lambda: self.movement_stopjogging(2))                    # connect the signal to the slot
         #endregion
-        #====================================================================================================================================================================================================================================================================================
-        # Temp plotting frame functionality (with threads)
-        #====================================================================================================================================================================================================================================================================================
-        #region:
-        self.tempWorker = TempWorker(temperature_sensor_serial)
-        self.tempThread = QThread()
-        self.tempWorker.moveToThread(self.tempThread) 
-
-        self.tempWorker.update_temp.connect(self.update_temp_plot)
-
-        self.temp_is_plotting = False
-
-        self.xdata = np.linspace(0, 499, 500)  
-        self.plotdata = np.zeros(500)
-
-        if self.flag_connections[3]:
-            self.ui.temp_button.pressed.connect(self.start_stop_temp_plotting)
-        #endregion
-        #====================================================================================================================================================================================================================================================================================
-        # Box plot frame functionality
-        #====================================================================================================================================================================================================================================================================================
-        #region:
-        self.max_temp = float('-inf')
-        self.min_temp = float('inf')
-
-        self.tempWorker.update_temp.connect(self.update_temperature_labels)
-        #endregion
         #======================================================================================================================================================================================================================================================================================================
         # Voltage plotting frame functionality
         #======================================================================================================================================================================================================================================================================================================
@@ -360,14 +370,6 @@ class Functionality(QtWidgets.QMainWindow):
         #self.serialThread.started.connect(self.serialWorker.run)  # start the workers run function when the thread starts
         if self.flag_connections[2]:
             self.serialThread.start() #start the thread so that the dashboard always reads incoming serial data from the esp32 
-        #endregion
-        #================================================================================================================================================================================================================================================================================================================
-        # Start the thread that will read from the Temp Sensor
-        #================================================================================================================================================================================================================================================================================================================================================
-        #region:
-        self.tempThread.started.connect(self.tempWorker.run)
-        if self.flag_connections[3]:
-            self.tempThread.start()  # Start the existing thread
         #endregion
         #================================================================================================================================================================================================================================================================================================================
         # Start the thread that will read from the Pulse Generator
@@ -448,10 +450,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.save_interval = 10  # seconds
         #endregion
 
-# region : PLOTTING FUNCTIONS  
 
-    #region: Temperature Plot 
-
+#region: TEMPERATURE 
     def start_stop_temp_plotting(self):
         if not self.temp_is_plotting and not self.voltage_is_plotting:  
             self.temp_is_plotting = True
@@ -461,6 +461,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.temp_is_plotting = False
             self.reset_button_style(self.ui.temp_button)
 
+    @pyqtSlot(float)
     def update_temp_plot(self, temperature):
 
         if self.temp_is_plotting:
@@ -507,9 +508,18 @@ class Functionality(QtWidgets.QMainWindow):
 
             self.ui.canvas_voltage.draw()
     
-    #endregion
+    @pyqtSlot(float)
+    def update_temperature_labels(self, temperature):
+        if temperature > self.max_temp:
+            self.max_temp = temperature
+            self.ui.max_temp_data.setText(f"{self.max_temp}°")
+            
+        if temperature < self.min_temp:
+            self.min_temp = temperature
+            self.ui.min_temp_data.setText(f"{self.min_temp}°")
+#endregion
      
-    #region: Voltage Plot
+#region: Voltage Plot
 
     def handleZeroDataUpdate(self, zerodata):
         self.zerodata = zerodata
@@ -586,8 +596,6 @@ class Functionality(QtWidgets.QMainWindow):
             self.update_voltage_plot()
 
     
-    #endregion
-
 #endregion
 
 # region : SUCROSE PUMPING 
@@ -914,20 +922,6 @@ class Functionality(QtWidgets.QMainWindow):
             writeLogoStatus(self.device_serials[2], 0)
             writeLedStatus(self.device_serials[2], 0, 0, 0)
    
-#endregion
-
-# region : TEMPERATURE FRAME
-
-    @pyqtSlot(float)
-    def update_temperature_labels(self, temperature):
-        if temperature > self.max_temp:
-            self.max_temp = temperature
-            self.ui.max_temp_data.setText(f"{self.max_temp}°")
-            
-        if temperature < self.min_temp:
-            self.min_temp = temperature
-            self.ui.min_temp_data.setText(f"{self.min_temp}°")
-
 #endregion
 
 # region : UPDATE PRESSURE PROGRESS BAR 
