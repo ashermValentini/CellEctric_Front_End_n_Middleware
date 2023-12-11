@@ -1,12 +1,14 @@
 import serial
 from serial.tools import list_ports
+import minimalmodbus
 
-# SUPER SERIAL CLASS
+
+# SUPER SERIAL DEVICE CLASS
 class SerialConnections:
     def __init__(self, vendor_id, product_id):
         self.vendor_id = vendor_id
         self.product_id = product_id
-        self.connection = None
+        self.serial_device = None
 
     def find_serial_port(self):
         ports = serial.tools.list_ports.comports()
@@ -16,38 +18,52 @@ class SerialConnections:
         return None
 
     def establish_connection(self, baud_rate=9600, timeout=1):
-        device = self.find_serial_port()
-        if device:
-            self.connection = serial.Serial(device, baud_rate, timeout=timeout)
+        port = self.find_serial_port()
+        if port:
+            self.serial_device = serial.Serial(port, baud_rate, timeout=timeout)
             return True
         else:
             print(f"Device with VID: {self.vendor_id} and PID: {self.product_id} not found")
             return False
 
     def close_connection(self):
-        if self.connection and self.connection.is_open:
-            self.connection.close()
+        if self.serial_device and self.serial_device.is_open:
+            self.serial_device.close()
 
-
-
-
-import minimalmodbus
-
-# CHILD SERIAL CLASS FOR TEMPERATURE SENSOR
-
+# CHILD SERIAL DEVICE CLASS FOR TEMPERATURE SENSOR
 class TemperatureSensorSerial(SerialConnections):
     def establish_connection(self):
-        device = self.find_serial_port()
-        if device is not None:
-            self.connection = minimalmodbus.Instrument(device, 1)  # Assuming slave address is 1
-            self.connection.serial.baudrate = 9600
-            self.connection.serial.bytesize = 8
-            self.connection.serial.parity = serial.PARITY_NONE
-            self.connection.serial.stopbits = 1
-            self.connection.serial.timeout = 0.1
-            self.connection.mode = minimalmodbus.MODE_RTU
+        port = self.find_serial_port()
+        if port is not None:
+            self.serial_device = minimalmodbus.Instrument(port, 1)  # Assuming slave address is 1
+            self.serial_device.serial.baudrate = 9600
+            self.serial_device.serial.bytesize = 8
+            self.serial_device.serial.parity = serial.PARITY_NONE
+            self.serial_device.serial.stopbits = 1
+            self.serial_device.serial.timeout = 0.1
+            self.serial_device.mode = minimalmodbus.MODE_RTU
             return True
         else:
             print(f"Temperature sensor with VID: {self.vendor_id} and PID: {self.product_id} not found")
             return False
 
+# CHILD SERIAL DEVICE CLASS for ESP32 RTOS dubbed 3PAC
+class ESP32Serial(SerialConnections):
+    def __init__(self):
+        super().__init__(vendor_id=None, product_id=None)
+
+    def find_serial_port(self):
+        ports = serial.tools.list_ports.comports()
+        for port in ports:
+            if port.manufacturer is not None and "Silicon" in port.manufacturer:
+                return port.device
+        return None
+
+    def establish_connection(self, baud_rate=115200, timeout=1):
+        port = self.find_serial_port()
+        if port:
+            self.serial_device = serial.Serial(port, baud_rate, timeout=timeout)
+            return True
+        else:
+            print("ESP32 device not found")
+            return False

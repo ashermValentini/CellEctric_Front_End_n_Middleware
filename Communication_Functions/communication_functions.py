@@ -216,18 +216,14 @@ def establish_serial_connections(com_list):
     '''
     serials = []
 
-    for i, com_port in enumerate(com_list):
+    for com_port in enumerate(com_list):
         try:
-            if i == 2:  # Check if it's the third COM port ie this is the 3PAC which for some reason hates to be spoken to on a 9600 baudrate setting
-                ser = serial.Serial(com_port, 115200, write_timeout=5)
-            else:
-                ser = serial.Serial(com_port, 9600, write_timeout=5)
+            ser = serial.Serial(com_port, 9600, write_timeout=5)
             serials.append(ser)
         except:
             raise Exception("Could not establish a connection to the port {}".format(com_port))
 
     return serials
-
 
 # FUNCTION TO READ AND PRINT SERIAL DATA FROM CONNECTED DEVICE
 def readSerialData(ser, verbose=0):
