@@ -1016,13 +1016,6 @@ def handshake_3PAC(ser, sleep_time=1, print_handshake_message=False, handshake_c
     if print_handshake_message:
         print("Handshake message: " + handshake_message.decode())
 
-    # Send and receive request again
-    ser.write(handshake_code.encode())
-    handshake_message = ser.readline()
-    # Print the handshake message, if desired
-    if print_handshake_message:
-        print("Handshake message: " + handshake_message.decode())
-
     # Reset the timeout
     ser.timeout = timeout
 
