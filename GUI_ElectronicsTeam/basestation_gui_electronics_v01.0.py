@@ -783,7 +783,7 @@ class MainWindow(QMainWindow):
         pass
 
     # TIMER CALLBACK: READ ALL MESSAGES
-    def read_messages(self):
+    #def read_messages(self):
         # R
 
     # =====================================================================================================================================

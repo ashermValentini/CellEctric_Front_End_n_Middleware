@@ -55,9 +55,11 @@ class ESP32Serial(SerialConnections):
     def find_serial_port(self):
         ports = serial.tools.list_ports.comports()
         for port in ports:
+            print(f"Found port: {port.device}, Manufacturer: {port.manufacturer}")
             if port.manufacturer is not None and "Silicon" in port.manufacturer:
                 return port.device
         return None
+
 
     def establish_connection(self, baud_rate=115200, timeout=1):
         port = self.find_serial_port()

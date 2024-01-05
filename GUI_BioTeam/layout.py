@@ -1544,7 +1544,7 @@ class Ui_MainWindow(object):
         #pressure_details_layout.addSpacing(110)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
 
         pressure_details_layout.addStretch(1) 
-        self.pressure_data = QtWidgets.QLabel("- Bar")
+        self.pressure_data = QtWidgets.QLabel("-    Bar")
         self.pressure_data.setStyleSheet(temperature_number_style)
         pressure_details_layout.addWidget(self.pressure_data, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
         #endregion
@@ -1642,15 +1642,15 @@ class Ui_MainWindow(object):
 
         # Create the QLabel for the unit
         unit_label = QtWidgets.QLabel("V")
-        unit_label.setStyleSheet("color: white;")
+        unit_label.setStyleSheet(input_style)
 
         # Create the QLabel for the higher pk-pk voltage
-        MAX_label = QtWidgets.QLabel("MAX :")
-        MAX_label.setStyleSheet("color: white;")
+        MAX_label = QtWidgets.QLabel("Vp+ :")
+        MAX_label.setStyleSheet(input_style)
 
         # Create the QLineEdit for the value
         self.line_edit_max_signal = QtWidgets.QLineEdit()
-        self.line_edit_max_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_max_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
         self.line_edit_max_signal.setText(" 75")
 
         # Add the line edit and label to the group box layout
@@ -1671,15 +1671,15 @@ class Ui_MainWindow(object):
 
         # Create the QLabel for the unit
         min_unit_label = QtWidgets.QLabel("V")
-        min_unit_label.setStyleSheet("color: white;")
+        min_unit_label.setStyleSheet(input_style)
 
         # Create the QLabel for the higher pk-pk voltage
-        MIN_label = QtWidgets.QLabel("MIN : ")
-        MIN_label.setStyleSheet("color: white;")
+        MIN_label = QtWidgets.QLabel("Vp- : ")
+        MIN_label.setStyleSheet(input_style)
 
         # Create the QLineEdit for the value
         self.line_edit_min_signal = QtWidgets.QLineEdit()
-        self.line_edit_min_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; }")
+        self.line_edit_min_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
         self.line_edit_min_signal.setText("-75")
 
         # Add the line edit and label to the group box layout
@@ -1700,7 +1700,7 @@ class Ui_MainWindow(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/lightning_symbol.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.psu_button.setIcon(icon)
-        self.psu_button.setIconSize(QtCore.QSize(64, 110))  # Adjust size as needed
+        self.psu_button.setIconSize(QtCore.QSize(64, 120))  # Adjust size as needed
         self.psu_button.setStyleSheet("""
             QPushButton {
                 border: 2px solid white;

@@ -178,12 +178,11 @@ class Functionality(QtWidgets.QMainWindow):
             self.pgThread = QThread()
             self.pgWorker.moveToThread(self.pgThread)
 
-            self.pgWorker.update_pulse.connect(self.update_voltage_plot)
             self.pgWorker.update_pulse.connect(self.process_voltage_data)
             self.pgWorker.update_zerodata.connect(self.handleZeroDataUpdate)
             
             self.pgThread.started.connect(self.pgWorker.run)
-            self.pgThread.start()  # Start the existing thread
+            self.pgThread.start()  
 
         if self.flag_connections[0] and self.flag_connections[1]:
             self.ui.voltage_button.pressed.connect(self.start_voltage_plotting)
@@ -416,7 +415,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.min_temp_data.setText(f"{self.min_temp}°")
 #endregion
 
-# region: 3PAC
+# region : 3PAC
     def start_stop_sucrose_pump(self):
         if not self.ethanol_is_pumping:
             if not self.sucrose_is_pumping:   
@@ -536,7 +535,7 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion
 
-#region: Voltage Plot
+# region : Voltage Plot
 
     def handleZeroDataUpdate(self, zerodata):
         self.zerodata = zerodata
@@ -549,6 +548,33 @@ class Functionality(QtWidgets.QMainWindow):
         else: 
             self.voltage_is_plotting = False  
             self.reset_button_style(self.ui.voltage_button)     
+
+
+    def process_voltage_data(self, voltage_y):
+        # Process the data here
+        voltage_y[:, 0] -= self.zerodata[0]            # voltage data
+        voltage_y[:, -1] -= self.zerodata[1]           # current data  
+        
+        maxval_pulse_new = voltage_y.max(axis=0)[0]    # voltage data    
+
+        scale_factor_x = 200 / 1000  # us per unit
+        voltage_xdata = np.linspace(0, voltage_y.shape[0]-1, voltage_y.shape[0]) * scale_factor_x
+
+        if self.signal_is_enabled:
+            self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
+            self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
+            scale_factor = self.correct_max_voltage/maxval_pulse_new
+            voltage_y[:,0] *= scale_factor
+
+        current_time = time.time()
+        if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
+            self.save_data_to_csv(voltage_y)
+            self.last_save_time = current_time
+        
+        self.voltage_xdata = voltage_xdata
+        self.voltage_y = voltage_y
+        if self.voltage_is_plotting: 
+            self.update_voltage_plot()
 
     def update_voltage_plot(self):
         
@@ -586,33 +612,6 @@ class Functionality(QtWidgets.QMainWindow):
         
         self.ui.canvas_voltage.draw()
    
-    def process_voltage_data(self, voltage_y):
-        # Process the data here
-        voltage_y[:, 0] -= self.zerodata[0]            # voltage data
-        voltage_y[:, -1] -= self.zerodata[1]           # current data  
-        
-        maxval_pulse_new = voltage_y.max(axis=0)[0]    # voltage data    
-
-        scale_factor_x = 200 / 1000  # us per unit
-        voltage_xdata = np.linspace(0, voltage_y.shape[0]-1, voltage_y.shape[0]) * scale_factor_x
-
-        if self.signal_is_enabled:
-            self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
-            self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
-            scale_factor = self.correct_max_voltage/maxval_pulse_new
-            voltage_y[:,0] *= scale_factor
-
-        current_time = time.time()
-        if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
-            self.save_data_to_csv(voltage_y)
-            self.last_save_time = current_time
-        
-        self.voltage_xdata = voltage_xdata
-        self.voltage_y = voltage_y
-        if self.voltage_is_plotting: 
-            self.update_voltage_plot()
-
-    
 #endregion
 
 # region : BLOOD PUMP
@@ -677,7 +676,7 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion 
 
-# region : ENABLE/DISABLE THE VOLTAGE SIGNAL (PSU AND PG)
+# region : THE VOLTAGE SIGNAL (PSU AND PG)
 
     def start_psu_pg(self): 
         if not self.signal_is_enabled:  
@@ -687,7 +686,6 @@ class Functionality(QtWidgets.QMainWindow):
 
             self.ui.line_edit_max_signal.setEnabled(False)
             self.ui.line_edit_min_signal.setEnabled(False)
-
 
             # Validate positive setpoint
             if not pos_setpoint_text:
