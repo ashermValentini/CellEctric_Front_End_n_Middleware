@@ -403,34 +403,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
             self.ui.axes_voltage.set_ylim(min(self.ydata) - 1, max(self.ydata) + 10)  # dynamically update y range
 
-
-            # Get the Axes object from the Figure for voltage plot
-            self.ui.axes_voltage.grid(True, color='black', linestyle='--')
-            self.ui.axes_voltage.set_facecolor('#222222')
-            self.ui.axes_voltage.spines['bottom'].set_color('#FFFFFF')
-            self.ui.axes_voltage.spines['top'].set_color('#FFFFFF')
-            self.ui.axes_voltage.spines['right'].set_color('#FFFFFF')
-            self.ui.axes_voltage.spines['left'].set_color('#FFFFFF')
-            self.ui.axes_voltage.tick_params(colors='#FFFFFF')
-
-            # Increase the font size of the x-axis and y-axis labels
-            self.ui.axes_voltage.tick_params(axis='x', labelsize=14)  # You can adjust the font size (e.g., 12)
-            self.ui.axes_voltage.tick_params(axis='y', labelsize=14)  # You can adjust the font size (e.g., 12)
-            
-            # Move the y-axis ticks and labels to the right
-            self.ui.axes_voltage.yaxis.tick_right()
-
-            # Adjust the position of the x-axis label
-            self.ui.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
-
-            # Adjust the position of the y-axis label to the left
-            self.ui.axes_voltage.yaxis.set_label_coords(-0.05, 0.5)  # Move the y-axis label to the left
-
-            # Set static labels
-            self.ui.axes_voltage.set_xlabel('Time (ms)', color='#FFFFFF', fontsize=15)
-            self.ui.axes_voltage.set_ylabel('Temperature (°C)', color='#FFFFFF',  fontsize=15)
-            self.ui.axes_voltage.set_title('Electrode Temperature', color='#FFFFFF', fontsize=20, fontweight='bold', y=1.05)
-
+            self.set_plot_canvas('Temperature (°C)', 'Electrode Temperature')
             self.ui.canvas_voltage.draw()
     
     @pyqtSlot(float)
@@ -615,33 +588,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
         self.ui.axes_voltage.set_ylim(-90, 90) #+-90 are the PG voltage limits
         
-        # Get the Axes object from the Figure for voltage plot
-        self.ui.axes_voltage.grid(True, color='black', linestyle='--')
-        self.ui.axes_voltage.set_facecolor('#222222')
-        self.ui.axes_voltage.spines['bottom'].set_color('#FFFFFF')
-        self.ui.axes_voltage.spines['top'].set_color('#FFFFFF')
-        self.ui.axes_voltage.spines['right'].set_color('#FFFFFF')
-        self.ui.axes_voltage.spines['left'].set_color('#FFFFFF')
-        self.ui.axes_voltage.tick_params(colors='#FFFFFF')
-        
-        # Increase the font size of the x-axis and y-axis labels
-        self.ui.axes_voltage.tick_params(axis='x', labelsize=14)  # You can adjust the font size (e.g., 12)
-        self.ui.axes_voltage.tick_params(axis='y', labelsize=14)  # You can adjust the font size (e.g., 12)
-        
-        # Move the y-axis ticks and labels to the right
-        self.ui.axes_voltage.yaxis.tick_right()
-        
-        # Adjust the position of the x-axis label
-        self.ui.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
+        self.set_plot_canvas('Voltage (V)', 'Voltage Signal')
 
-        # Adjust the position of the y-axis label to the left
-        self.ui.axes_voltage.yaxis.set_label_coords(-0.05, 0.5)  # Move the y-axis label to the left
-
-        # Set static labels
-        self.ui.axes_voltage.set_xlabel('Time (us)', color='#FFFFFF',  fontsize=15)
-        self.ui.axes_voltage.set_ylabel('Voltage (V)', color='#FFFFFF',  fontsize=15)
-        self.ui.axes_voltage.set_title('Voltage Signal', color='#FFFFFF',fontsize=20, fontweight='bold', y=1.05)
-        
         self.ui.canvas_voltage.draw()
    
     def start_psu_pg(self): 
@@ -996,6 +944,35 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion 
 
 # region : GENERIC UI ELEMENT UPDATES 
+    
+    def set_plot_canvas(self, x_title: str, y_title: str):
+        # Get the Axes object from the Figure for voltage plot
+        self.ui.axes_voltage.grid(True, color='#808080', linestyle='--')
+        self.ui.axes_voltage.set_facecolor('#222222')
+        self.ui.axes_voltage.spines['bottom'].set_color('#FFFFFF')
+        self.ui.axes_voltage.spines['top'].set_color('#FFFFFF')
+        self.ui.axes_voltage.spines['right'].set_color('#FFFFFF')
+        self.ui.axes_voltage.spines['left'].set_color('#FFFFFF')
+        self.ui.axes_voltage.tick_params(colors='#FFFFFF')
+        
+        # Increase the font size of the x-axis and y-axis labels
+        self.ui.axes_voltage.tick_params(axis='x', labelsize=14)  # You can adjust the font size (e.g., 12)
+        self.ui.axes_voltage.tick_params(axis='y', labelsize=14)  # You can adjust the font size (e.g., 12)
+        
+        # Move the y-axis ticks and labels to the right
+        self.ui.axes_voltage.yaxis.tick_right()
+        
+        # Adjust the position of the x-axis label
+        self.ui.axes_voltage.xaxis.set_label_coords(0.5, -0.1)  # Move the x-axis label downwards
+
+        # Adjust the position of the y-axis label to the left
+        self.ui.axes_voltage.yaxis.set_label_coords(-0.05, 0.5)  # Move the y-axis label to the left
+
+        # Set static labels
+        self.ui.axes_voltage.set_xlabel('Time (us)', color='#FFFFFF',  fontsize=15)
+        self.ui.axes_voltage.set_ylabel(x_title, color='#FFFFFF',  fontsize=15)
+        self.ui.axes_voltage.set_title(y_title, color='#FFFFFF',fontsize=20, fontweight='bold', y=1.05)
+        
     def set_button_style(self, button):
         button.setStyleSheet("""
             QPushButton {
