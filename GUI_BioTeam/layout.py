@@ -613,6 +613,7 @@ class Ui_MainWindow(object):
         header_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 50px; font-weight: bold;  }"
         input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 25px;  }"
         temperature_number_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px;  }"
+        voltage_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px;  }"
 
         # Set up the main window 
         MainWindow.setObjectName("MainWindow")
@@ -1642,15 +1643,15 @@ class Ui_MainWindow(object):
 
         # Create the QLabel for the unit
         unit_label = QtWidgets.QLabel("V")
-        unit_label.setStyleSheet(input_style)
+        unit_label.setStyleSheet(voltage_style)
 
         # Create the QLabel for the higher pk-pk voltage
         MAX_label = QtWidgets.QLabel("Vp+ :")
-        MAX_label.setStyleSheet(input_style)
+        MAX_label.setStyleSheet(voltage_style)
 
         # Create the QLineEdit for the value
         self.line_edit_max_signal = QtWidgets.QLineEdit()
-        self.line_edit_max_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
+        self.line_edit_max_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
         self.line_edit_max_signal.setText(" 75")
 
         # Add the line edit and label to the group box layout
@@ -1671,15 +1672,15 @@ class Ui_MainWindow(object):
 
         # Create the QLabel for the unit
         min_unit_label = QtWidgets.QLabel("V")
-        min_unit_label.setStyleSheet(input_style)
+        min_unit_label.setStyleSheet(voltage_style)
 
         # Create the QLabel for the higher pk-pk voltage
         MIN_label = QtWidgets.QLabel("Vp- : ")
-        MIN_label.setStyleSheet(input_style)
+        MIN_label.setStyleSheet(voltage_style)
 
         # Create the QLineEdit for the value
         self.line_edit_min_signal = QtWidgets.QLineEdit()
-        self.line_edit_min_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
+        self.line_edit_min_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
         self.line_edit_min_signal.setText("-75")
 
         # Add the line edit and label to the group box layout

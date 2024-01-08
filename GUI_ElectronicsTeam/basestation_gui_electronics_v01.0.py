@@ -20,7 +20,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure                                                # IMPORT GRAPHS (NOT USED)
 import matplotlib.ticker as ticker                                                  # IMPORT TICKER FOR GRAPH UPDATES (NOT USED)
 
-import numpy as np                                                                  
+import numpy as np
+import pandas as pd                                                                
 
 from Ui_GUI_Design_01 import Ui_MainWindow
 
@@ -111,13 +112,26 @@ class MainWindow(QMainWindow):
         self.POS_FLASK_UP     = 13      # Z-POSITION FOR FLASK: CONNECTED (UP)
 
         # TIMERS
-        self.flow_timer = QTimer()
-        self.flow_timer.setInterval(self.interval)
-        self.flow_timer.timeout.connect(self.update_flowrate_suceth)
+        self.interval_read_3pac = 500
+        self.t_read_3pac_timer = QTimer()
+        self.t_read_3pac_timer.setInterval(self.interval_read_3pac)
+        self.t_read_3pac_timer.timeout.connect(self.read_3pac_data)
 
-        self.plot_timer = QTimer()
-        self.plot_timer.setInterval(self.interval)
-        self.plot_timer.timeout.connect(self.update_plot)
+        self.interval_update_gui = 1000
+        self.t_update_gui_timer = QTimer()
+        self.t_update_gui_timer.setInterval(self.interval_update_gui)
+        self.t_update_gui_timer.timeout.connect(self.read_3pac_data)
+
+        # GLOBAL VARIABLES
+        self.g_flowrate = None              # VARIABLE TO SAVE THE MEASURED FLOW RATE
+        self.g_pressure = None              # VARIABLE TO SAVE THE MEASURED PRESSURE
+        self.g_psu_voltages = [None, None]  # ARRAY (2) TO SAVE THE PSU VOLTAGES
+        self.g_psu_currents = [None, None]  # ARRAY (2) TO SAVE THE PSU CURRENTS
+        self.g_pg_voltages = pd.DataFrame() # EMPTY PANDAS DATAFRAME FOR PG VOLTAGES
+        self.g_pg_currents = pd.DataFrame() # EMPTY PANDAS DATAFRAME FOR PG CURRENTS
+        self.g_pg_zerovolt = [None, None]   # ARRAY (2) TO SAVE ZERO-VOLT VALUE FROM PG
+
+        
 
         # ================================================================
         #  _____ _____ _____ _____    _ _ _ _____ _____ ____  _____ _ _ _ 
@@ -400,6 +414,7 @@ class MainWindow(QMainWindow):
 
         self.start_plotting()
 
+
         # INIT 3PAC
         if self.flag_connections[2]:
             # INITIALIZE VALVE STATES (ALL CLOSED) TODO: NEEDS TO BE CHANGED SOON. MAYBE ADD A GLOBAL VARIABLE AT THE BEGINNING FOR INITIAL STATES
@@ -411,7 +426,7 @@ class MainWindow(QMainWindow):
             print("RESPONSE: " + msg.decode())
             time.sleep(2)
 
-            # INITIALIZE PID STATES (ALL CLOSED)
+            # INITIALIZE PID STATES
             #print("MESSAGE: PID On")
             #msg = "wPS-22"
             #self.device_serials[2].write(msg.encode())
@@ -421,6 +436,8 @@ class MainWindow(QMainWindow):
             #self.start_flowrate_suceth_update()
 
         
+        self.t_update_gui_timer.start()     # START TIMER: UPDATE ALL GUI LABELS/VALUES/GRAPHS
+        self.t_read_3pac_timer.start()      # START TIMER: READ 3PAC
 
         
         
@@ -783,8 +800,15 @@ class MainWindow(QMainWindow):
         pass
 
     # TIMER CALLBACK: READ ALL MESSAGES
-    #def read_messages(self):
-        # R
+    def read_messages(self):
+        pass
+
+    def read_3pac_data(self):
+        pass
+        # GET FLOW RATE
+
+        # GET PRESSURE
+
 
     # =====================================================================================================================================
     #  ____  _____ _____ _____ _____ _____    _____ _____ _____ _____ __    _____    _____ _____ _____ _____ _____ _____ _____ _____ _____ 

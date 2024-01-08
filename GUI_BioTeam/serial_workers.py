@@ -118,7 +118,7 @@ class ESP32SerialWorker(QObject):
 class PulseGeneratorSerialWorker(QObject):
     update_pulse = pyqtSignal(np.ndarray)
     update_zerodata = pyqtSignal(object)  
-    interval = 500   
+    interval = 2000   
 
     def __init__(self, pulse_generator_serial):
         super(PulseGeneratorSerialWorker, self).__init__()
@@ -138,6 +138,7 @@ class PulseGeneratorSerialWorker(QObject):
             voltage_y, _ = read_next_PG_pulse(self.pulse_generator_serial.serial_device)
             if voltage_y is not None:
                 self.update_pulse.emit(voltage_y)
+                print(voltage_y)
             QThread.msleep(self.interval)
     
     @pyqtSlot()

@@ -21,10 +21,10 @@ class SerialConnections:
         port = self.find_serial_port()
         if port:
             self.serial_device = serial.Serial(port, baud_rate, timeout=timeout)
-            return True
+            return self.serial_device
         else:
             print(f"Device with VID: {self.vendor_id} and PID: {self.product_id} not found")
-            return False
+            return None
 
     def close_connection(self):
         if self.serial_device and self.serial_device.is_open:
@@ -42,10 +42,10 @@ class TemperatureSensorSerial(SerialConnections):
             self.serial_device.serial.stopbits = 1
             self.serial_device.serial.timeout = 0.1
             self.serial_device.mode = minimalmodbus.MODE_RTU
-            return True
+            return self.serial_device
         else:
             print(f"Temperature sensor with VID: {self.vendor_id} and PID: {self.product_id} not found")
-            return False
+            return None
 
 # CHILD SERIAL DEVICE CLASS for ESP32 RTOS dubbed 3PAC
 class ESP32Serial(SerialConnections):
@@ -65,7 +65,7 @@ class ESP32Serial(SerialConnections):
         port = self.find_serial_port()
         if port:
             self.serial_device = serial.Serial(port, baud_rate, timeout=timeout)
-            return True
+            return self.serial_device
         else:
             print("ESP32 device not found")
-            return False
+            return None
