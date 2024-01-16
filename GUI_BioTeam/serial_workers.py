@@ -53,7 +53,7 @@ class ESP32SerialWorker(QObject):
     update_flowrate = pyqtSignal(float)
     update_pressure = pyqtSignal(float)
     # Add more signals as needed for other data types
-    interval = 250  
+    interval = 500  
 
     def __init__(self, esp32_RTOS_serial):
         super(ESP32SerialWorker, self).__init__()
@@ -98,7 +98,8 @@ class ESP32SerialWorker(QObject):
             self.update_pressure.emit(pressure)
             self.update_flowrate.emit(flow_rate)
         except ValueError as e:
-            print(f"Error parsing pressure or flow rate: {e}")
+            #print(f"Error parsing pressure or flow rate: {e}")
+            pass
 
     def write_serial_message(self, message):
         self._lock.lock()
@@ -138,7 +139,6 @@ class PulseGeneratorSerialWorker(QObject):
             voltage_y, _ = read_next_PG_pulse(self.pulse_generator_serial.serial_device)
             if voltage_y is not None:
                 self.update_pulse.emit(voltage_y)
-                print(voltage_y)
             QThread.msleep(self.interval)
     
     @pyqtSlot()

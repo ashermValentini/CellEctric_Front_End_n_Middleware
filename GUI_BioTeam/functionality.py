@@ -29,16 +29,6 @@ from matplotlib.figure import Figure
 import matplotlib.ticker as ticker
 import numpy as np
 
-#===========================================
-#SERIAL MESSAGES FOR ESP32 RTOS dubbed 3PAC
-#===========================================
-
-VALVE1_OFF = "wVS-001\n"
-VALVE1_ON = "wVS-000\n"
-PELTIER_ON = "wCS-1\n"
-PELTIER_OFF = "wCS-0\n"
-PUMPS_OFF ="wFO\n"
-
 #========================
 # DIRECTIONS FOR MOTORS 
 #========================
@@ -83,6 +73,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.temp_is_plotting = False
         self.voltage_is_plotting = False
+        self.current_is_plotting = False 
 
         self.sucrose_is_pumping = False       
         self.ethanol_is_pumping = False 
@@ -199,7 +190,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.pgThread = QThread()
             self.pgWorker.moveToThread(self.pgThread)
 
-            self.pgWorker.update_pulse.connect(self.process_voltage_data)
+            self.pgWorker.update_pulse.connect(self.process_pg_data)
             self.pgWorker.update_zerodata.connect(self.handleZeroDataUpdate)
             
             self.pgThread.started.connect(self.pgWorker.run)
@@ -246,10 +237,10 @@ class Functionality(QtWidgets.QMainWindow):
         self.blood_pump_timer = None 
         if self.flag_connections[2]: 
             self.ui.button_blood_top.clicked.connect(lambda: self.movement_homing(1))                       # connect the signal to the slot 
-            self.ui.button_blood_up.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, True)) # connect the signal to the slot    
+            self.ui.button_blood_up.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, False)) # connect the signal to the slot    
             self.ui.button_blood_up.released.connect(lambda: self.movement_stopjogging(1))                  # connect the signal to the slot              
 
-            self.ui.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, True)) # connect the signal to the slot
+            self.ui.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, False)) # connect the signal to the slot
             self.ui.button_blood_down.released.connect(lambda: self.movement_stopjogging(1))                    # connect the signal to the slot
             self.ui.button_blood_play_pause.pressed.connect(self.toggle_blood_pump)
         #endregion
@@ -304,6 +295,7 @@ class Functionality(QtWidgets.QMainWindow):
         #region:     
         if self.flag_connections[0] and self.flag_connections[1]:
             self.ui.voltage_button.pressed.connect(self.start_voltage_plotting)
+            self.ui.current_button.pressed.connect(self.start_current_plotting)
         if self.flag_connections[3]:            
             self.ui.temp_button.pressed.connect(self.start_stop_temp_plotting)
         #endregion
@@ -374,11 +366,12 @@ class Functionality(QtWidgets.QMainWindow):
         #region : 
         self.last_save_time = None
         self.save_interval = 10  # seconds
+        self.pulse_number = 1 
         #endregion
 
 # region: TEMPERATURE SENSOR 
     def start_stop_temp_plotting(self):
-        if not self.temp_is_plotting and not self.voltage_is_plotting:  
+        if not self.temp_is_plotting and not self.voltage_is_plotting and not self.current_is_plotting:  
             self.temp_is_plotting = True
             self.set_button_style(self.ui.temp_button)
 
@@ -407,13 +400,13 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.canvas_voltage.draw()
     
     @pyqtSlot(float)
-    def update_temperature_labels(self, temperature):
-        if temperature > self.max_temp:
-            self.max_temp = temperature
+    def update_temperature_labels(self, temp_data):
+        if temp_data > self.max_temp:
+            self.max_temp = temp_data
             self.ui.max_temp_data.setText(f"{self.max_temp}°")
             
-        if temperature < self.min_temp:
-            self.min_temp = temperature
+        if temp_data < self.min_temp:
+            self.min_temp = temp_data
             self.ui.min_temp_data.setText(f"{self.min_temp}°")
 #endregion
 
@@ -425,17 +418,19 @@ class Functionality(QtWidgets.QMainWindow):
                 self.sucrose_is_pumping = True 
                 try:
                     FR = float(self.ui.line_edit_sucrose.text())
+                    V = float(self.ui.line_edit_sucrose_2.text())
                 except ValueError:
                     print("Invalid input in line_edit_sucrose")
                     return 
-                message = f'wFS-{FR:.2f}\n'  
+                message = f'wFS-{FR:.2f}-{V:.2f}\n'
+                print(message)  
                 self.esp32Worker.write_serial_message(message)
 
             else: 
                 self.reset_button_style(self.ui.button_sucrose)
                 self.sucrose_is_pumping = False 
-                self.accumulated_sucrose_volume=0 
-                self.esp32Worker.write_serial_message(PUMPS_OFF)
+                message = f'wFO\n'
+                self.esp32Worker.write_serial_message(message)
                 self.updateSucroseProgressBar(0)
     
     def updateSucroseProgressBar(self, value):
@@ -462,17 +457,19 @@ class Functionality(QtWidgets.QMainWindow):
                 self.set_button_style(self.ui.button_ethanol)
                 try:
                     FR = float(self.ui.line_edit_ethanol.text())
+                    V = float(self.ui.line_edit_ethanol_2.text())
                 except ValueError:
                     print("Invalid input in line_edit_sucrose")
                     return 
-                message = f'wFE-{FR:.2f}\n'  
+                message = f'wFE-{FR:.2f}-{V:.2f}\n'  
+                print(message)
                 self.esp32Worker.write_serial_message(message)
 
             else: 
                 self.reset_button_style(self.ui.button_ethanol)
                 self.ethanol_is_pumping = False 
-                self.accumulated_ethanol_volume = 0
-                self.esp32Worker.write_serial_message(PUMPS_OFF)
+                message = f'wFO\n'
+                self.esp32Worker.write_serial_message(message)
                 self.updateEthanolProgressBar(0)
 
     def updateEthanolProgressBar(self, value):
@@ -508,17 +505,17 @@ class Functionality(QtWidgets.QMainWindow):
     def start_stop_increasing_system_pressure(self):
         if not self.resetting_pressure:
             self.resetting_pressure = True 
-
             self.set_button_style(self.ui.pressure_reset_button)
-
             self.ui.pressure_progress_bar.setValue(0)
             
             # Setup timer to update progress bar every second
             self.timer = QTimer(self)
             self.timer.timeout.connect(self.update_pressure_progress_bar)
             self.timer.start(1000)  # 1000 milliseconds == 1 second
-            writePressureCommandStart(self.device_serials[2]); 
             self.counter = 0
+            message = f'wRS\n'
+            print(message)
+            self.esp32Worker.write_serial_message(message)
 
         else: 
             self.reset_button_style(self.ui.pressure_reset_button)
@@ -526,7 +523,9 @@ class Functionality(QtWidgets.QMainWindow):
             self.timer.stop()
             self.counter = 0
             self.ui.pressure_progress_bar.setValue(0) 
-            writePressureCommandStop(self.device_serials[2]); 
+            message = f'wRO\n'
+            print(message)
+            self.esp32Worker.write_serial_message(message)
         
     def update_pressure_progress_bar(self):
         self.counter += 1
@@ -543,15 +542,28 @@ class Functionality(QtWidgets.QMainWindow):
         self.zerodata = zerodata
 
     def start_voltage_plotting(self):
-        if not self.voltage_is_plotting and not self.temp_is_plotting:   
+        if not self.voltage_is_plotting and not self.temp_is_plotting and not self.current_is_plotting:   
             self.voltage_is_plotting = True  
             self.set_button_style(self.ui.voltage_button)       
         
         else: 
             self.voltage_is_plotting = False  
-            self.reset_button_style(self.ui.voltage_button)     
+            self.reset_button_style(self.ui.voltage_button)   
 
-    def process_voltage_data(self, voltage_y):
+    def start_current_plotting(self): 
+        if not self.current_is_plotting and not self.temp_is_plotting and not self.voltage_is_plotting:  
+            self.current_is_plotting = True 
+            self.set_button_style(self.ui.current_button)
+        else: 
+            self.current_is_plotting = False 
+            self.reset_button_style(self.ui.current_button)
+
+    def process_pg_data(self, voltage_y):
+
+        current_time = time.time()
+        if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
+            self.save_data_to_csv(voltage_y)
+            self.last_save_time = current_time
        
         self.voltage_y = voltage_y
         # Process the data:
@@ -559,7 +571,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.voltage_y = self.voltage_y[:new_length]
         
         self.voltage_y[:, 0] -= self.zerodata[0]            # voltage data
-        self.voltage_y[:, -1] -= self.zerodata[1]           # current data  
+        self.voltage_y[:, 1] -= self.zerodata[1]           # current data  
         
         maxval_pulse_new = self.voltage_y.max(axis=0)[0]         # voltage max data    
 
@@ -571,15 +583,22 @@ class Functionality(QtWidgets.QMainWindow):
             self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
             scale_factor = self.correct_max_voltage/maxval_pulse_new
             self.voltage_y[:,0] *= scale_factor
-
-        current_time = time.time()
-        if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
-            self.save_data_to_csv(self.voltage_y)
-            self.last_save_time = current_time
         
-
         if self.voltage_is_plotting: 
             self.update_voltage_plot()
+        
+        if self.current_is_plotting: 
+            self.update_current_plot() 
+    
+    def update_current_plot(self): 
+        self.ui.axes_voltage.clear()
+        self.ui.axes_voltage.plot(self.voltage_xdata, self.voltage_y[:, -1], color='#FFFFFF')
+        self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
+        self.ui.axes_voltage.set_ylim(-90, 90) #+-90 are the PG voltage limits
+        
+        self.set_plot_canvas('Current (A)', 'Current Signal')
+
+        self.ui.canvas_voltage.draw()
 
     def update_voltage_plot(self):
         
@@ -642,10 +661,11 @@ class Functionality(QtWidgets.QMainWindow):
             send_PSU_enable(self.device_serials[0], 1)
             time.sleep(.25)
 
-            send_PSU_setpoints(self.device_serials[0], 75, 75, 0)
+            send_PSU_setpoints(self.device_serials[0], 40, 40, 0)
             time.sleep(.25)
 
-            #self.zerodata = send_PG_enable(self.device_serials[1], 0)
+            send_PSU_setpoints(self.device_serials[0], 75, 75, 0)
+            time.sleep(.25)
 
             self.pgWorker.start_pg()
 
@@ -658,8 +678,8 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.line_edit_min_signal.setEnabled(True)
 
             send_PSU_disable(self.device_serials[0], 1)
-            #send_PG_disable(self.device_serials[1], 0)
             self.pgWorker.stop_pg()
+
 #endregion
 
 # region : BLOOD PUMP
@@ -907,6 +927,7 @@ class Functionality(QtWidgets.QMainWindow):
         border_style = "#centralwidget { border: 0px solid green; }"
         self.live_data_is_logging = False
         self.ui.centralwidget.setStyleSheet(border_style)
+        self.pulse_number = 1
         print("Ending live data saving...")
 
     def save_data_to_csv(self, y_data):
@@ -914,31 +935,33 @@ class Functionality(QtWidgets.QMainWindow):
         current_time = datetime.datetime.now()
         filename = current_time.strftime("%Y%m%d_%H%M%S") + "_experiment_data.csv"
         
-        # Calculate the pulse number (assuming the method is called every 10 seconds)
-        pulse_number = int(current_time.timestamp() / 10)  # Adjust logic if needed
-
         # Create a DataFrame for the header information
-        header_info = {
-            'Info': [
+        header_info = [
                 current_time.strftime("%Y-%m-%d %H:%M:%S"),
-                f"#Pulse Number: {pulse_number}",
+                f"#Pulse Number: {self.pulse_number}",
                 f"#Voltage Pos: {self.ui.line_edit_max_signal.text()}",
                 f"#Voltage Neg: {self.ui.line_edit_min_signal.text()}",
                 "#Pulse Length: 75,00",
                 "#Transistor on time: 75",
                 "#Rate: 200"
             ]
-        }
-        header_df = pd.DataFrame(header_info)
+        
+
+        # Calculate the pulse number (assuming the method is called every 10 seconds)
+        self.pulse_number = self.pulse_number + 1
+
+        header_df = pd.DataFrame({'Column1': header_info,'Column2': ['']*len(header_info)})
 
         # Create a DataFrame for the data
-        data_df = pd.DataFrame({'Voltage (V)': y_data[:, 0]})
+        voltage_data_df = pd.DataFrame({'Column1': y_data[:, 0]})
+        current_data_df = pd.DataFrame({'Column2': y_data[:, 1] })
 
-        # Combine the header and data DataFrames
-        combined_df = pd.concat([header_df, data_df], ignore_index=True)
+        combined_pg_data_df = pd.concat([voltage_data_df, current_data_df], axis=1)
+        combined_output_df = pd.concat([header_df, combined_pg_data_df], ignore_index=True)
+
 
         # Save to CSV
-        combined_df.to_csv(filename, index=False, header=False)
+        combined_output_df.to_csv(filename, index=False, header=False)
         print(f"Saving experiment data to {filename}...")
 
 #endregion 
