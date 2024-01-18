@@ -64,6 +64,11 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+
+        #self.popup = PopupWindow()
+        #self.endpopup = EndPopupWindow()
+
+        
         #endregion
         #==============================================================================================================================================================================================================================
         # Initialize application flags 
@@ -95,6 +100,12 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.starting_a_live_data_session = False
         self.live_data_is_logging = False
+        self.live_tracking_temperature = False
+        self.live_tracking_ethanol_flowrate = False 
+        self.live_tracking_sucrose_flowrate = False
+        self.live_tracking_pressure = False 
+        self.live_tracking_current = False 
+        self.live_tracking_voltage = False
 
         self.signal_is_enabled=False 
 
@@ -617,8 +628,8 @@ class Functionality(QtWidgets.QMainWindow):
             pos_setpoint_text = self.ui.line_edit_max_signal.text().strip()
             neg_setpoint_text = self.ui.line_edit_min_signal.text().strip()
 
-            self.ui.line_edit_max_signal.setEnabled(False)
-            self.ui.line_edit_min_signal.setEnabled(False)
+            #self.ui.line_edit_max_signal.setEnabled(False)
+            #self.ui.line_edit_min_signal.setEnabled(False)
 
             # Validate positive setpoint
             if not pos_setpoint_text:
@@ -658,13 +669,15 @@ class Functionality(QtWidgets.QMainWindow):
 
             neg_setpoint = abs(neg_setpoint)
             
+            print(pos_setpoint)
+            print(neg_setpoint)
             send_PSU_enable(self.device_serials[0], 1)
             time.sleep(.25)
 
             send_PSU_setpoints(self.device_serials[0], 40, 40, 0)
             time.sleep(.25)
 
-            send_PSU_setpoints(self.device_serials[0], 75, 75, 0)
+            send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
             time.sleep(.25)
 
             self.pgWorker.start_pg()
@@ -674,8 +687,8 @@ class Functionality(QtWidgets.QMainWindow):
             self.reset_button_style(self.ui.psu_button)
             self.signal_is_enabled = False         
             
-            self.ui.line_edit_max_signal.setEnabled(True)
-            self.ui.line_edit_min_signal.setEnabled(True)
+            #self.ui.line_edit_max_signal.setEnabled(True)
+            #self.ui.line_edit_min_signal.setEnabled(True)
 
             send_PSU_disable(self.device_serials[0], 1)
             self.pgWorker.stop_pg()
@@ -806,7 +819,7 @@ class Functionality(QtWidgets.QMainWindow):
 
     def step_two(self):
         if self.flag_connections[2]: 
-            writeMotorDistance(self.device_serials[2], 2, 31, 2)  # connect fluidics to cartridge (move motor two down a distance 27.5mm)
+            writeMotorDistance(self.device_serials[2], 2, 31, 2)    # connect fluidics to cartridge (move motor two down a distance 31mm)
             writeLedStatus(self.device_serials[2], 0, 1, 0)         # syringe region LED on
 
         frame_name = "frame_DEMO_close_fluidic_circuit"
@@ -916,17 +929,91 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion
 
 # region : LIVE DATA AQUISITION 
+    def toggle_LDA_popup(self):
+        if not self.starting_a_live_data_session:
+            self.showLDAPopup()
+        else:
+            self.showEndLDAPopup()
+
+    def showLDAPopup(self):
+        self.popup = PopupWindow()
+        self.popup.button_LDA_go_live.clicked.connect(self.go_live)
+
+        self.popup.button_LDA_temperature.clicked.connect(self.toggle_LDA_temperature_button)
+        self.popup.button_LDA_pressure.clicked.connect(self.toggle_LDA_pressure_button)
+        self.popup.button_LDA_Sucrose.clicked.connect(self.toggle_LDA_sucrose_button)
+        self.popup.button_LDA_Ethanol.clicked.connect(self.toggle_LDA_ethanol_button)
+        self.popup.button_LDA_current.clicked.connect(self.toggle_LDA_current_button)
+        self.popup.button_LDA_voltage.clicked.connect(self.toggle_LDA_voltage_button)
+        
+        self.popup.exec_()
+
+    def showEndLDAPopup(self):
+        self.endpopup = EndPopupWindow()
+        self.endpopup.button_end_LDA.clicked.connect(self.end_go_live)
+        self.endpopup.exec_()
+
+    def toggle_LDA_temperature_button(self): 
+        if not self.live_tracking_temperature:
+            self.live_tracking_temperature = True
+            self.set_button_style(self.popup.button_LDA_temperature)
+        else: 
+            self.live_tracking_temperature = False
+            self.reset_button_style(self.popup.button_LDA_temperature)
+
+    def toggle_LDA_current_button(self): 
+        if not self.live_tracking_temperature:
+            self.live_tracking_current = True
+            self.set_button_style(self.popup.button_LDA_current)
+        else: 
+            self.live_tracking_current = False
+            self.reset_button_style(self.popup.button_LDA_current)
+    
+    def toggle_LDA_voltage_button(self): 
+        if not self.live_tracking_voltage: 
+            self.live_tracking_voltage = True 
+            self.set_button_style(self.popup.button_LDA_voltage)
+        else: 
+            self.live_tracking_voltage = False 
+            self.reset_button_style(self.popup.button_LDA_voltage)
+    
+    def toggle_LDA_pressure_button(self): 
+        if not self.live_tracking_pressure: 
+            self.live_tracking_pressure = True 
+            self.set_button_style(self.popup.button_LDA_pressure)
+        else: 
+            self.live_tracking_pressure = False 
+            self.reset_button_style(self.popup.button_LDA_pressure)
+
+    def toggle_LDA_ethanol_button(self): 
+        if not self.live_tracking_ethanol_flowrate: 
+            self.live_tracking_ethanol_flowrate = True 
+            self.set_button_style(self.popup.button_LDA_Ethanol)
+        else: 
+            self.live_tracking_ethanol_flowrate = False
+            self.reset_button_style(self.popup.button_LDA_Ethanol)
+
+    def toggle_LDA_sucrose_button(self): 
+        if not self.live_tracking_sucrose_flowrate: 
+            self.live_tracking_sucrose_flowrate = True 
+            self.set_button_style(self.popup.button_LDA_Sucrose)
+        else: 
+            self.live_tracking_sucrose_flowrate = False
+            self.reset_button_style(self.popup.button_LDA_Sucrose)
+
 
     def go_live(self):
         border_style = "#centralwidget { border: 7px solid green; }"
         self.live_data_is_logging = True
         self.ui.centralwidget.setStyleSheet(border_style)
+        self.starting_a_live_data_session = True
         print("Going live and starting data saving...")
     
     def end_go_live(self):
         border_style = "#centralwidget { border: 0px solid green; }"
         self.live_data_is_logging = False
         self.ui.centralwidget.setStyleSheet(border_style)
+        self.starting_a_live_data_session = False
         self.pulse_number = 1
         print("Ending live data saving...")
 
@@ -1045,24 +1132,6 @@ class Functionality(QtWidgets.QMainWindow):
     def reset_all_DEMO_progress_bars(self):
         for progress_bar in self.DEMO_progress_bar_dict.values():
             progress_bar.setValue(0)   
-
-    def toggle_LDA_popup(self):
-        if not self.starting_a_live_data_session:
-            self.showLDAPopup()
-            self.starting_a_live_data_session = True
-        else:
-            self.showEndLDAPopup()
-            self.starting_a_live_data_session = False
-
-    def showLDAPopup(self):
-        self.popup = PopupWindow()
-        self.popup.button_LDA_go_live.clicked.connect(self.go_live)
-        self.popup.exec_()
-
-    def showEndLDAPopup(self):
-        self.endpopup = EndPopupWindow()
-        self.endpopup.button_end_LDA.clicked.connect(self.end_go_live)
-        self.endpopup.exec_()
 
     def lock_unlock_experiment_choice(self): 
         if not self.experiment_choice_is_locked_in: 

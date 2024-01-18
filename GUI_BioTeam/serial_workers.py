@@ -119,7 +119,7 @@ class ESP32SerialWorker(QObject):
 class PulseGeneratorSerialWorker(QObject):
     update_pulse = pyqtSignal(np.ndarray)
     update_zerodata = pyqtSignal(object)  
-    interval = 2000   
+    interval = 500   
 
     def __init__(self, pulse_generator_serial):
         super(PulseGeneratorSerialWorker, self).__init__()
