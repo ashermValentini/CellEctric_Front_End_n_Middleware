@@ -64,11 +64,6 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
-        #self.popup = PopupWindow()
-        #self.endpopup = EndPopupWindow()
-
-        
         #endregion
         #==============================================================================================================================================================================================================================
         # Initialize application flags 
@@ -112,7 +107,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.experiment_choice_is_locked_in = False
         #endregion
         #==============================================================================================================================================================================================================================
-        # Initialize scaling variables
+        # Initialize global variables
         #==============================================================================================================================================================================================================================
         #region:
         self.xdata = np.linspace(0, 499, 500)   # Initialize the x data array for update_temp_plot() to update the FigureCanvas widget in the Plot Frame
@@ -127,6 +122,8 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.max_temp = float('-inf')           # Initialize the max temp data for max temp QLabel in the Temperature Frame
         self.min_temp = float('inf')            # Initialize the min temp data for min temp QLabel in the Temperature Frame
+
+        self.current_temp = 0
         
         #endregion
         #==============================================================================================================================================================================================================================
@@ -165,6 +162,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.tempThread = QThread()
             self.tempWorker.moveToThread(self.tempThread) 
 
+            self.tempWorker.update_temp.connect(self.update_temp_data)
             self.tempWorker.update_temp.connect(self.update_temp_plot)
             self.tempWorker.update_temp.connect(self.update_temperature_labels)
 
@@ -195,7 +193,7 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         if self.flag_connections[1]:
 
-            send_PG_pulsetimes(self.device_serials[1])
+            #send_PG_pulsetimes(self.device_serials[1], 0, 200, 75, 75, verbose = 0)
 
             self.pgWorker = PulseGeneratorSerialWorker(pulse_generator_serial)
             self.pgThread = QThread()
@@ -381,6 +379,9 @@ class Functionality(QtWidgets.QMainWindow):
         #endregion
 
 # region: TEMPERATURE SENSOR 
+    def update_temp_data(self, temp_data): 
+        self.current_temp = temp_data
+
     def start_stop_temp_plotting(self):
         if not self.temp_is_plotting and not self.voltage_is_plotting and not self.current_is_plotting:  
             self.temp_is_plotting = True
@@ -571,29 +572,34 @@ class Functionality(QtWidgets.QMainWindow):
 
     def process_pg_data(self, voltage_y):
 
+        self.voltage_y = voltage_y
+
+        self.voltage_y[:, 0] -= self.zerodata[0]           # voltage data
+        self.voltage_y[:, 1] -= self.zerodata[1]           # current data  
+
+        self.voltage_y[:, 0] *= 0.15
+        self.voltage_y[:, 1] *= 0.15
+
+        # before we chop up the data to display on the UI we will save the data to csv as the Octave script potentially requires the full data set to be analyzed
         current_time = time.time()
         if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
-            self.save_data_to_csv(voltage_y)
+            self.save_data_to_csv(self.voltage_y, self.current_temp)
             self.last_save_time = current_time
-       
-        self.voltage_y = voltage_y
-        # Process the data:
+
+        # Process the data so that it can be displayed on UI:
         new_length = round(self.voltage_y.shape[0]/2) #cut the last half of the first columns rows off the data set (since the data is useless)
         self.voltage_y = self.voltage_y[:new_length]
-        
-        self.voltage_y[:, 0] -= self.zerodata[0]            # voltage data
-        self.voltage_y[:, 1] -= self.zerodata[1]           # current data  
         
         maxval_pulse_new = self.voltage_y.max(axis=0)[0]         # voltage max data    
 
         scale_factor_x = 200 / 1000  # us per unit
         self.voltage_xdata = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0]) * scale_factor_x
 
-        if self.signal_is_enabled:
-            self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
-            self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
-            scale_factor = self.correct_max_voltage/maxval_pulse_new
-            self.voltage_y[:,0] *= scale_factor
+        #if self.signal_is_enabled:
+            #self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
+            #self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
+            #scale_factor = self.correct_max_voltage/maxval_pulse_new
+            #self.voltage_y[:,0] *= scale_factor
         
         if self.voltage_is_plotting: 
             self.update_voltage_plot()
@@ -672,13 +678,15 @@ class Functionality(QtWidgets.QMainWindow):
             print(pos_setpoint)
             print(neg_setpoint)
             send_PSU_enable(self.device_serials[0], 1)
-            time.sleep(.25)
+            time.sleep(.1)
 
             send_PSU_setpoints(self.device_serials[0], 40, 40, 0)
-            time.sleep(.25)
+            time.sleep(.1)
 
             send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
-            time.sleep(.25)
+            time.sleep(.1)
+
+            send_PG_pulsetimes(self.device_serials[1], 0, 200, 75, 75, verbose = 0)
 
             self.pgWorker.start_pg()
 
@@ -1001,7 +1009,6 @@ class Functionality(QtWidgets.QMainWindow):
             self.live_tracking_sucrose_flowrate = False
             self.reset_button_style(self.popup.button_LDA_Sucrose)
 
-
     def go_live(self):
         border_style = "#centralwidget { border: 7px solid green; }"
         self.live_data_is_logging = True
@@ -1014,20 +1021,29 @@ class Functionality(QtWidgets.QMainWindow):
         self.live_data_is_logging = False
         self.ui.centralwidget.setStyleSheet(border_style)
         self.starting_a_live_data_session = False
+        self.starting_a_live_data_session = False
+        self.live_data_is_logging = False
+        self.live_tracking_temperature = False
+        self.live_tracking_ethanol_flowrate = False 
+        self.live_tracking_sucrose_flowrate = False
+        self.live_tracking_pressure = False 
+        self.live_tracking_current = False 
+        self.live_tracking_voltage = False
         self.pulse_number = 1
         print("Ending live data saving...")
 
-    def save_data_to_csv(self, y_data):
+    def save_data_to_csv(self, y_data, temp_data):
         # Construct the file name based on the current date and time
         current_time = datetime.datetime.now()
         filename = current_time.strftime("%Y%m%d_%H%M%S") + "_experiment_data.csv"
         
         # Create a DataFrame for the header information
         header_info = [
-                current_time.strftime("%Y-%m-%d %H:%M:%S"),
+                f"Date: {current_time.strftime("%Y-%m-%d %H:%M:%S")}",
                 f"#Pulse Number: {self.pulse_number}",
                 f"#Voltage Pos: {self.ui.line_edit_max_signal.text()}",
                 f"#Voltage Neg: {self.ui.line_edit_min_signal.text()}",
+                f"Temperature: {temp_data}",
                 "#Pulse Length: 75,00",
                 "#Transistor on time: 75",
                 "#Rate: 200"
