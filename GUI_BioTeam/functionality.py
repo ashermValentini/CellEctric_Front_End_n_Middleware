@@ -95,13 +95,19 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.starting_a_live_data_session = False
         self.live_data_is_logging = False
+        self.live_tracking_temperature = False
+        self.live_tracking_ethanol_flowrate = False 
+        self.live_tracking_sucrose_flowrate = False
+        self.live_tracking_pressure = False 
+        self.live_tracking_current = False 
+        self.live_tracking_voltage = False
 
         self.signal_is_enabled=False 
 
         self.experiment_choice_is_locked_in = False
         #endregion
         #==============================================================================================================================================================================================================================
-        # Initialize scaling variables
+        # Initialize global variables
         #==============================================================================================================================================================================================================================
         #region:
         self.xdata = np.linspace(0, 499, 500)   # Initialize the x data array for update_temp_plot() to update the FigureCanvas widget in the Plot Frame
@@ -116,6 +122,8 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.max_temp = float('-inf')           # Initialize the max temp data for max temp QLabel in the Temperature Frame
         self.min_temp = float('inf')            # Initialize the min temp data for min temp QLabel in the Temperature Frame
+
+        self.current_temp = 0
         
         #endregion
         #==============================================================================================================================================================================================================================
@@ -154,6 +162,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.tempThread = QThread()
             self.tempWorker.moveToThread(self.tempThread) 
 
+            self.tempWorker.update_temp.connect(self.update_temp_data)
             self.tempWorker.update_temp.connect(self.update_temp_plot)
             self.tempWorker.update_temp.connect(self.update_temperature_labels)
 
@@ -184,7 +193,7 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         if self.flag_connections[1]:
 
-            send_PG_pulsetimes(self.device_serials[1])
+            #send_PG_pulsetimes(self.device_serials[1], 0, 200, 75, 75, verbose = 0)
 
             self.pgWorker = PulseGeneratorSerialWorker(pulse_generator_serial)
             self.pgThread = QThread()
@@ -370,6 +379,9 @@ class Functionality(QtWidgets.QMainWindow):
         #endregion
 
 # region: TEMPERATURE SENSOR 
+    def update_temp_data(self, temp_data): 
+        self.current_temp = temp_data
+
     def start_stop_temp_plotting(self):
         if not self.temp_is_plotting and not self.voltage_is_plotting and not self.current_is_plotting:  
             self.temp_is_plotting = True
@@ -560,29 +572,34 @@ class Functionality(QtWidgets.QMainWindow):
 
     def process_pg_data(self, voltage_y):
 
+        self.voltage_y = voltage_y
+
+        self.voltage_y[:, 0] -= self.zerodata[0]           # voltage data
+        self.voltage_y[:, 1] -= self.zerodata[1]           # current data  
+
+        self.voltage_y[:, 0] *= 0.15
+        self.voltage_y[:, 1] *= 0.15
+
+        # before we chop up the data to display on the UI we will save the data to csv as the Octave script potentially requires the full data set to be analyzed
         current_time = time.time()
         if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
-            self.save_data_to_csv(voltage_y)
+            self.save_data_to_csv(self.voltage_y, self.current_temp)
             self.last_save_time = current_time
-       
-        self.voltage_y = voltage_y
-        # Process the data:
+
+        # Process the data so that it can be displayed on UI:
         new_length = round(self.voltage_y.shape[0]/2) #cut the last half of the first columns rows off the data set (since the data is useless)
         self.voltage_y = self.voltage_y[:new_length]
-        
-        self.voltage_y[:, 0] -= self.zerodata[0]            # voltage data
-        self.voltage_y[:, 1] -= self.zerodata[1]           # current data  
         
         maxval_pulse_new = self.voltage_y.max(axis=0)[0]         # voltage max data    
 
         scale_factor_x = 200 / 1000  # us per unit
         self.voltage_xdata = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0]) * scale_factor_x
 
-        if self.signal_is_enabled:
-            self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
-            self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
-            scale_factor = self.correct_max_voltage/maxval_pulse_new
-            self.voltage_y[:,0] *= scale_factor
+        #if self.signal_is_enabled:
+            #self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
+            #self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
+            #scale_factor = self.correct_max_voltage/maxval_pulse_new
+            #self.voltage_y[:,0] *= scale_factor
         
         if self.voltage_is_plotting: 
             self.update_voltage_plot()
@@ -617,8 +634,8 @@ class Functionality(QtWidgets.QMainWindow):
             pos_setpoint_text = self.ui.line_edit_max_signal.text().strip()
             neg_setpoint_text = self.ui.line_edit_min_signal.text().strip()
 
-            self.ui.line_edit_max_signal.setEnabled(False)
-            self.ui.line_edit_min_signal.setEnabled(False)
+            #self.ui.line_edit_max_signal.setEnabled(False)
+            #self.ui.line_edit_min_signal.setEnabled(False)
 
             # Validate positive setpoint
             if not pos_setpoint_text:
@@ -658,14 +675,18 @@ class Functionality(QtWidgets.QMainWindow):
 
             neg_setpoint = abs(neg_setpoint)
             
+            print(pos_setpoint)
+            print(neg_setpoint)
             send_PSU_enable(self.device_serials[0], 1)
-            time.sleep(.25)
+            time.sleep(.1)
 
             send_PSU_setpoints(self.device_serials[0], 40, 40, 0)
-            time.sleep(.25)
+            time.sleep(.1)
 
-            send_PSU_setpoints(self.device_serials[0], 75, 75, 0)
-            time.sleep(.25)
+            send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
+            time.sleep(.1)
+
+            send_PG_pulsetimes(self.device_serials[1], 0, 200, 75, 75, verbose = 0)
 
             self.pgWorker.start_pg()
 
@@ -674,8 +695,8 @@ class Functionality(QtWidgets.QMainWindow):
             self.reset_button_style(self.ui.psu_button)
             self.signal_is_enabled = False         
             
-            self.ui.line_edit_max_signal.setEnabled(True)
-            self.ui.line_edit_min_signal.setEnabled(True)
+            #self.ui.line_edit_max_signal.setEnabled(True)
+            #self.ui.line_edit_min_signal.setEnabled(True)
 
             send_PSU_disable(self.device_serials[0], 1)
             self.pgWorker.stop_pg()
@@ -806,7 +827,7 @@ class Functionality(QtWidgets.QMainWindow):
 
     def step_two(self):
         if self.flag_connections[2]: 
-            writeMotorDistance(self.device_serials[2], 2, 31, 2)  # connect fluidics to cartridge (move motor two down a distance 27.5mm)
+            writeMotorDistance(self.device_serials[2], 2, 31, 2)    # connect fluidics to cartridge (move motor two down a distance 31mm)
             writeLedStatus(self.device_serials[2], 0, 1, 0)         # syringe region LED on
 
         frame_name = "frame_DEMO_close_fluidic_circuit"
@@ -916,31 +937,113 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion
 
 # region : LIVE DATA AQUISITION 
+    def toggle_LDA_popup(self):
+        if not self.starting_a_live_data_session:
+            self.showLDAPopup()
+        else:
+            self.showEndLDAPopup()
+
+    def showLDAPopup(self):
+        self.popup = PopupWindow()
+        self.popup.button_LDA_go_live.clicked.connect(self.go_live)
+
+        self.popup.button_LDA_temperature.clicked.connect(self.toggle_LDA_temperature_button)
+        self.popup.button_LDA_pressure.clicked.connect(self.toggle_LDA_pressure_button)
+        self.popup.button_LDA_Sucrose.clicked.connect(self.toggle_LDA_sucrose_button)
+        self.popup.button_LDA_Ethanol.clicked.connect(self.toggle_LDA_ethanol_button)
+        self.popup.button_LDA_current.clicked.connect(self.toggle_LDA_current_button)
+        self.popup.button_LDA_voltage.clicked.connect(self.toggle_LDA_voltage_button)
+        
+        self.popup.exec_()
+
+    def showEndLDAPopup(self):
+        self.endpopup = EndPopupWindow()
+        self.endpopup.button_end_LDA.clicked.connect(self.end_go_live)
+        self.endpopup.exec_()
+
+    def toggle_LDA_temperature_button(self): 
+        if not self.live_tracking_temperature:
+            self.live_tracking_temperature = True
+            self.set_button_style(self.popup.button_LDA_temperature)
+        else: 
+            self.live_tracking_temperature = False
+            self.reset_button_style(self.popup.button_LDA_temperature)
+
+    def toggle_LDA_current_button(self): 
+        if not self.live_tracking_temperature:
+            self.live_tracking_current = True
+            self.set_button_style(self.popup.button_LDA_current)
+        else: 
+            self.live_tracking_current = False
+            self.reset_button_style(self.popup.button_LDA_current)
+    
+    def toggle_LDA_voltage_button(self): 
+        if not self.live_tracking_voltage: 
+            self.live_tracking_voltage = True 
+            self.set_button_style(self.popup.button_LDA_voltage)
+        else: 
+            self.live_tracking_voltage = False 
+            self.reset_button_style(self.popup.button_LDA_voltage)
+    
+    def toggle_LDA_pressure_button(self): 
+        if not self.live_tracking_pressure: 
+            self.live_tracking_pressure = True 
+            self.set_button_style(self.popup.button_LDA_pressure)
+        else: 
+            self.live_tracking_pressure = False 
+            self.reset_button_style(self.popup.button_LDA_pressure)
+
+    def toggle_LDA_ethanol_button(self): 
+        if not self.live_tracking_ethanol_flowrate: 
+            self.live_tracking_ethanol_flowrate = True 
+            self.set_button_style(self.popup.button_LDA_Ethanol)
+        else: 
+            self.live_tracking_ethanol_flowrate = False
+            self.reset_button_style(self.popup.button_LDA_Ethanol)
+
+    def toggle_LDA_sucrose_button(self): 
+        if not self.live_tracking_sucrose_flowrate: 
+            self.live_tracking_sucrose_flowrate = True 
+            self.set_button_style(self.popup.button_LDA_Sucrose)
+        else: 
+            self.live_tracking_sucrose_flowrate = False
+            self.reset_button_style(self.popup.button_LDA_Sucrose)
 
     def go_live(self):
         border_style = "#centralwidget { border: 7px solid green; }"
         self.live_data_is_logging = True
         self.ui.centralwidget.setStyleSheet(border_style)
+        self.starting_a_live_data_session = True
         print("Going live and starting data saving...")
     
     def end_go_live(self):
         border_style = "#centralwidget { border: 0px solid green; }"
         self.live_data_is_logging = False
         self.ui.centralwidget.setStyleSheet(border_style)
+        self.starting_a_live_data_session = False
+        self.starting_a_live_data_session = False
+        self.live_data_is_logging = False
+        self.live_tracking_temperature = False
+        self.live_tracking_ethanol_flowrate = False 
+        self.live_tracking_sucrose_flowrate = False
+        self.live_tracking_pressure = False 
+        self.live_tracking_current = False 
+        self.live_tracking_voltage = False
         self.pulse_number = 1
         print("Ending live data saving...")
 
-    def save_data_to_csv(self, y_data):
+    def save_data_to_csv(self, y_data, temp_data):
         # Construct the file name based on the current date and time
         current_time = datetime.datetime.now()
         filename = current_time.strftime("%Y%m%d_%H%M%S") + "_experiment_data.csv"
         
         # Create a DataFrame for the header information
         header_info = [
-                current_time.strftime("%Y-%m-%d %H:%M:%S"),
+                f"Date: {current_time.strftime("%Y-%m-%d %H:%M:%S")}",
                 f"#Pulse Number: {self.pulse_number}",
                 f"#Voltage Pos: {self.ui.line_edit_max_signal.text()}",
                 f"#Voltage Neg: {self.ui.line_edit_min_signal.text()}",
+                f"Temperature: {temp_data}",
                 "#Pulse Length: 75,00",
                 "#Transistor on time: 75",
                 "#Rate: 200"
@@ -1045,24 +1148,6 @@ class Functionality(QtWidgets.QMainWindow):
     def reset_all_DEMO_progress_bars(self):
         for progress_bar in self.DEMO_progress_bar_dict.values():
             progress_bar.setValue(0)   
-
-    def toggle_LDA_popup(self):
-        if not self.starting_a_live_data_session:
-            self.showLDAPopup()
-            self.starting_a_live_data_session = True
-        else:
-            self.showEndLDAPopup()
-            self.starting_a_live_data_session = False
-
-    def showLDAPopup(self):
-        self.popup = PopupWindow()
-        self.popup.button_LDA_go_live.clicked.connect(self.go_live)
-        self.popup.exec_()
-
-    def showEndLDAPopup(self):
-        self.endpopup = EndPopupWindow()
-        self.endpopup.button_end_LDA.clicked.connect(self.end_go_live)
-        self.endpopup.exec_()
 
     def lock_unlock_experiment_choice(self): 
         if not self.experiment_choice_is_locked_in: 

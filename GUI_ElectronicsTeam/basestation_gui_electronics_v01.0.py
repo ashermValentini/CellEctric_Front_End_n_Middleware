@@ -5,6 +5,8 @@
 # ██ ██  ██  ██ ██      ██    ██ ██   ██    ██         ██
 # ██ ██      ██ ██       ██████  ██   ██    ██    ███████
 # =======================================================
+import time
+import datetime
 import sys                                                                              # IMPORT SYSTEM: TO GET THE ABSOLUTE PATH
 import os                                                                               # IMPORT OPERATING SYSTEM: TO GET THE ABSOLUTE PATH
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))            # GET THE ABSOLUT PATH FOR THE WHOLE PROJECT: TO FIND THE "communication_functions.py" FILE
@@ -738,8 +740,8 @@ class MainWindow(QMainWindow):
 
         # PROCESS PULSE
         # CUT THE LAST PART
-        new_length = round(self.voltage_y.shape[0]/2)
-        self.voltage_y = self.voltage_y[:new_length]
+        #new_length = round(self.voltage_y.shape[0]/2)
+        #self.voltage_y = self.voltage_y[:new_length]
         # REMOVE OFFSET
         self.voltage_y[:, 0] -= self.zerodata[0]    # ZERO THE VOLTAGE DATA
         self.voltage_y[:, 1] -= self.zerodata[1]    # ZERO THE CURRENT DATA
@@ -760,10 +762,14 @@ class MainWindow(QMainWindow):
         
         self.ui.value_voltage_max.setText("{:.2f}".format(maxval_pulse_new))    # SET GUI TEXT
         self.ui.value_voltage_min.setText("{:.2f}".format(minval_pulse_new))    # SET GUI TEXT
+        
+        self.save_data_to_csv(self.voltage_y)
 
 
         
         self.voltage_x = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0])
+
+
     
         # UPDATE PLOT
         # CLEAR PLOTS
@@ -1477,6 +1483,32 @@ class MainWindow(QMainWindow):
         if event.key() == Qt.Key_S and not event.isAutoRepeat():  # AT "DOWN ARROW" KEY-EVENT
             self.movement_stopjogging(1)
 
+    def save_data_to_csv(self, y_data):
+        # Construct the file name based on the current date and time
+        current_time = datetime.datetime.now()
+        filename = current_time.strftime("%Y%m%d_%H%M%S") + "_experiment_data.csv"
+        
+        # Create a DataFrame for the header information
+        header_info = [
+                "#Pulse Length: 75,00",
+                "#Transistor on time: 75",
+                "#Rate: 200"
+            ]
+        
+
+        header_df = pd.DataFrame({'Column1': header_info,'Column2': ['']*len(header_info)})
+
+        # Create a DataFrame for the data
+        voltage_data_df = pd.DataFrame({'Column1': y_data[:, 0]})
+        current_data_df = pd.DataFrame({'Column2': y_data[:, 1] })
+
+        combined_pg_data_df = pd.concat([voltage_data_df, current_data_df], axis=1)
+        combined_output_df = pd.concat([header_df, combined_pg_data_df], ignore_index=True)
+
+
+        # Save to CSV
+        combined_output_df.to_csv(filename, index=False, header=False)
+        print(f"Saving experiment data to {filename}...")
 
 
 
