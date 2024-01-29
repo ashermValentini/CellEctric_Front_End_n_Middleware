@@ -763,7 +763,7 @@ class MainWindow(QMainWindow):
         self.ui.value_voltage_max.setText("{:.2f}".format(maxval_pulse_new))    # SET GUI TEXT
         self.ui.value_voltage_min.setText("{:.2f}".format(minval_pulse_new))    # SET GUI TEXT
         
-        self.save_data_to_csv(self.voltage_y)
+        #self.save_data_to_csv(self.voltage_y) added the function that will save your data to csv to check that we get the same outputted data
 
 
         

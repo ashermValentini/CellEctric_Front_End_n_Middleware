@@ -193,7 +193,7 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         if self.flag_connections[1]:
 
-            #send_PG_pulsetimes(self.device_serials[1], 0, 200, 75, 75, verbose = 0)
+            send_PG_pulsetimes(self.device_serials[1], 0, 200, 75, 75, verbose = 0)
 
             self.pgWorker = PulseGeneratorSerialWorker(pulse_generator_serial)
             self.pgThread = QThread()
@@ -587,8 +587,8 @@ class Functionality(QtWidgets.QMainWindow):
             self.last_save_time = current_time
 
         # Process the data so that it can be displayed on UI:
-        new_length = round(self.voltage_y.shape[0]/2) #cut the last half of the first columns rows off the data set (since the data is useless)
-        self.voltage_y = self.voltage_y[:new_length]
+        #new_length = round(self.voltage_y.shape[0]/2) #cut the last half of the first columns rows off the data set (since the data is useless)
+        #self.voltage_y = self.voltage_y[:new_length]
         
         maxval_pulse_new = self.voltage_y.max(axis=0)[0]         # voltage max data    
 
@@ -684,9 +684,8 @@ class Functionality(QtWidgets.QMainWindow):
             time.sleep(.1)
 
             send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
-            time.sleep(.1)
 
-            send_PG_pulsetimes(self.device_serials[1], 0, 200, 75, 75, verbose = 0)
+
 
             self.pgWorker.start_pg()
 
@@ -1036,6 +1035,10 @@ class Functionality(QtWidgets.QMainWindow):
         # Construct the file name based on the current date and time
         current_time = datetime.datetime.now()
         filename = current_time.strftime("%Y%m%d_%H%M%S") + "_experiment_data.csv"
+
+        # Define the directory where the file will be saved
+        save_directory = r"C:\Users\BSG2_UI\OneDrive\Desktop\Experiments"  # Use raw string for Windows paths
+        full_path = os.path.join(save_directory, filename)
         
         # Create a DataFrame for the header information
         header_info = [
@@ -1064,7 +1067,7 @@ class Functionality(QtWidgets.QMainWindow):
 
 
         # Save to CSV
-        combined_output_df.to_csv(filename, index=False, header=False)
+        combined_output_df.to_csv(full_path, index=False, header=False)
         print(f"Saving experiment data to {filename}...")
 
 #endregion 
