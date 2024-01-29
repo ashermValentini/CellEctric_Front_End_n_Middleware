@@ -849,63 +849,45 @@ def read_PG_data(ser, verbose=0):
     # CREATE THE ARRAY (UINT8/16/32 DEPENDING ON THE SIZE)
     pgData = np.array(struct.unpack(data_fmt, serData[4:]), dtype=np.uint32 if datatype == PG_TYPE_DATASTART else np.uint16)
 
-    # RESHAPE IT TO [[VOLTAGE, CURRENT],[VOLTAGE, CURRENT]...] (2 COLUMNS, x ROWS)
-    if datatype == PG_TYPE_PULSEDATA:
-        pgData = pgData.reshape(-1, 2)
-
     # DELETE ZEROS, IF DATASTRUCTURE IS PLANNED TO BE EMPTY
-    elif datatype in (PG_TYPE_DATASTART, PG_TYPE_ZERODATA):
-        pgData[pgData != 0]
+    if datatype in (PG_TYPE_DATASTART, PG_TYPE_ZERODATA):
+        pgData = pgData[pgData != 0]
 
     return pgData, datatype, crcStatus
 
-# READS A WHOLE PULSE OF DATA, RIGHT AFTER "START"-DATA IS RECEIVED
 def read_next_PG_pulse(ser, timeout=0, verbose=0):
     '''
-    Reads serial data from PG (from specified serial port) and restructures the message according to the datasheet.
-    NOTE: This function waits for the received type to be "pulse-data-start" (see datasheet)
-
-        Parameters:
-                ser:      			Reference to serial connection to the device (pyserial) 
-                
-                timeout:            NOTE: NOT USED YET
-
-                verbose (int):      0.. printing OFF, 1.. basic printing, 2.. print ALL
-                                    DEFAULT: 0
-                
-        Returns:
-                pulseData (numpy array):    2D Numpy Array of the Data [n,2] --> [voltage, current] (structure: see datasheet)
-
-                pulseDataLength (int):      length of the data for a single pulse
+    ... [existing documentation] ...
     '''
-    # READ DATA AND WAIT UNTIL "PULSE DATA START"-SIGNAL IS RECEIVED
     dtype = 0
-
     ser.flushInput()
 
+    # Accumulate data here
+    all_data = np.empty(0)
+
     while dtype != PG_TYPE_DATASTART:
-        PG_data, dtype, _= read_PG_data(ser)
+        PG_data, dtype, _ = read_PG_data(ser)
 
     if verbose: print("PULSE START RECEIVED")
 
-    # SAVE RECEIVED PULSE DATA LENGTH
-    pulseDataLength = PG_data[0]
-
-    # CREATE EMPTY ARRAY
-    pulseData = np.empty(shape=[0,2])
-
     # READ ALL PULSE-DATA-ARRAYS UNTIL "DATA END" IS RECEIVED
-    start_time = time.time()
     while dtype != PG_TYPE_DATAEND:
-        PG_data, dtype, _= read_PG_data(ser)
+        PG_data, dtype, _ = read_PG_data(ser)
 
-        # ADD NEW DATA TO THE ARRAY
         if dtype == PG_TYPE_PULSEDATA:
-            pulseData = np.concatenate((pulseData, PG_data), axis=0)
+            all_data = np.concatenate((all_data, PG_data))
 
     if verbose: print("PULSE END RECEIVED")
 
-    return pulseData, pulseDataLength
+    # Split the data into voltage and current
+    half_len = len(all_data) // 2
+    voltageData = all_data[:half_len]
+    currentData = all_data[half_len:]
+
+    # Combine voltage and current data into two columns
+    pulseData = np.column_stack((voltageData, currentData))
+
+    return pulseData, half_len
 
 
 #endregion

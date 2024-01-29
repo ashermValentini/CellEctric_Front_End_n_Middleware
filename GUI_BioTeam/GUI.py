@@ -12,3 +12,4 @@ window = Functionality()
 window.show()
 sys.exit(app.exec_())
 
+ 
