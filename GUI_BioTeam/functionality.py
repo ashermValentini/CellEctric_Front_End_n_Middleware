@@ -35,14 +35,14 @@ import numpy as np
 # DIRECTIONS FOR MOTORS 
 #========================
 
-DIR_M1_UP = -1
-DIR_M1_DOWN = 1
-DIR_M2_UP = 1
-DIR_M2_DOWN = -1
-DIR_M3_RIGHT = -1
-DIR_M3_LEFT = 1
-DIR_M4_UP = 1
-DIR_M4_DOWN = -1
+DIR_M1_UP = 1
+DIR_M1_DOWN = -1
+DIR_M2_UP = -1
+DIR_M2_DOWN = 1
+DIR_M3_RIGHT = 1
+DIR_M3_LEFT = -1
+DIR_M4_UP = -1
+DIR_M4_DOWN = 1
 
 #==========================
 # IDS FOR THE BSG2 DEVICES
@@ -380,7 +380,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.pulse_number = 1 
         #endregion
 
-# region: TEMPERATURE SENSOR 
+# region: TEMPERATURE  
     def update_temp_data(self, temp_data): 
         self.current_temp = temp_data
 
@@ -424,7 +424,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.min_temp_data.setText(f"{self.min_temp}°")
 #endregion
 
-# region : 3PAC
+# region : PUMPS
     def start_stop_sucrose_pump(self):
         if not self.ethanol_is_pumping:
             if not self.sucrose_is_pumping:   
@@ -436,7 +436,7 @@ class Functionality(QtWidgets.QMainWindow):
                 except ValueError:
                     print("Invalid input in line_edit_sucrose")
                     return 
-                message = f'wFS-{FR:.2f}-{V:.2f}\n'
+                message = f'wFS-{FR:.2f}-{V:.1f}\n'
                 print(message)  
                 self.esp32Worker.write_serial_message(message)
 
@@ -475,7 +475,7 @@ class Functionality(QtWidgets.QMainWindow):
                 except ValueError:
                     print("Invalid input in line_edit_sucrose")
                     return 
-                message = f'wFE-{FR:.2f}-{V:.2f}\n'  
+                message = f'wFE-{FR:.2f}-{V:.1f}\n'  
                 print(message)
                 self.esp32Worker.write_serial_message(message)
 
@@ -550,7 +550,7 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion
 
-# region : PULSE GEN AND POWER SUP 
+# region : PULSE GENENRATOR AND POWER SUP 
 
     def handleZeroDataUpdate(self, zerodata):
         self.zerodata = zerodata
@@ -712,7 +712,7 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion
 
-# region : BLOOD PUMP
+# region : BLOOD PUMP (MOTOR)
 
     def toggle_blood_pump(self):
         if not self.blood_is_pumping:
@@ -723,28 +723,39 @@ class Functionality(QtWidgets.QMainWindow):
     def start_blood_pump(self):  
         self.blood_is_pumping = True  
         self.set_button_style(self.ui.button_blood_play_pause)
-        blood_volume = float(self.ui.line_edit_blood_2.text()) 
+        
+        blood_volume = float(self.ui.line_edit_blood_2.text())
         blood_speed = float(self.ui.line_edit_blood.text())
-        print(f"Calculating pump time with volume = {blood_volume}ml and speed = {blood_speed}ml/min")
-        blood_pump_time = int((blood_volume / blood_speed) * 60000)  # Ensure this is the only place blood_pump_time is calculated
-        print(f"Calculated pump time: {blood_pump_time} ms")
+       
+        volume_str = f"0{blood_volume:.1f}" if blood_volume < 10 else f"{blood_volume:.1f}"
+        speed_str = f"{blood_speed:.3f}"
+
+        if speed_str[0] == "0":
+            speed_str = speed_str[1:]
+
+        message = f'wMB-{volume_str}-{speed_str}\n'
+        #print(message)   
+        #self.esp32Worker.write_serial_message(message)
+
         writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
         
-        if self.blood_pump_timer is None:
-            self.blood_pump_timer = QTimer()
-            self.blood_pump_timer.timeout.connect(self.stop_blood_pump)
-
-        self.blood_pump_timer.start(blood_pump_time)  # Start the timer
+        #if self.blood_pump_timer is None:
+            #self.blood_pump_timer = QTimer()
+            #self.blood_pump_timer.timeout.connect(self.stop_blood_pump)
+        #self.blood_pump_timer.start(blood_pump_time)  # Start the timer
             
     def stop_blood_pump(self):
-        
         self.reset_button_style(self.ui.button_blood_play_pause)
-
-        if self.blood_pump_timer is not None:
-            self.blood_pump_timer.stop()  # Stop the timer
-
+        #if self.blood_pump_timer is not None:
+            #self.blood_pump_timer.stop()  # Stop the timer
+        blood_volume = float(0) 
+        blood_speed = float(0)
+        volume_str = f"0{blood_volume:02.1f}"  
+        speed_str = f"{blood_speed:.2f}"
+        message = f'wMB-{volume_str}-{speed_str}\n'
+        print(message)
+        self.esp32Worker.write_serial_message(message)
         self.blood_is_pumping = False
-        writeBloodSyringe(self.device_serials[2], 0, 0)
 
 #endregion
 
@@ -786,7 +797,7 @@ class Functionality(QtWidgets.QMainWindow):
         
 #endregion 
 
-# region : MOTOR MOVEMENTS
+# region : MOTOR MOVEMENTS (NOT INCLUDING BLOOD MOTOR)
     def movement_homing(self, motornumber=0):
         # motornumber = 0 --> ALL MOTORS
         if self.flag_connections[2]:
