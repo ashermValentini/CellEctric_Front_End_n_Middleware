@@ -5,6 +5,8 @@ import serial
 import pandas as pd
 import datetime
 
+from scipy.signal import butter, filtfilt
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Communication_Functions.communication_functions import *
 
@@ -569,6 +571,16 @@ class Functionality(QtWidgets.QMainWindow):
         else: 
             self.current_is_plotting = False 
             self.reset_button_style(self.ui.current_button)
+    
+    def butter_lowpass_filter(self, data, cutoff, fs, order):
+        nyq = 0.5 * fs
+        normal_cutoff = cutoff / nyq
+        b, a = butter(order, normal_cutoff, btype='low', analog=False)
+        y = filtfilt(b, a, data)
+        return y
+    
+    def moving_average(self, data, window_size):
+        return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
 
     def process_pg_data(self, voltage_y):
 
@@ -585,28 +597,26 @@ class Functionality(QtWidgets.QMainWindow):
         if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
             self.save_data_to_csv(self.voltage_y, self.current_temp)
             self.last_save_time = current_time
-
-        # Process the data so that it can be displayed on UI:
-        #new_length = round(self.voltage_y.shape[0]/2) #cut the last half of the first columns rows off the data set (since the data is useless)
-        #self.voltage_y = self.voltage_y[:new_length]
         
-        maxval_pulse_new = self.voltage_y.max(axis=0)[0]         # voltage max data    
-
         scale_factor_x = 200 / 1000  # us per unit
         self.voltage_xdata = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0]) * scale_factor_x
-
-        #if self.signal_is_enabled:
-            #self.correct_max_voltage = float(self.ui.line_edit_max_signal.text())
-            #self.correct_min_voltage = float(self.ui.line_edit_min_signal.text())  
-            #scale_factor = self.correct_max_voltage/maxval_pulse_new
-            #self.voltage_y[:,0] *= scale_factor
         
+        # Sample rate and desired cutoff frequency of the filter
+        fs = 1000.0  # Sample rate, adjust to your data
+        cutoff = 40  # Desired cutoff frequency, adjust based on your data
+
+        #self.voltage_y[:, 1] = self.butter_lowpass_filter(self.voltage_y[:, 1], cutoff, fs, order=5)
+
+        # Apply the filter to the current data
+        window_size = 5  # Adjust this based on your data
+        #self.voltage_y[:, 1] = self.moving_average(self.voltage_y[:, 1], window_size)
+
         if self.voltage_is_plotting: 
             self.update_voltage_plot()
         
         if self.current_is_plotting: 
             self.update_current_plot() 
-    
+
     def update_current_plot(self): 
         self.ui.axes_voltage.clear()
         self.ui.axes_voltage.plot(self.voltage_xdata, self.voltage_y[:, -1], color='#FFFFFF')
