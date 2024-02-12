@@ -851,7 +851,7 @@ class Ui_MainWindow(object):
 
         self.progress_bar_sucrose = QRoundProgressBar()  # create progress bar
         self.progress_bar_sucrose.setFixedSize(175, 175)
-        self.progress_bar_sucrose.setRange(0, 10)
+        self.progress_bar_sucrose.setRange(0, 60)
         self.progress_bar_sucrose.setValue(0)
         self.progress_bar_sucrose.setBarColor('#0796FF')
         self.progress_bar_sucrose.setDecimals(2)
@@ -1112,7 +1112,7 @@ class Ui_MainWindow(object):
 
         self.progress_bar_ethanol = QRoundProgressBar()  # create progress bar
         self.progress_bar_ethanol.setFixedSize(175, 175)
-        self.progress_bar_ethanol.setRange(0, 10)
+        self.progress_bar_ethanol.setRange(0, 60)
         self.progress_bar_ethanol.setValue(0)
         self.progress_bar_ethanol.setDecimals(2)
         self.progress_bar_ethanol.setDonutThicknessRatio(0.85)
