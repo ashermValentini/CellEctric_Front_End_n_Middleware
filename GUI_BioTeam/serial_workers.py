@@ -53,7 +53,7 @@ class ESP32SerialWorker(QObject):
     update_flowrate = pyqtSignal(float)
     update_pressure = pyqtSignal(float)
     # Add more signals as needed for other data types
-    interval = 500  
+    interval = 250  
 
     def __init__(self, esp32_RTOS_serial):
         super(ESP32SerialWorker, self).__init__()
@@ -79,7 +79,7 @@ class ESP32SerialWorker(QObject):
 
     def parse_and_emit_data(self, line):
         # Print the raw line for debugging
-        #print(f"Raw line received: {line}")
+        print(f"Raw line received: {line}")
 
         try:
             # Find the second occurrence of 'P' and the first occurrence of 'F'
