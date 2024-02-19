@@ -436,7 +436,7 @@ class Functionality(QtWidgets.QMainWindow):
                 except ValueError:
                     print("Invalid input in line_edit_sucrose")
                     return 
-                message = f'wFS-300-{FR:.2f}-{V:.1f}\n'
+                message = f'wFS-150-{FR:.2f}-{V:.1f}\n'
                 print(message)  
                 self.esp32Worker.write_serial_message(message)
 
@@ -475,7 +475,7 @@ class Functionality(QtWidgets.QMainWindow):
                 except ValueError:
                     print("Invalid input in line_edit_sucrose")
                     return 
-                message = f'wFE-160-{FR:.2f}-{V:.1f}\n'  
+                message = f'wFE-100-{FR:.2f}-{V:.1f}\n'  
                 print(message)
                 self.esp32Worker.write_serial_message(message)
 
