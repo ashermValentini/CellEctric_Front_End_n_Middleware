@@ -184,7 +184,8 @@ class Functionality(QtWidgets.QMainWindow):
 
             self.esp32Worker.update_flowrate.connect(self.updateEthanolProgressBar) 
             self.esp32Worker.update_flowrate.connect(self.updateSucroseProgressBar) 
-            self.esp32Worker.update_pressure.connect(self.update_pressure_line_edit) 
+            self.esp32Worker.update_pressure.connect(self.update_pressure_line_edit)
+            self.esp32Worker.update_fluidic_play_pause_buttons.connect(self.update_play_pause_buttons) 
 
             self.esp32Thread.started.connect(self.esp32Worker.run)  
             self.esp32Thread.start() 
@@ -548,6 +549,11 @@ class Functionality(QtWidgets.QMainWindow):
         else:
             self.start_stop_increasing_system_pressure()
 
+    def update_play_pause_buttons(self): 
+        if self.ethanol_is_pumping: 
+            self.start_stop_ethanol_pump()
+        elif self.sucrose_is_pumping: 
+            self.start_stop_sucrose_pump()
 #endregion
 
 # region : PULSE GENENRATOR AND POWER SUP 
