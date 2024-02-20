@@ -52,7 +52,8 @@ class TempWorker(QObject):
 class ESP32SerialWorker(QObject):
     update_flowrate = pyqtSignal(float)
     update_pressure = pyqtSignal(float)
-    # Add more signals as needed for other data types
+    update_fluidic_play_pause_buttons = pyqtSignal(float)
+
     interval = 250  
 
     def __init__(self, esp32_RTOS_serial):
@@ -90,13 +91,18 @@ class ESP32SerialWorker(QObject):
             # Extract the pressure and flow rate values
             pressure_value = line[second_p_index + 1:second_p_index + 6]
             flow_rate_value = line[f_index + 1:f_index + 6]
+            target_volume_reached_char = line[f_index+6]
 
             pressure = float(pressure_value)
             flow_rate = float(flow_rate_value)
+            target_volume_reached_state = float(target_volume_reached_char)
             
             # Emit the signals with the parsed data
             self.update_pressure.emit(pressure)
             self.update_flowrate.emit(flow_rate)
+            if target_volume_reached_state: 
+                self.update_fluidic_play_pause_buttons.emit(target_volume_reached_state)
+                #print("cb")
         except ValueError as e:
             #print(f"Error parsing pressure or flow rate: {e}")
             pass
