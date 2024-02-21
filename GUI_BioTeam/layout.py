@@ -1512,23 +1512,27 @@ class Ui_MainWindow(object):
         title_label.setStyleSheet(title_style)
         title_label.setAlignment(QtCore.Qt.AlignCenter)
         pressure_layout.addWidget(title_label)
-        pressure_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        pressure_layout.addSpacing(15)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
 
         #region : pressure check button and data
         pressure_details_layout = QtWidgets.QHBoxLayout()
         pressure_layout.addLayout(pressure_details_layout)
 
         # Add pressure check button
-        self.pressure_check_button = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/undo.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.pressure_check_button.setIcon(icon)
-        self.pressure_check_button.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        self.pressure_check_button = QtWidgets.QPushButton("OPEN")  # create button
+        #icon = QtGui.QIcon()
+        #icon.addPixmap(QtGui.QPixmap(":/images/undo.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        #self.pressure_check_button.setIcon(icon)
+        #self.pressure_check_button.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
+        
         self.pressure_check_button.setStyleSheet("""
             QPushButton {
                 border: 2px solid white;
-                border-radius: 6px;
+                border-radius: 10px;
                 background-color: #222222;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: 25px;
             }
 
             QPushButton:hover {
