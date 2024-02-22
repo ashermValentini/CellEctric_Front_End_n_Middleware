@@ -85,8 +85,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.blood_is_jogging_up = False    
         self.blood_is_pumping = False
 
-        self.reading_pressure = False
-        self.resetting_pressure = False 
+        self.pressure_release_valve_open = True # the pressure release valve always at start up is open  
+        self.resetting_pressure = False # in this context resetting pressure means increasing the systems pressure 
 
         self.flask_vertical_gantry_is_home= False  
         self.all_motors_are_home= False 
@@ -239,7 +239,7 @@ class Functionality(QtWidgets.QMainWindow):
         #==============================================================================================================================================================================================================================
         #region:
         if self.flag_connections[2]: 
-            self.ui.pressure_check_button.pressed.connect(self.start_stop_displaying_system_pressure)
+            self.ui.pressure_check_button.pressed.connect(self.toggle_pressure_release_button)
             self.ui.pressure_reset_button.pressed.connect(self.start_stop_increasing_system_pressure)
         #endregion
         #===============================================================================================================================================================================================
@@ -503,22 +503,33 @@ class Functionality(QtWidgets.QMainWindow):
                 self.ui.progress_bar_ethanol.setValue(0)
         else: self.ui.progress_bar_ethanol.setValue(0)  
 
-    def start_stop_displaying_system_pressure(self):
-        if not self.reading_pressure:   
-            self.reading_pressure = True  
-            self.set_button_style(self.ui.pressure_check_button)
-        
+    def toggle_pressure_release_button(self): 
+        if self.pressure_release_valve_open: 
+            self.close_pressure_release_valve()
         else: 
-            self.reading_pressure=False
-            self.reset_button_style(self.ui.pressure_check_button)
-            self.ui.pressure_data.setText("-       Bar")
+            self.open_pressure_release_valve()
+
+    def open_pressure_release_valve(self):
+        self.pressure_release_valve_open = True  
+        self.reset_button_style(self.ui.pressure_check_button)
+        self.ui.pressure_check_button.setText("OPEN")
+        message = f'wRL\n' 
+        self.esp32Worker.write_serial_message(message)
+
+    def close_pressure_release_valve(self):
+        self.pressure_release_valve_open = False  
+        self.set_button_style(self.ui.pressure_check_button)
+        self.ui.pressure_check_button.setText("CLOSED")
+        message = f'wRH\n'
+        self.esp32Worker.write_serial_message(message)
 
     def update_pressure_line_edit(self, value):
-        if self.reading_pressure and value is not None:
+        if value is not None:
             self.ui.pressure_data.setText(f"{value} Bar")
     
     def start_stop_increasing_system_pressure(self):
         if not self.resetting_pressure:
+            self.close_pressure_release_valve()
             self.resetting_pressure = True 
             self.set_button_style(self.ui.pressure_reset_button)
             self.ui.pressure_progress_bar.setValue(0)
@@ -1137,7 +1148,7 @@ class Functionality(QtWidgets.QMainWindow):
                 background-color: #0796FF;
                 color: #FFFFFF;
                 font-family: Archivo;
-                font-size: 30px;
+                font-size: 25px;
             }
 
             QPushButton:hover {
@@ -1153,7 +1164,7 @@ class Functionality(QtWidgets.QMainWindow):
                 background-color: #222222;
                 color: #FFFFFF;
                 font-family: Archivo;
-                font-size: 30px;
+                font-size: 25px;
             }
 
             QPushButton:hover {
