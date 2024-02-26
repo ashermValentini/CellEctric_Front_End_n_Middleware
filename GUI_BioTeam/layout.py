@@ -1345,7 +1345,7 @@ class Ui_MainWindow(object):
         
         #endregion
         
-        # region : Frame for cartridge motors
+        # region : Frame for fluidic motors
         self.frame_cartridge = QtWidgets.QFrame()  # create cartridge frame
         self.frame_cartridge.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_cartridge.setObjectName("frame_d_cartridgeMotors")
@@ -1357,7 +1357,7 @@ class Ui_MainWindow(object):
         # region: label
         label_cartridge = QtWidgets.QLabel(self.frame_cartridge)
         label_cartridge.setStyleSheet(title_style)
-        label_cartridge.setText("CARTRIDGE")
+        label_cartridge.setText("FLUIDICS")
         label_cartridge.setAlignment(QtCore.Qt.AlignCenter)
         layout_cartridge.addWidget(label_cartridge)  # add label to layout
         layout_cartridge.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
