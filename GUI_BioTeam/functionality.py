@@ -61,7 +61,7 @@ class Functionality(QtWidgets.QMainWindow):
     def __init__(self):
         super(Functionality, self).__init__()
         #==============================================================================================================================================================================================================================
-        # Initialize the main UI window
+        # Initialize the applications widget structure creating an instance of the UI_MainWindow class that defined the application layout
         #==============================================================================================================================================================================================================================
         #region:
         self.ui = Ui_MainWindow()
@@ -109,7 +109,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.experiment_choice_is_locked_in = False
         #endregion
         #==============================================================================================================================================================================================================================
-        # Initialize global variables
+        # Initialize display variables for line edits and plotting canvas 
         #==============================================================================================================================================================================================================================
         #region:
         self.xdata = np.linspace(0, 499, 500)   # Initialize the x data array for update_temp_plot() to update the FigureCanvas widget in the Plot Frame
@@ -429,6 +429,7 @@ class Functionality(QtWidgets.QMainWindow):
     def start_stop_sucrose_pump(self):
         if not self.ethanol_is_pumping:
             if not self.sucrose_is_pumping:   
+                self.close_pressure_release_valve()
                 self.set_button_style(self.ui.button_sucrose)
                 self.sucrose_is_pumping = True 
                 try:
@@ -467,7 +468,8 @@ class Functionality(QtWidgets.QMainWindow):
          
     def start_stop_ethanol_pump(self):
         if not self.sucrose_is_pumping:
-            if not self.ethanol_is_pumping:   
+            if not self.ethanol_is_pumping: 
+                self.close_pressure_release_valve()
                 self.ethanol_is_pumping = True  
                 self.set_button_style(self.ui.button_ethanol)
                 try:
@@ -511,14 +513,14 @@ class Functionality(QtWidgets.QMainWindow):
 
     def open_pressure_release_valve(self):
         self.pressure_release_valve_open = True  
-        self.reset_button_style(self.ui.pressure_check_button)
+        self.reset_button_style(self.ui.pressure_check_button, 25)
         self.ui.pressure_check_button.setText("OPEN")
         message = f'wRL\n' 
         self.esp32Worker.write_serial_message(message)
 
     def close_pressure_release_valve(self):
         self.pressure_release_valve_open = False  
-        self.set_button_style(self.ui.pressure_check_button)
+        self.set_button_style(self.ui.pressure_check_button, 25)
         self.ui.pressure_check_button.setText("CLOSED")
         message = f'wRH\n'
         self.esp32Worker.write_serial_message(message)
@@ -1140,40 +1142,40 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.axes_voltage.set_ylabel(x_title, color='#FFFFFF',  fontsize=15)
         self.ui.axes_voltage.set_title(y_title, color='#FFFFFF',fontsize=20, fontweight='bold', y=1.05)
         
-    def set_button_style(self, button):
-        button.setStyleSheet("""
-            QPushButton {
+    def set_button_style(self, button, font_size=30):
+        button.setStyleSheet(f"""
+            QPushButton {{
                 border: 2px solid white;
                 border-radius: 10px;
                 background-color: #0796FF;
                 color: #FFFFFF;
                 font-family: Archivo;
-                font-size: 25px;
-            }
+                font-size: {font_size}px;
+            }}
 
-            QPushButton:hover {
+            QPushButton:hover {{
                 background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
+            }}
         """)
 
-    def reset_button_style(self, button):
-        button.setStyleSheet("""
-            QPushButton {
+    def reset_button_style(self, button, font_size=30):
+        button.setStyleSheet(f"""
+            QPushButton {{
                 border: 2px solid white;
                 border-radius: 10px;
                 background-color: #222222;
                 color: #FFFFFF;
                 font-family: Archivo;
-                font-size: 25px;
-            }
+                font-size: {font_size}px;
+            }}
 
-            QPushButton:hover {
+            QPushButton:hover {{
                 background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
+            }}
 
-            QPushButton:pressed {
+            QPushButton:pressed {{
                 background-color: #0796FF;
-            }
+            }}
         """)
     
     def update_experiment_step_progress_bar(self, counter, timer, progress_bar, frame_name):
