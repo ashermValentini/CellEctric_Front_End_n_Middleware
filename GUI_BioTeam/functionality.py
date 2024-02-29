@@ -608,18 +608,20 @@ class Functionality(QtWidgets.QMainWindow):
         self.voltage_y[:, 0] -= self.zerodata[0]           # voltage data
         self.voltage_y[:, 1] -= self.zerodata[1]           # current data  
 
-        self.voltage_y[:, 0] *= 0.15
-        self.voltage_y[:, 1] *= 0.15
+        self.voltage_y[:, 0] *= 0.15       # Nico original guess for voltage caling 
+        self.voltage_y[:, 1] *= 0.15       # Nico original guess for current scaling
+        #self.voltage_y[:, 0] *= 0.456812    # Hans value for voltage scaling as calculated by Nico  
+        #self.voltage_y[:, 1] *= 0.034  # Hans value fo current scaling as calculated by Nico
 
         # before we chop up the data to display on the UI we will save the data to csv as the Octave script potentially requires the full data set to be analyzed
         current_time = time.time()
         if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
             self.save_data_to_csv(self.voltage_y, self.current_temp)
             self.last_save_time = current_time
-        
-        scale_factor_x = 200 / 1000  # us per unit
-        self.voltage_xdata = np.linspace(0, self.voltage_y.shape[0]-1, self.voltage_y.shape[0]) * scale_factor_x
-        
+
+        length_of_data = self.voltage_y.shape[0] 
+        self.voltage_xdata = np.linspace(1, 300, length_of_data)
+
         # Sample rate and desired cutoff frequency of the filter
         fs = 1000.0  # Sample rate, adjust to your data
         cutoff = 40  # Desired cutoff frequency, adjust based on your data
@@ -627,7 +629,7 @@ class Functionality(QtWidgets.QMainWindow):
         #self.voltage_y[:, 1] = self.butter_lowpass_filter(self.voltage_y[:, 1], cutoff, fs, order=5)
 
         # Apply the filter to the current data
-        window_size = 5  # Adjust this based on your data
+        window_size = 10  # Adjust this based on your data
         #self.voltage_y[:, 1] = self.moving_average(self.voltage_y[:, 1], window_size)
 
         if self.voltage_is_plotting: 
@@ -712,11 +714,7 @@ class Functionality(QtWidgets.QMainWindow):
             send_PSU_setpoints(self.device_serials[0], 20, 20, 0)
             time.sleep(.1)
 
-            send_PSU_setpoints(self.device_serials[0], 40, 40, 0)
-            time.sleep(.1)
-
             send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
-
 
 
             self.pgWorker.start_pg()
