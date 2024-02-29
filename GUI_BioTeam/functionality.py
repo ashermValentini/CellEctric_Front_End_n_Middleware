@@ -262,16 +262,16 @@ class Functionality(QtWidgets.QMainWindow):
         #region:   
         if self.flag_connections[2]: 
             self.ui.button_flask_bottom.clicked.connect(lambda: self.movement_homing(4))                        # connect the signal to the slot 
-            self.ui.button_flask_up.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, False))     # connect the signal to the slot    
+            self.ui.button_flask_up.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, True))     # connect the signal to the slot    
             self.ui.button_flask_up.released.connect(lambda: self.movement_stopjogging(4))                      # connect the signal to the slot              
-            self.ui.button_flask_down.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, False)) # connect the signal to the slot
+            self.ui.button_flask_down.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, True)) # connect the signal to the slot
             self.ui.button_flask_down.released.connect(lambda: self.movement_stopjogging(4))                    # connect the signal to the slot   
 
         if self.flag_connections[2]:
             self.ui.button_flask_rightmost.clicked.connect(lambda: self.movement_homing(3))                           # connect the signal to the slot 
-            self.ui.button_flask_right.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, False))     # connect the signal to the slot    
+            self.ui.button_flask_right.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, True))     # connect the signal to the slot    
             self.ui.button_flask_right.released.connect(lambda: self.movement_stopjogging(3))                      # connect the signal to the slot              
-            self.ui.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, False)) # connect the signal to the slot
+            self.ui.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, True)) # connect the signal to the slot
             self.ui.button_flask_left.released.connect(lambda: self.movement_stopjogging(3))                    # connect the signal to the slot
         #endregion
         #================================================================================================================================================================================================================================================================
@@ -438,7 +438,7 @@ class Functionality(QtWidgets.QMainWindow):
                 except ValueError:
                     print("Invalid input in line_edit_sucrose")
                     return 
-                message = f'wFS-150-{FR:.2f}-{V:.1f}\n'
+                message = f'wFS-300-{FR:.2f}-{V:.1f}\n'
                 print(message)  
                 self.esp32Worker.write_serial_message(message)
 
@@ -478,7 +478,7 @@ class Functionality(QtWidgets.QMainWindow):
                 except ValueError:
                     print("Invalid input in line_edit_sucrose")
                     return 
-                message = f'wFE-100-{FR:.2f}-{V:.1f}\n'  
+                message = f'wFE-160-{FR:.2f}-{V:.1f}\n'  
                 print(message)
                 self.esp32Worker.write_serial_message(message)
 
@@ -707,6 +707,9 @@ class Functionality(QtWidgets.QMainWindow):
             print(pos_setpoint)
             print(neg_setpoint)
             send_PSU_enable(self.device_serials[0], 1)
+            time.sleep(.1)
+
+            send_PSU_setpoints(self.device_serials[0], 20, 20, 0)
             time.sleep(.1)
 
             send_PSU_setpoints(self.device_serials[0], 40, 40, 0)
