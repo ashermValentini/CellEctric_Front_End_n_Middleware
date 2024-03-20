@@ -1013,7 +1013,7 @@ class Functionality(QtWidgets.QMainWindow):
     def showLDAPopup(self):
         self.popup = PopupWindow()
         self.popup.button_LDA_go_live.clicked.connect(self.go_live)
-
+        self.popup.button_LDA_go_live.clicked.connect(self.popup.close)
         self.popup.button_LDA_temperature.clicked.connect(self.toggle_LDA_temperature_button)
         self.popup.button_LDA_pressure.clicked.connect(self.toggle_LDA_pressure_button)
         self.popup.button_LDA_Sucrose.clicked.connect(self.toggle_LDA_sucrose_button)
@@ -1026,6 +1026,7 @@ class Functionality(QtWidgets.QMainWindow):
     def showEndLDAPopup(self):
         self.endpopup = EndPopupWindow()
         self.endpopup.button_end_LDA.clicked.connect(self.end_go_live)
+        self.endpopup.button_end_LDA.clicked.connect(self.endpopup.close)
         self.endpopup.exec_()
 
     def toggle_LDA_temperature_button(self): 
@@ -1037,7 +1038,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.reset_button_style(self.popup.button_LDA_temperature)
 
     def toggle_LDA_current_button(self): 
-        if not self.live_tracking_temperature:
+        if not self.live_tracking_current:
             self.live_tracking_current = True
             self.set_button_style(self.popup.button_LDA_current)
         else: 
