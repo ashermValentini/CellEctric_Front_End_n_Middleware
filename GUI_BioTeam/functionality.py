@@ -311,6 +311,10 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         if self.flag_connections[0] and self.flag_connections[1]:
             self.ui.psu_button.pressed.connect(self.start_psu_pg)
+        
+        self.ui.line_edit_min_signal.setReadOnly(True)                                  #negative value should not be able to be edited
+        self.ui.line_edit_max_signal.textChanged.connect(self.line_edit_min_signal_text_changed)    #updates to the positive signal value must be reflected in the negative line edit
+
         #endregion
         #==============================================================================================================================================================================================================================
         # 5 Plotting Frame functionality (not the same as the plotting canvas)
@@ -581,6 +585,9 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion
 
 # region : PULSE GENENRATOR AND POWER SUP 
+    def line_edit_min_signal_text_changed(self, text):
+        neg_text = "-" + text
+        self.ui.line_edit_min_signal.setText(neg_text)
 
     def handleZeroDataUpdate(self, zerodata):
         self.zerodata = zerodata
