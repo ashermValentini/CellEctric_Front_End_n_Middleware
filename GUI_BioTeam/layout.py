@@ -257,7 +257,6 @@ class PopupWindow(QDialog):
         self.label_LDA_variable_information.setStyleSheet(input_style)
 
         #region : variable options 
-
         layout_variable_options = QtWidgets.QHBoxLayout()
 
         #region : c1-c2
@@ -443,8 +442,6 @@ class PopupWindow(QDialog):
         layout_variable_options.addLayout(layout_variable_options_c5)
         layout_variable_options.addLayout(layout_variable_options_c6)
         layout_variable_options.addStretch(1)
-
-
         #endregion
 
         layout_LDA_apply_live = QtWidgets.QHBoxLayout()
