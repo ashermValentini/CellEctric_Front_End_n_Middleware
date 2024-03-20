@@ -438,7 +438,7 @@ class Functionality(QtWidgets.QMainWindow):
                 except ValueError:
                     print("Invalid input in line_edit_sucrose")
                     return 
-                message = f'wFS-300-{FR:.2f}-{V:.1f}\n'
+                message = f'wFS-418-{FR:.2f}-{V:.1f}\n'
                 print(message)  
                 self.esp32Worker.write_serial_message(message)
 
@@ -478,7 +478,7 @@ class Functionality(QtWidgets.QMainWindow):
                 except ValueError:
                     print("Invalid input in line_edit_sucrose")
                     return 
-                message = f'wFE-160-{FR:.2f}-{V:.1f}\n'  
+                message = f'wFE-168-{FR:.2f}-{V:.1f}\n'  
                 print(message)
                 self.esp32Worker.write_serial_message(message)
 
@@ -608,10 +608,10 @@ class Functionality(QtWidgets.QMainWindow):
         self.voltage_y[:, 0] -= self.zerodata[0]           # voltage data
         self.voltage_y[:, 1] -= self.zerodata[1]           # current data  
 
-        self.voltage_y[:, 0] *= 0.15       # Nico original guess for voltage caling 
-        self.voltage_y[:, 1] *= 0.15       # Nico original guess for current scaling
-        #self.voltage_y[:, 0] *= 0.456812    # Hans value for voltage scaling as calculated by Nico  
-        #self.voltage_y[:, 1] *= 0.034  # Hans value fo current scaling as calculated by Nico
+        self.voltage_y[:, 0] *= 0.15        # Nico original guess for voltage scaling 
+        self.voltage_y[:, 1] *= 0.15        # Nico original guess for current scaling
+        #self.voltage_y[:, 0] *= 0.456812   # Hans value for voltage scaling as calculated by Nico  
+        #self.voltage_y[:, 1] *= 0.034      # Hans value fo current scaling as calculated by Nico
 
         # before we chop up the data to display on the UI we will save the data to csv as the Octave script potentially requires the full data set to be analyzed
         current_time = time.time()
