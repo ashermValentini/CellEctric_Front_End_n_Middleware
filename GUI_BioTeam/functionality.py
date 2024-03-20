@@ -251,10 +251,13 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.button_blood_top.clicked.connect(lambda: self.movement_homing(1))                       # connect the signal to the slot 
             self.ui.button_blood_up.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, False)) # connect the signal to the slot    
             self.ui.button_blood_up.released.connect(lambda: self.movement_stopjogging(1))                  # connect the signal to the slot              
-
             self.ui.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, False)) # connect the signal to the slot
             self.ui.button_blood_down.released.connect(lambda: self.movement_stopjogging(1))                    # connect the signal to the slot
             self.ui.button_blood_play_pause.pressed.connect(self.toggle_blood_pump)
+        
+        self.ui.button_blood_down.setEnabled(False)
+        self.ui.button_blood_up.setEnabled(False)
+        self.ui.button_blood_play_pause.setEnabled(False)
         #endregion
         #================================================================================================================================================================================================================================
         # 11 Flask frame functionality
@@ -273,9 +276,14 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.button_flask_right.released.connect(lambda: self.movement_stopjogging(3))                      # connect the signal to the slot              
             self.ui.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, True)) # connect the signal to the slot
             self.ui.button_flask_left.released.connect(lambda: self.movement_stopjogging(3))                    # connect the signal to the slot
+        
+        self.ui.button_flask_up.setEnabled(False)
+        self.ui.button_flask_down.setEnabled(False)
+        self.ui.button_flask_right.setEnabled(False)
+        self.ui.button_flask_left.setEnabled(False)
         #endregion
         #================================================================================================================================================================================================================================================================
-        # 6 Cartrige frame functionality
+        # 6 Fludic frame functionality
         #================================================================================================================================================================================================================================================================
         #region:
         if self.flag_connections[2]:
@@ -284,6 +292,9 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.button_cartridge_up.released.connect(lambda: self.movement_stopjogging(2))                      # connect the signal to the slot              
             self.ui.button_cartridge_down.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, False)) # connect the signal to the slot
             self.ui.button_cartridge_down.released.connect(lambda: self.movement_stopjogging(2))                    # connect the signal to the slot
+        
+        self.ui.button_cartridge_up.setEnabled(False)
+        self.ui.button_cartridge_down.setEnabled(False)
         #endregion
         #======================================================================================================================================================================================================================================================================================================
         # 4 Connections frame functionality
@@ -824,6 +835,15 @@ class Functionality(QtWidgets.QMainWindow):
             writeMotorHoming(self.device_serials[2], motornumber)
             if motornumber == 0:
                 print("HOMING STARTED FOR ALL MOTORS")
+                self.ui.button_blood_down.setEnabled(True)
+                self.ui.button_blood_up.setEnabled(True)
+                self.ui.button_blood_play_pause.setEnabled(True)
+                self.ui.button_flask_up.setEnabled(True)
+                self.ui.button_flask_down.setEnabled(True)
+                self.ui.button_flask_right.setEnabled(True)
+                self.ui.button_flask_left.setEnabled(True)
+                self.ui.button_cartridge_up.setEnabled(True)
+                self.ui.button_cartridge_down.setEnabled(True)
             else:
                 print("HOMING STARTED FOR MOTOR {}".format(motornumber))      
 
