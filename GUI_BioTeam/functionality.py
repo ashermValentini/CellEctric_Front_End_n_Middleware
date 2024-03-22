@@ -764,28 +764,28 @@ class Functionality(QtWidgets.QMainWindow):
         
         blood_volume = float(self.ui.line_edit_blood_2.text())
         blood_speed = float(self.ui.line_edit_blood.text())
-       
+
         volume_str = f"0{blood_volume:.1f}" if blood_volume < 10 else f"{blood_volume:.1f}"
         speed_str = f"{blood_speed:.3f}"
 
         if speed_str[0] == "0":
             speed_str = speed_str[1:]
 
-        message = f'wMB-{volume_str}-{speed_str}\n'
+        #message = f'wMB-{volume_str}-{speed_str}\n'
         #print(message)   
         #self.esp32Worker.write_serial_message(message)
 
         writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
         
-        #if self.blood_pump_timer is None:
-            #self.blood_pump_timer = QTimer()
-            #self.blood_pump_timer.timeout.connect(self.stop_blood_pump)
-        #self.blood_pump_timer.start(blood_pump_time)  # Start the timer
+        blood_pump_time = int((blood_volume / blood_speed) * 60 * 1000)
+
+        self.blood_pump_timer = QTimer()
+        self.blood_pump_timer.timeout.connect(self.stop_blood_pump)
+        self.blood_pump_timer.start(blood_pump_time)  
             
     def stop_blood_pump(self):
         self.reset_button_style(self.ui.button_blood_play_pause)
-        #if self.blood_pump_timer is not None:
-            #self.blood_pump_timer.stop()  # Stop the timer
+        self.blood_pump_timer.stop()  
         blood_volume = float(0) 
         blood_speed = float(0)
         volume_str = f"0{blood_volume:02.1f}"  
