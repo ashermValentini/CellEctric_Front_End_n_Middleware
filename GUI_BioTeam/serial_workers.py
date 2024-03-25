@@ -142,9 +142,9 @@ class PulseGeneratorSerialWorker(QObject):
                 self._lock.unlock()
                 break
             self._lock.unlock()
-            voltage_y, _ = read_next_PG_pulse(self.pulse_generator_serial.serial_device)
-            if voltage_y is not None:
-                self.update_pulse.emit(voltage_y)
+            pg_data, _ = read_next_PG_pulse(self.pulse_generator_serial.serial_device)
+            if pg_data is not None:
+                self.update_pulse.emit(pg_data)
             QThread.msleep(self.interval)
     
     @pyqtSlot()
