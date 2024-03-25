@@ -509,7 +509,8 @@ class Functionality(QtWidgets.QMainWindow):
             if not self.sucrose_is_pumping:   
                 self.close_pressure_release_valve()
                 self.set_button_style(self.ui.button_sucrose)
-                self.sucrose_is_pumping = True 
+                self.sucrose_is_pumping = True # GUI flag 
+                self.liveDataWorker.set_sucrose_is_running(True) # Data saving thread flag
                 try:
                     FR = float(self.ui.line_edit_sucrose.text())
                     V = float(self.ui.line_edit_sucrose_2.text())
@@ -523,6 +524,7 @@ class Functionality(QtWidgets.QMainWindow):
             else: 
                 self.reset_button_style(self.ui.button_sucrose)
                 self.sucrose_is_pumping = False 
+                self.liveDataWorker.set_sucrose_is_running(False) # Data saving thread flag
                 message = f'wFO\n'
                 self.esp32Worker.write_serial_message(message)
                 self.updateSucroseProgressBar(0)
@@ -548,7 +550,8 @@ class Functionality(QtWidgets.QMainWindow):
         if not self.sucrose_is_pumping:
             if not self.ethanol_is_pumping: 
                 self.close_pressure_release_valve()
-                self.ethanol_is_pumping = True  
+                self.ethanol_is_pumping = True  # GUI flag 
+                self.liveDataWorker.set_ethanol_is_running(True) # Live data saving flag
                 self.set_button_style(self.ui.button_ethanol)
                 try:
                     FR = float(self.ui.line_edit_ethanol.text())
@@ -563,6 +566,7 @@ class Functionality(QtWidgets.QMainWindow):
             else: 
                 self.reset_button_style(self.ui.button_ethanol)
                 self.ethanol_is_pumping = False 
+                self.liveDataWorker.set_ethanol_is_running(False) # Live data saving flag
                 message = f'wFO\n'
                 self.esp32Worker.write_serial_message(message)
                 self.updateEthanolProgressBar(0)

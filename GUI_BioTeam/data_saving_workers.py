@@ -17,6 +17,10 @@ class DataSavingWorker(QObject):
         self.flag_save_sucrose_flowrate = False
         self.flag_start_saving_live_data = False
 
+        # Flag to determine where to direct the flow rate value to(ethanol or sucrose)
+        self.flag_ethanol_is_running = False 
+        self.flag_sucrose_is_running = False
+
         # Setting up the timer for periodic data aggregation
         self.aggregation_timer = QTimer(self)
         self.aggregation_timer.timeout.connect(self.aggregate_data)
@@ -29,10 +33,16 @@ class DataSavingWorker(QObject):
         self.current_pressure = pressure_data
 
     def update_ethanol_flowrate_data(self, flowrate_data):
-        self.current_ethanol_flowrate = flowrate_data
+        if(self.flag_ethanol_is_running):
+            self.current_ethanol_flowrate = flowrate_data
+        else: 
+            self.current_ethanol_flowrate = 0
 
     def update_sucrose_flowrate_data(self, flowrate_data):
-        self.current_sucrose_flowrate = flowrate_data
+        if(self.flag_sucrose_is_running):
+            self.current_sucrose_flowrate = flowrate_data
+        else: 
+            self.current_sucrose_flowrate = 0
 
     def aggregate_data(self):
         """Aggregates the current data into the DataFrame."""
@@ -104,6 +114,12 @@ class DataSavingWorker(QObject):
 
     def set_save_sucrose_flowrate(self, value):
         self.flag_save_sucrose_flowrate = value
+
+    def set_sucrose_is_running(self, value):
+        self.flag_sucrose_is_running = value
+
+    def set_ethanol_is_running(self, value):
+        self.flag_ethanol_is_running = value
 
     def start_saving_live_non_pg_data(self, value):
         self.flag_start_saving_live_data = value
