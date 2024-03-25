@@ -15,9 +15,12 @@ from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTi
 from PyQt5.QtWidgets import QProgressBar, QMessageBox
 
 import application_style
+
 from layout import Ui_MainWindow
 from layout import PopupWindow
 from layout import EndPopupWindow
+
+from data_saving_workers import DataSavingWorker
 
 from serial_connections import SerialConnections
 from serial_connections import TemperatureSensorSerial
@@ -155,6 +158,16 @@ class Functionality(QtWidgets.QMainWindow):
             self.flag_connections[3] = True
 
         #endregion
+        #==============================================================================================================================================================================================================================
+        # Setup Data Saving Workers and Threads
+        #==============================================================================================================================================================================================================================
+        #region:
+        self.liveDataWorker = DataSavingWorker()
+        self.liveDataThread = QThread()
+        self.liveDataWorker.moveToThread(self.liveDataThread)
+        
+        self.liveDataThread.start()
+        #endregion
         # =====================================================================================================================================================================================================================================================================================================================================================================================================================================================================
         # Setup Temperature Sensor Worker and Thread 
         # =====================================================================================================================================================================================================================================================================================================================================================================================================================================
@@ -168,6 +181,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.tempWorker.update_temp.connect(self.update_temp_data)
             self.tempWorker.update_temp.connect(self.update_temp_plot)
             self.tempWorker.update_temp.connect(self.update_temperature_labels)
+            self.tempWorker.update_temp.connect(self.liveDataWorker.update_temp_data)
 
             self.tempThread.started.connect(self.tempWorker.run)
             self.tempThread.start() 
@@ -186,6 +200,9 @@ class Functionality(QtWidgets.QMainWindow):
             self.esp32Worker.update_flowrate.connect(self.updateEthanolProgressBar) 
             self.esp32Worker.update_flowrate.connect(self.updateSucroseProgressBar) 
             self.esp32Worker.update_pressure.connect(self.update_pressure_line_edit)
+            self.esp32Worker.update_flowrate.connect(self.liveDataWorker.update_sucrose_flowrate_data)
+            self.esp32Worker.update_flowrate.connect(self.liveDataWorker.update_ethanol_flowrate_data)
+            self.esp32Worker.update_pressure.connect(self.liveDataWorker.update_pressure_data)
             self.esp32Worker.update_fluidic_play_pause_buttons.connect(self.update_play_pause_buttons) 
 
             self.esp32Thread.started.connect(self.esp32Worker.run)  
@@ -397,6 +414,48 @@ class Functionality(QtWidgets.QMainWindow):
         self.pulse_number = 1 
         #endregion
 
+#region: PG LIVE DATA SAVING
+
+    def save_pg_data_to_csv(self, pg_data, temp_data):
+        # Construct the file name based on the current date and time
+        current_time = datetime.datetime.now()
+        filename = current_time.strftime("%Y%m%d_%H%M%S") + "_experiment_data.csv"
+
+        # Define the directory where the file will be saved
+        save_directory = r"C:\Users\BSG2_UI\OneDrive\Desktop\Experiments"  # Use raw string for Windows paths
+        full_path = os.path.join(save_directory, filename)
+        
+        # Create a DataFrame for the header information
+        header_info = [
+                f"Date: {current_time.strftime("%Y-%m-%d %H:%M:%S")}",
+                f"#Pulse Number: {self.pulse_number}",
+                f"#Voltage Pos: {self.ui.line_edit_max_signal.text()}",
+                f"#Voltage Neg: {self.ui.line_edit_min_signal.text()}",
+                f"#Temperature: {temp_data}",
+                "#Pulse Length: 75,00",
+                "#Transistor on time: 75",
+                "#Rate: 200"
+            ]
+        
+
+        # Calculate the pulse number (assuming the method is called every 10 seconds)
+        self.pulse_number = self.pulse_number + 1
+
+        header_df = pd.DataFrame({'Column1': header_info,'Column2': ['']*len(header_info)})
+
+        # Create a DataFrame for the data
+        voltage_data_df = pd.DataFrame({'Column1': pg_data[:, 0]})
+        current_data_df = pd.DataFrame({'Column2': pg_data[:, 1] })
+
+        combined_pg_data_df = pd.concat([voltage_data_df, current_data_df], axis=1)
+        combined_output_df = pd.concat([header_df, combined_pg_data_df], ignore_index=True)
+
+        # Save to CSV
+        combined_output_df.to_csv(full_path, index=False, header=False)
+        print(f"Saving experiment data to {filename}...")
+
+#endregion
+
 # region: TEMPERATURE  
     def update_temp_data(self, temp_data): 
         self.current_temp = temp_data
@@ -434,9 +493,9 @@ class Functionality(QtWidgets.QMainWindow):
     def update_temperature_labels(self, temp_data):
         if temp_data > self.max_temp:
             self.max_temp = temp_data
-            if(self.max_temp>23 and self.max_temp<24):
+            if(self.max_temp>30 and self.max_temp<35):
                 self.ui.max_temp_data.setStyleSheet(application_style.medium_temperature_number_style)
-            elif(self.max_temp>24): 
+            elif(self.max_temp>35): 
                 self.ui.max_temp_data.setStyleSheet(application_style.high_temperature_number_style)
 
             self.ui.max_temp_data.setText(f"{self.max_temp}°")
@@ -635,7 +694,7 @@ class Functionality(QtWidgets.QMainWindow):
         # before we chop up the data to display on the UI we will save the data to csv as the Octave script potentially requires the full data set to be analyzed
         current_time = time.time()
         if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
-            self.save_data_to_csv(self.voltage_y, self.current_temp)
+            self.save_pg_data_to_csv(self.voltage_y, self.current_temp)
             self.last_save_time = current_time
 
         length_of_data = self.voltage_y.shape[0] 
@@ -822,18 +881,6 @@ class Functionality(QtWidgets.QMainWindow):
         else: 
             self.ui.circles["PSU"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
 
-#endregion 
-
-# region : CHANGING PAGES 
-
-    def go_to_route1(self):
-        # This is the slot that gets called when the button is clicked
-        self.ui.stack.setCurrentIndex(0)
-
-    def go_to_route2(self):
-        # This is the slot that gets called when the button is clicked
-        self.ui.stack.setCurrentIndex(1)
-        
 #endregion 
 
 # region : MOTOR MOVEMENTS (NOT INCLUDING BLOOD MOTOR)
@@ -1032,10 +1079,12 @@ class Functionality(QtWidgets.QMainWindow):
 
     def toggle_LDA_temperature_button(self): 
         if not self.live_tracking_temperature:
-            self.live_tracking_temperature = True
+            self.live_tracking_temperature = True   # GUI thread flag
+            self.liveDataWorker.set_save_temp(True) # Data saving thread flag
             self.set_button_style(self.popup.button_LDA_temperature)
         else: 
-            self.live_tracking_temperature = False
+            self.live_tracking_temperature = False  # GUI thread flag 
+            self.liveDataWorker.set_save_temp(False) # Data saving thread flag
             self.reset_button_style(self.popup.button_LDA_temperature)
 
     def toggle_LDA_current_button(self): 
@@ -1057,30 +1106,37 @@ class Functionality(QtWidgets.QMainWindow):
     def toggle_LDA_pressure_button(self): 
         if not self.live_tracking_pressure: 
             self.live_tracking_pressure = True 
+            self.liveDataWorker.set_save_pressure(True)
             self.set_button_style(self.popup.button_LDA_pressure)
         else: 
             self.live_tracking_pressure = False 
+            self.liveDataWorker.set_save_pressure(False)
             self.reset_button_style(self.popup.button_LDA_pressure)
 
     def toggle_LDA_ethanol_button(self): 
         if not self.live_tracking_ethanol_flowrate: 
             self.live_tracking_ethanol_flowrate = True 
+            self.liveDataWorker.set_save_ethanol_flowrate(True)
             self.set_button_style(self.popup.button_LDA_Ethanol)
         else: 
             self.live_tracking_ethanol_flowrate = False
+            self.liveDataWorker.set_save_ethanol_flowrate(False)
             self.reset_button_style(self.popup.button_LDA_Ethanol)
 
     def toggle_LDA_sucrose_button(self): 
         if not self.live_tracking_sucrose_flowrate: 
             self.live_tracking_sucrose_flowrate = True 
+            self.liveDataWorker.set_save_sucrose_flowrate(True)
             self.set_button_style(self.popup.button_LDA_Sucrose)
         else: 
             self.live_tracking_sucrose_flowrate = False
+            self.liveDataWorker.set_save_sucrose_flowrate(False)
             self.reset_button_style(self.popup.button_LDA_Sucrose)
 
     def go_live(self):
         border_style = "#centralwidget { border: 7px solid green; }"
-        self.live_data_is_logging = True
+        self.live_data_is_logging = True # GUI thread flag 
+        self.liveDataWorker.start_saving_live_non_pg_data(True)
         self.ui.centralwidget.setStyleSheet(border_style)
         self.starting_a_live_data_session = True
         print("Going live and starting data saving...")
@@ -1088,6 +1144,18 @@ class Functionality(QtWidgets.QMainWindow):
     def end_go_live(self):
         border_style = "#centralwidget { border: 0px solid green; }"
         self.live_data_is_logging = False
+        self.liveDataWorker.start_saving_live_non_pg_data(False)
+        header_values = {
+            "Name": self.popup.combobox_LDA_user_name.currentText(),
+            "Email": self.popup.combobox_LDA_user_email.currentText(),
+            "Purpose": self.popup.line_edit_LDA_experiment_purpose.text(), 
+            "ID": self.popup.line_edit_LDA_experiment_number.text(),  
+            "Strain Name": self.popup.combobox_LDA_strain.currentText(),
+            "Fresh Sucrose": self.popup.combobox_LDA_fresh_sucrose.currentText()
+        }
+        self.liveDataWorker.save_header_info_to_csv(header_values)
+        self.liveDataWorker.save_non_pg_data_to_csv()
+
         self.ui.centralwidget.setStyleSheet(border_style)
         self.starting_a_live_data_session = False
         self.starting_a_live_data_session = False
@@ -1100,47 +1168,6 @@ class Functionality(QtWidgets.QMainWindow):
         self.live_tracking_voltage = False
         self.pulse_number = 1
         print("Ending live data saving...")
-
-    def save_data_to_csv(self, y_data, temp_data):
-        # Construct the file name based on the current date and time
-        current_time = datetime.datetime.now()
-        filename = current_time.strftime("%Y%m%d_%H%M%S") + "_experiment_data.csv"
-
-        # Define the directory where the file will be saved
-        save_directory = r"C:\Users\BSG2_UI\OneDrive\Desktop\Experiments"  # Use raw string for Windows paths
-        full_path = os.path.join(save_directory, filename)
-        
-        # Create a DataFrame for the header information
-        header_info = [
-                f"Date: {current_time.strftime("%Y-%m-%d %H:%M:%S")}",
-                f"#Pulse Number: {self.pulse_number}",
-                f"#Voltage Pos: {self.ui.line_edit_max_signal.text()}",
-                f"#Voltage Neg: {self.ui.line_edit_min_signal.text()}",
-                f"Temperature: {temp_data}",
-                "#Pulse Length: 75,00",
-                "#Transistor on time: 75",
-                "#Rate: 200"
-            ]
-        
-
-        # Calculate the pulse number (assuming the method is called every 10 seconds)
-        self.pulse_number = self.pulse_number + 1
-
-        header_df = pd.DataFrame({'Column1': header_info,'Column2': ['']*len(header_info)})
-
-        # Create a DataFrame for the data
-        voltage_data_df = pd.DataFrame({'Column1': y_data[:, 0]})
-        current_data_df = pd.DataFrame({'Column2': y_data[:, 1] })
-
-        combined_pg_data_df = pd.concat([voltage_data_df, current_data_df], axis=1)
-        combined_output_df = pd.concat([header_df, combined_pg_data_df], ignore_index=True)
-
-
-        # Save to CSV
-        combined_output_df.to_csv(full_path, index=False, header=False)
-        print(f"Saving experiment data to {filename}...")
-
-
 
 #endregion 
 
@@ -1337,3 +1364,14 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion
 
+# region : CHANGING PAGES 
+
+    def go_to_route1(self):
+        # This is the slot that gets called when the button is clicked
+        self.ui.stack.setCurrentIndex(0)
+
+    def go_to_route2(self):
+        # This is the slot that gets called when the button is clicked
+        self.ui.stack.setCurrentIndex(1)
+        
+#endregion 
