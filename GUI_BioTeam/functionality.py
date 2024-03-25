@@ -14,6 +14,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTimer
 from PyQt5.QtWidgets import QProgressBar, QMessageBox
 
+import application_style
 from layout import Ui_MainWindow
 from layout import PopupWindow
 from layout import EndPopupWindow
@@ -433,11 +434,14 @@ class Functionality(QtWidgets.QMainWindow):
     def update_temperature_labels(self, temp_data):
         if temp_data > self.max_temp:
             self.max_temp = temp_data
+            if(self.max_temp>23 and self.max_temp<24):
+                self.ui.max_temp_data.setStyleSheet(application_style.medium_temperature_number_style)
+            elif(self.max_temp>24): 
+                self.ui.max_temp_data.setStyleSheet(application_style.high_temperature_number_style)
+
             self.ui.max_temp_data.setText(f"{self.max_temp}°")
-            
-        if temp_data < self.min_temp:
-            self.min_temp = temp_data
-            self.ui.min_temp_data.setText(f"{self.min_temp}°")
+    
+        self.ui.current_temp_data.setText(f"{self.current_temp}°")
 #endregion
 
 # region : PUMPS
@@ -620,12 +624,9 @@ class Functionality(QtWidgets.QMainWindow):
         return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
 
     def process_pg_data(self, voltage_y):
-
         self.voltage_y = voltage_y
-
         self.voltage_y[:, 0] -= self.zerodata[0]           # voltage data
         self.voltage_y[:, 1] -= self.zerodata[1]           # current data  
-
         self.voltage_y[:, 0] *= 0.15        # Nico original guess for voltage scaling 
         self.voltage_y[:, 1] *= 0.15        # Nico original guess for current scaling
         #self.voltage_y[:, 0] *= 0.456812   # Hans value for voltage scaling as calculated by Nico  
@@ -641,13 +642,13 @@ class Functionality(QtWidgets.QMainWindow):
         self.voltage_xdata = np.linspace(1, 300, length_of_data)
 
         # Sample rate and desired cutoff frequency of the filter
-        fs = 1000.0  # Sample rate, adjust to your data
-        cutoff = 40  # Desired cutoff frequency, adjust based on your data
+        #fs = 1000.0  # Sample rate, adjust to your data
+        #cutoff = 40  # Desired cutoff frequency, adjust based on your data
 
         #self.voltage_y[:, 1] = self.butter_lowpass_filter(self.voltage_y[:, 1], cutoff, fs, order=5)
 
         # Apply the filter to the current data
-        window_size = 10  # Adjust this based on your data
+        #window_size = 10  # Adjust this based on your data
         #self.voltage_y[:, 1] = self.moving_average(self.voltage_y[:, 1], window_size)
 
         if self.voltage_is_plotting: 
@@ -1138,6 +1139,8 @@ class Functionality(QtWidgets.QMainWindow):
         # Save to CSV
         combined_output_df.to_csv(full_path, index=False, header=False)
         print(f"Saving experiment data to {filename}...")
+
+
 
 #endregion 
 
