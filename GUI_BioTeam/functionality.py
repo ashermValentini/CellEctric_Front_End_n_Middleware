@@ -1149,6 +1149,10 @@ class Functionality(QtWidgets.QMainWindow):
         border_style = "#centralwidget { border: 0px solid green; }"
         self.live_data_is_logging = False
         self.liveDataWorker.start_saving_live_non_pg_data(False)
+
+        folder_name = self.popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.create_data_folder(folder_name)
+
         header_values = {
             "Name": self.popup.combobox_LDA_user_name.currentText(),
             "Email": self.popup.combobox_LDA_user_email.currentText(),
@@ -1157,8 +1161,8 @@ class Functionality(QtWidgets.QMainWindow):
             "Strain Name": self.popup.combobox_LDA_strain.currentText(),
             "Fresh Sucrose": self.popup.combobox_LDA_fresh_sucrose.currentText()
         }
-        self.liveDataWorker.save_header_info_to_csv(header_values)
-        self.liveDataWorker.save_non_pg_data_to_csv()
+        self.liveDataWorker.save_header_info_to_csv(header_values, folder_name)
+        self.liveDataWorker.save_non_pg_data_to_csv(folder_name)
 
         self.ui.centralwidget.setStyleSheet(border_style)
         self.starting_a_live_data_session = False

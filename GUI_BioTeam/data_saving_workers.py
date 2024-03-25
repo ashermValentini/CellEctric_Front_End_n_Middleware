@@ -56,9 +56,32 @@ class DataSavingWorker(QObject):
             }])
             self.data_aggregated = pd.concat([self.data_aggregated, new_row], ignore_index=True)
 
-    def save_non_pg_data_to_csv(self):
+    def create_data_folder(self, folder_name):
+        """
+        Creates a data folder in a specified path based on the folder name provided.
+
+        :param folder_name: The name of the folder to create.
+        """
+        # Define the base path where the folder will be created. Adjust as necessary.
+        base_path = r"C:\Users\BSG2_UI\OneDrive\Desktop"
+        
+        # Combine the base path with the folder name to form the full path
+        folder_path = os.path.join(base_path, folder_name)
+        
+        try:
+            # Attempt to create the folder. If it exists, do nothing.
+            os.makedirs(folder_path, exist_ok=True)
+            print(f"Folder '{folder_path}' created successfully.")
+            return folder_path  # Returning the full path could be useful
+        except Exception as e:
+            print(f"Failed to create folder: {str(e)}")
+            self.error.emit(f"Failed to create folder: {str(e)}")
+            return None
+
+    def save_non_pg_data_to_csv(self, folder_name):
         """Saves the aggregated data to a CSV file."""
-        file_path = r"C:\Users\BSG2_UI\OneDrive\Desktop\BSG2_System_Data\my_data.csv"  # Corrected file path
+        # Use string formatting to insert the folder name
+        file_path = r"C:\Users\BSG2_UI\OneDrive\Desktop\{}\sys_data.csv".format(folder_name)
         try:
             # Check if the file exists to determine whether to write the header
             header = not os.path.exists(file_path)
@@ -67,7 +90,7 @@ class DataSavingWorker(QObject):
         except Exception as e:
             self.error.emit(f"Failed to save data to CSV: {str(e)}")
 
-    def save_header_info_to_csv(self, header_values):
+    def save_header_info_to_csv(self, header_values, folder_name):
         """
         Saves header information to a CSV file.
 
@@ -92,7 +115,8 @@ class DataSavingWorker(QObject):
         df_header = pd.DataFrame(data=default_values, index=[0])
 
         # Define the file path (consider making this a parameter or a class attribute)
-        file_path = r"C:\Users\BSG2_UI\OneDrive\Desktop\BSG2_System_Data\header_info.csv"
+        # Use string formatting to insert the folder name
+        file_path = r"C:\Users\BSG2_UI\OneDrive\Desktop\{}\header_info.csv".format(folder_name)
 
         # Save the DataFrame to CSV
         try:
