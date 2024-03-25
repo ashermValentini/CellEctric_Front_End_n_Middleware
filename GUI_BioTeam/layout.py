@@ -1475,7 +1475,7 @@ class Ui_MainWindow(object):
         self.max_temp_label.setStyleSheet(temperature_number_style)
         temp_stats_labels_layout.addWidget(self.max_temp_label, alignment=QtCore.Qt.AlignTop )
 
-        self.min_temp_label = QtWidgets.QLabel("Min")
+        self.min_temp_label = QtWidgets.QLabel("Current")
         self.min_temp_label.setStyleSheet(temperature_number_style)
         temp_stats_labels_layout.addWidget(self.min_temp_label, alignment=QtCore.Qt.AlignBottom)
 
@@ -1489,9 +1489,9 @@ class Ui_MainWindow(object):
         self.max_temp_data.setStyleSheet(temperature_number_style)
         temp_stats_layout.addWidget(self.max_temp_data, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
 
-        self.min_temp_data = QtWidgets.QLabel("-")
-        self.min_temp_data.setStyleSheet(temperature_number_style)
-        temp_stats_layout.addWidget(self.min_temp_data, alignment=QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
+        self.current_temp_data = QtWidgets.QLabel("-")
+        self.current_temp_data.setStyleSheet(temperature_number_style)
+        temp_stats_layout.addWidget(self.current_temp_data, alignment=QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
 
         #endregion
         
