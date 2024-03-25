@@ -175,6 +175,15 @@ class PopupWindow(QDialog):
 
         layout_LDA_user_information = QtWidgets.QHBoxLayout()
 
+        layout_LDA_folder_name = QtWidgets.QVBoxLayout()
+        self.label_LDA_folder_name = QLabel("Folder: ")
+        self.label_LDA_folder_name.setStyleSheet(input_style)
+        self.line_edit_LDA_folder_name = QtWidgets.QLineEdit()
+        self.line_edit_LDA_folder_name.setStyleSheet(line_edit_style)
+        self.line_edit_LDA_folder_name.setText("Data")
+        layout_LDA_folder_name.addWidget(self.label_LDA_folder_name)
+        layout_LDA_folder_name.addWidget(self.line_edit_LDA_folder_name)
+
         layout_LDA_user_name = QtWidgets.QVBoxLayout()
         self.label_LDA_user_name = QLabel("Name: ")
         self.label_LDA_user_name.setStyleSheet(input_style)
@@ -193,6 +202,8 @@ class PopupWindow(QDialog):
         layout_LDA_user_email.addWidget(self.label_LDA_user_email)
         layout_LDA_user_email.addWidget(self.combobox_LDA_user_email)
 
+        layout_LDA_user_information.addLayout(layout_LDA_folder_name)
+        layout_LDA_user_information.addStretch(1)
         layout_LDA_user_information.addLayout(layout_LDA_user_name)
         layout_LDA_user_information.addStretch(1)
         layout_LDA_user_information.addLayout(layout_LDA_user_email)
