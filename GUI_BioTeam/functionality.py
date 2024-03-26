@@ -414,7 +414,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.pulse_number = 1 
         #endregion
 
-#region: PG LIVE DATA SAVING
+# region: PG LIVE DATA SAVING NOTE: move this method to the data saving class 
 
     def save_pg_data_to_csv(self, pg_data, temp_data):
         # Construct the file name based on the current date and time
@@ -521,6 +521,10 @@ class Functionality(QtWidgets.QMainWindow):
                 print(message)  
                 self.esp32Worker.write_serial_message(message)
 
+                if self.live_data_is_logging: 
+                    folder_name = self.popup.line_edit_LDA_folder_name.text()
+                    self.liveDataWorker.save_activity_log(message, folder_name)
+
             else: 
                 self.reset_button_style(self.ui.button_sucrose)
                 self.sucrose_is_pumping = False 
@@ -528,7 +532,11 @@ class Functionality(QtWidgets.QMainWindow):
                 message = f'wFO\n'
                 self.esp32Worker.write_serial_message(message)
                 self.updateSucroseProgressBar(0)
-    
+
+                if self.live_data_is_logging: 
+                    folder_name = self.popup.line_edit_LDA_folder_name.text()
+                    self.liveDataWorker.save_activity_log(message, folder_name)
+
     def updateSucroseProgressBar(self, value):
         if self.sucrose_is_pumping:
             if value:
@@ -563,6 +571,10 @@ class Functionality(QtWidgets.QMainWindow):
                 print(message)
                 self.esp32Worker.write_serial_message(message)
 
+                if self.live_data_is_logging: 
+                    folder_name = self.popup.line_edit_LDA_folder_name.text()
+                    self.liveDataWorker.save_activity_log(message, folder_name)
+
             else: 
                 self.reset_button_style(self.ui.button_ethanol)
                 self.ethanol_is_pumping = False 
@@ -570,7 +582,10 @@ class Functionality(QtWidgets.QMainWindow):
                 message = f'wFO\n'
                 self.esp32Worker.write_serial_message(message)
                 self.updateEthanolProgressBar(0)
-
+                if self.live_data_is_logging: 
+                    folder_name = self.popup.line_edit_LDA_folder_name.text()
+                    self.liveDataWorker.save_activity_log(message, folder_name)
+                
     def updateEthanolProgressBar(self, value):
         if self.ethanol_is_pumping:
             if value:
@@ -599,6 +614,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.pressure_check_button.setText("OPEN")
         message = f'wRL\n' 
         self.esp32Worker.write_serial_message(message)
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
 
     def close_pressure_release_valve(self):
         self.pressure_release_valve_open = False  
@@ -606,6 +624,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.pressure_check_button.setText("CLOSED")
         message = f'wRH\n'
         self.esp32Worker.write_serial_message(message)
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
 
     def update_pressure_line_edit(self, value):
         if value is not None:
@@ -626,6 +647,9 @@ class Functionality(QtWidgets.QMainWindow):
             message = f'wRS\n'
             print(message)
             self.esp32Worker.write_serial_message(message)
+            if self.live_data_is_logging: 
+                folder_name = self.popup.line_edit_LDA_folder_name.text()
+                self.liveDataWorker.save_activity_log(message, folder_name)
 
         else: 
             self.reset_button_style(self.ui.pressure_reset_button)
@@ -636,6 +660,9 @@ class Functionality(QtWidgets.QMainWindow):
             message = f'wRO\n'
             print(message)
             self.esp32Worker.write_serial_message(message)
+            if self.live_data_is_logging: 
+                folder_name = self.popup.line_edit_LDA_folder_name.text()
+                self.liveDataWorker.save_activity_log(message, folder_name)
         
     def update_pressure_progress_bar(self):
         self.counter += 1
@@ -791,15 +818,26 @@ class Functionality(QtWidgets.QMainWindow):
             print(pos_setpoint)
             print(neg_setpoint)
             send_PSU_enable(self.device_serials[0], 1)
+            message = "Enabled PSU"
+            if self.live_data_is_logging: 
+                folder_name = self.popup.line_edit_LDA_folder_name.text()
+                self.liveDataWorker.save_activity_log(message, folder_name)
             time.sleep(.1)
 
             send_PSU_setpoints(self.device_serials[0], 20, 20, 0)
             time.sleep(.1)
 
             send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
-
+            message = "Sent PSU setpoints"
+            if self.live_data_is_logging: 
+                folder_name = self.popup.line_edit_LDA_folder_name.text()
+                self.liveDataWorker.save_activity_log(message, folder_name)
 
             self.pgWorker.start_pg()
+            message = "Started PG"
+            if self.live_data_is_logging: 
+                folder_name = self.popup.line_edit_LDA_folder_name.text()
+                self.liveDataWorker.save_activity_log(message, folder_name)
 
         else: 
             
@@ -810,7 +848,16 @@ class Functionality(QtWidgets.QMainWindow):
             #self.ui.line_edit_min_signal.setEnabled(True)
 
             send_PSU_disable(self.device_serials[0], 1)
+            message = "Disabled PSU"
+            if self.live_data_is_logging: 
+                folder_name = self.popup.line_edit_LDA_folder_name.text()
+                self.liveDataWorker.save_activity_log(message, folder_name)
+
             self.pgWorker.stop_pg()
+            message = "Stopped PG"
+            if self.live_data_is_logging: 
+                folder_name = self.popup.line_edit_LDA_folder_name.text()
+                self.liveDataWorker.save_activity_log(message, folder_name)
 
 #endregion
 
@@ -835,12 +882,14 @@ class Functionality(QtWidgets.QMainWindow):
         if speed_str[0] == "0":
             speed_str = speed_str[1:]
 
-        #message = f'wMB-{volume_str}-{speed_str}\n'
+        message = f'wMB-{volume_str}-{speed_str}\n'
         #print(message)   
         #self.esp32Worker.write_serial_message(message)
-
         writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
-        
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+
         blood_pump_time = int((blood_volume / blood_speed) * 60 * 1000)
 
         self.blood_pump_timer = QTimer()
@@ -857,6 +906,9 @@ class Functionality(QtWidgets.QMainWindow):
         message = f'wMB-{volume_str}-{speed_str}\n'
         print(message)
         self.esp32Worker.write_serial_message(message)
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
         self.blood_is_pumping = False
 
 #endregion
@@ -887,11 +939,16 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion 
 
-# region : MOTOR MOVEMENTS (NOT INCLUDING BLOOD MOTOR)
+# region : MOTOR MOVEMENTS (NOT INCLUDING BLOOD MOTOR) NOTE: use the esp worker to send motor commands not the comminication file
     def movement_homing(self, motornumber=0):
         # motornumber = 0 --> ALL MOTORS
         if self.flag_connections[2]:
             writeMotorHoming(self.device_serials[2], motornumber)
+            message = f'wMH-{motornumber}\n'
+            if self.live_data_is_logging: 
+                folder_name = self.popup.line_edit_LDA_folder_name.text()
+                self.liveDataWorker.save_activity_log(message, folder_name)
+
             if motornumber == 0:
                 print("HOMING STARTED FOR ALL MOTORS")
                 self.ui.button_blood_down.setEnabled(True)
@@ -910,14 +967,26 @@ class Functionality(QtWidgets.QMainWindow):
         if self.flag_connections[2]:
             if direction < 0:
                 direction = 2
+            if fast:
+                speed = 1
+            else:
+                speed = 0
+            
             writeMotorJog(self.device_serials[2], motornumber, direction, fast)
+            message = f'wMJ-{motornumber}-{direction}-{speed}\n'   
+            if self.live_data_is_logging: 
+                folder_name = self.popup.line_edit_LDA_folder_name.text()
+                self.liveDataWorker.save_activity_log(message, folder_name)
 
             print("TRYING TO START JOGGING: motor: {}; direction: {}; fast: {}".format(motornumber, direction, fast))
 
     def movement_stopjogging(self, motornumber):
         if self.flag_connections[2]:
             writeMotorJog(self.device_serials[2], motornumber, 0, 0)
-
+            message = f'wMJ-{motornumber}-{0}-{0}\n'   
+            if self.live_data_is_logging: 
+                folder_name = self.popup.line_edit_LDA_folder_name.text()
+                self.liveDataWorker.save_activity_log(message, folder_name)
             print("TRYING TO STOP JOGGING: motor: {}".format(motornumber))  
 #endregion
 
@@ -1138,20 +1207,21 @@ class Functionality(QtWidgets.QMainWindow):
             self.reset_button_style(self.popup.button_LDA_Sucrose)
 
     def go_live(self):
+        self.live_data_is_logging = True                            # GUI thread flag once go live has been pressed
+        self.starting_a_live_data_session = True                    # GUI thread flag for the side bar button being pressed
+        self.liveDataWorker.start_saving_live_non_pg_data(True)     # Live data saving thread flag
+
+        folder_name = self.popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.create_live_data_folder(folder_name)
+        
         border_style = "#centralwidget { border: 7px solid green; }"
-        self.live_data_is_logging = True # GUI thread flag 
-        self.liveDataWorker.start_saving_live_non_pg_data(True)
         self.ui.centralwidget.setStyleSheet(border_style)
-        self.starting_a_live_data_session = True
+
         print("Going live and starting data saving...")
     
     def end_go_live(self):
         border_style = "#centralwidget { border: 0px solid green; }"
-        self.live_data_is_logging = False
-        self.liveDataWorker.start_saving_live_non_pg_data(False)
-
-        folder_name = self.popup.line_edit_LDA_folder_name.text()
-        self.liveDataWorker.create_data_folder(folder_name)
+        self.ui.centralwidget.setStyleSheet(border_style)
 
         header_values = {
             "Name": self.popup.combobox_LDA_user_name.currentText(),
@@ -1161,13 +1231,14 @@ class Functionality(QtWidgets.QMainWindow):
             "Strain Name": self.popup.combobox_LDA_strain.currentText(),
             "Fresh Sucrose": self.popup.combobox_LDA_fresh_sucrose.currentText()
         }
+
+        folder_name = self.popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_header_info_to_csv(header_values, folder_name)
         self.liveDataWorker.save_non_pg_data_to_csv(folder_name)
 
-        self.ui.centralwidget.setStyleSheet(border_style)
-        self.starting_a_live_data_session = False
-        self.starting_a_live_data_session = False
         self.live_data_is_logging = False
+        self.liveDataWorker.start_saving_live_non_pg_data(False)
+        self.starting_a_live_data_session = False
         self.live_tracking_temperature = False
         self.live_tracking_ethanol_flowrate = False 
         self.live_tracking_sucrose_flowrate = False
