@@ -6,6 +6,7 @@ import csv
 
 class DataSavingWorker(QObject):
     error = pyqtSignal(str)
+    folderExistsSignal = pyqtSignal()
 
     def __init__(self, aggregation_interval=5000):
         super(DataSavingWorker, self).__init__()
@@ -71,6 +72,12 @@ class DataSavingWorker(QObject):
         # Construct the full path to the folder
         folder_path = os.path.join(base_path, folder_name)
         
+        # Check if the folder already exists
+        if os.path.exists(folder_path):
+            print(f"Folder '{folder_path}' already exists.")
+            self.folderExistsSignal.emit()  # Emit the signal
+            return
+        
         try:
             # Create the folder if it doesn't exist
             os.makedirs(folder_path, exist_ok=True)
@@ -84,7 +91,7 @@ class DataSavingWorker(QObject):
             print(f"Activity log CSV file created at: {file_path}")
         except Exception as e:
             print(f"Failed to create folder or CSV file: {str(e)}")
-    
+ 
     def save_non_pg_data_to_csv(self, folder_name):
         """Saves the aggregated data to a CSV file."""
         # Use string formatting to insert the folder name

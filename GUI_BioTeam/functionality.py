@@ -99,6 +99,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.lights_are_on= False 
 
+        self.flag_live_data_saving_applied = False
         self.starting_a_live_data_session = False
         self.live_data_is_logging = False
         self.live_tracking_temperature = False
@@ -159,14 +160,21 @@ class Functionality(QtWidgets.QMainWindow):
 
         #endregion
         #==============================================================================================================================================================================================================================
-        # Setup Data Saving Workers and Threads
+        # Setup Data: Saving, Workers, and Threads
         #==============================================================================================================================================================================================================================
         #region:
         self.liveDataWorker = DataSavingWorker()
         self.liveDataThread = QThread()
         self.liveDataWorker.moveToThread(self.liveDataThread)
-        
+        self.liveDataWorker.folderExistsSignal.connect(self.showFolderExistsDialog)
+        self.liveDataWorker.folderExistsSignal.connect(self.toggle_LDA_apply)
+
         self.liveDataThread.start()
+
+        #data saving initation for current and voltage which is different to non pg data since the bio team is using octave for the time being
+        self.last_save_time = None
+        self.save_interval = 10  
+        self.pulse_number = 1 
         #endregion
         # =====================================================================================================================================================================================================================================================================================================================================================================================================================================================================
         # Setup Temperature Sensor Worker and Thread 
@@ -405,14 +413,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.frame_DEMO_close_fluidic_circuit.start_stop_button.pressed.connect(self.start_demo)
         self.ui.save_experiment_data_frame.reset_button.pressed.connect(self.reset_all_DEMO_progress_bars)
         #endregion
-        #================================================================================================================================================================================================================================================================================================
-        # Live data logging
-        #================================================================================================================================================================================================================================================================================================
-        #region : 
-        self.last_save_time = None
-        self.save_interval = 10  # seconds
-        self.pulse_number = 1 
-        #endregion
+
 
 # region: PG LIVE DATA SAVING NOTE: move this method to the data saving class 
 
@@ -509,8 +510,8 @@ class Functionality(QtWidgets.QMainWindow):
             if not self.sucrose_is_pumping:   
                 self.close_pressure_release_valve()
                 self.set_button_style(self.ui.button_sucrose)
-                self.sucrose_is_pumping = True # GUI flag 
-                self.liveDataWorker.set_sucrose_is_running(True) # Data saving thread flag
+                self.sucrose_is_pumping = True                      # GUI flag 
+                self.liveDataWorker.set_sucrose_is_running(True)    # Data saving thread flag
                 try:
                     FR = float(self.ui.line_edit_sucrose.text())
                     V = float(self.ui.line_edit_sucrose_2.text())
@@ -1134,6 +1135,7 @@ class Functionality(QtWidgets.QMainWindow):
     def showLDAPopup(self):
         self.popup = PopupWindow()
         self.popup.button_LDA_go_live.clicked.connect(self.go_live)
+        self.popup.button_LDA_apply.clicked.connect(self.toggle_LDA_apply)
         self.popup.button_LDA_go_live.clicked.connect(self.popup.close)
         self.popup.button_LDA_temperature.clicked.connect(self.toggle_LDA_temperature_button)
         self.popup.button_LDA_pressure.clicked.connect(self.toggle_LDA_pressure_button)
@@ -1211,9 +1213,6 @@ class Functionality(QtWidgets.QMainWindow):
         self.starting_a_live_data_session = True                    # GUI thread flag for the side bar button being pressed
         self.liveDataWorker.start_saving_live_non_pg_data(True)     # Live data saving thread flag
 
-        folder_name = self.popup.line_edit_LDA_folder_name.text()
-        self.liveDataWorker.create_live_data_folder(folder_name)
-        
         border_style = "#centralwidget { border: 7px solid green; }"
         self.ui.centralwidget.setStyleSheet(border_style)
 
@@ -1247,7 +1246,24 @@ class Functionality(QtWidgets.QMainWindow):
         self.live_tracking_voltage = False
         self.pulse_number = 1
         print("Ending live data saving...")
+    
+    def toggle_LDA_apply(self): 
+        if not self.flag_live_data_saving_applied:
+            self.flag_live_data_saving_applied = True
+            self.set_button_style(self.popup.button_LDA_apply, 23)
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.create_live_data_folder(folder_name)
+        else: 
+            self.flag_live_data_saving_applied = False
+            self.reset_button_style(self.popup.button_LDA_apply, 23)
 
+    def showFolderExistsDialog(self):
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Warning)
+        msgBox.setText("The folder already exists. Please try a different name.")
+        msgBox.setWindowTitle("Folder Exists")
+        msgBox.setStandardButtons(QMessageBox.Ok)
+        msgBox.exec_()
 #endregion 
 
 # region : GENERIC UI ELEMENT UPDATES 
