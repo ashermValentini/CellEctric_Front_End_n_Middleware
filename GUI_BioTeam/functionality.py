@@ -414,7 +414,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.pulse_number = 1 
         #endregion
 
-#region: PG LIVE DATA SAVING
+# region: PG LIVE DATA SAVING NOTE TO MOVE THIS TO DATA SAVING CLASS 
 
     def save_pg_data_to_csv(self, pg_data, temp_data):
         # Construct the file name based on the current date and time
@@ -520,6 +520,8 @@ class Functionality(QtWidgets.QMainWindow):
                 message = f'wFS-418-{FR:.2f}-{V:.1f}\n'
                 print(message)  
                 self.esp32Worker.write_serial_message(message)
+                folder_name = self.popup.line_edit_LDA_folder_name.text()
+                self.liveDataWorker.save_activity_log(message, folder_name)
 
             else: 
                 self.reset_button_style(self.ui.button_sucrose)
@@ -1138,20 +1140,21 @@ class Functionality(QtWidgets.QMainWindow):
             self.reset_button_style(self.popup.button_LDA_Sucrose)
 
     def go_live(self):
-        border_style = "#centralwidget { border: 7px solid green; }"
         self.live_data_is_logging = True # GUI thread flag 
-        self.liveDataWorker.start_saving_live_non_pg_data(True)
-        self.ui.centralwidget.setStyleSheet(border_style)
         self.starting_a_live_data_session = True
+        self.liveDataWorker.start_saving_live_non_pg_data(True)
+
+        folder_name = self.popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.create_live_data_folder(folder_name)
+        
+        border_style = "#centralwidget { border: 7px solid green; }"
+        self.ui.centralwidget.setStyleSheet(border_style)
+
         print("Going live and starting data saving...")
     
     def end_go_live(self):
         border_style = "#centralwidget { border: 0px solid green; }"
-        self.live_data_is_logging = False
-        self.liveDataWorker.start_saving_live_non_pg_data(False)
-
-        folder_name = self.popup.line_edit_LDA_folder_name.text()
-        self.liveDataWorker.create_data_folder(folder_name)
+        self.ui.centralwidget.setStyleSheet(border_style)
 
         header_values = {
             "Name": self.popup.combobox_LDA_user_name.currentText(),
@@ -1161,13 +1164,14 @@ class Functionality(QtWidgets.QMainWindow):
             "Strain Name": self.popup.combobox_LDA_strain.currentText(),
             "Fresh Sucrose": self.popup.combobox_LDA_fresh_sucrose.currentText()
         }
+
+        folder_name = self.popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_header_info_to_csv(header_values, folder_name)
         self.liveDataWorker.save_non_pg_data_to_csv(folder_name)
 
-        self.ui.centralwidget.setStyleSheet(border_style)
-        self.starting_a_live_data_session = False
-        self.starting_a_live_data_session = False
         self.live_data_is_logging = False
+        self.liveDataWorker.start_saving_live_non_pg_data(False)
+        self.starting_a_live_data_session = False
         self.live_tracking_temperature = False
         self.live_tracking_ethanol_flowrate = False 
         self.live_tracking_sucrose_flowrate = False

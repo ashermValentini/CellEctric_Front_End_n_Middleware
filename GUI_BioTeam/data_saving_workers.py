@@ -2,11 +2,12 @@ from PyQt5.QtCore import QObject, pyqtSignal, QTimer
 import pandas as pd
 from datetime import datetime
 import os
+import csv
 
 class DataSavingWorker(QObject):
     error = pyqtSignal(str)
 
-    def __init__(self, aggregation_interval=5000, save_interval=10000):
+    def __init__(self, aggregation_interval=5000):
         super(DataSavingWorker, self).__init__()
         self.data_aggregated = pd.DataFrame(columns=['timestamp', 'temperature', 'pressure', 'ethanol_flowrate', 'sucrose_flowrate'])
 
@@ -26,6 +27,7 @@ class DataSavingWorker(QObject):
         self.aggregation_timer.timeout.connect(self.aggregate_data)
         self.aggregation_timer.start(aggregation_interval)
 
+    # region: Methods that update update data to current values
     def update_temp_data(self, temp_data):
         self.current_temp = temp_data
 
@@ -43,7 +45,8 @@ class DataSavingWorker(QObject):
             self.current_sucrose_flowrate = flowrate_data
         else: 
             self.current_sucrose_flowrate = 0
-
+    # endregion
+    # region: Methods that process and save data
     def aggregate_data(self):
         """Aggregates the current data into the DataFrame."""
         if self.flag_start_saving_live_data:
@@ -56,28 +59,32 @@ class DataSavingWorker(QObject):
             }])
             self.data_aggregated = pd.concat([self.data_aggregated, new_row], ignore_index=True)
 
-    def create_data_folder(self, folder_name):
+    def create_live_data_folder(self, folder_name):
         """
-        Creates a data folder in a specified path based on the folder name provided.
+        Creates a data folder at a predefined base path and an empty 'activity_log.csv' file within that folder.
 
-        :param folder_name: The name of the folder to create.
+        :param folder_name: The name of the folder where the file will be created.
         """
-        # Define the base path where the folder will be created. Adjust as necessary.
+        # Hard-coded base path where the folder will be created
         base_path = r"C:\Users\BSG2_UI\OneDrive\Desktop"
         
-        # Combine the base path with the folder name to form the full path
+        # Construct the full path to the folder
         folder_path = os.path.join(base_path, folder_name)
         
         try:
-            # Attempt to create the folder. If it exists, do nothing.
+            # Create the folder if it doesn't exist
             os.makedirs(folder_path, exist_ok=True)
             print(f"Folder '{folder_path}' created successfully.")
-            return folder_path  # Returning the full path could be useful
+            
+            # Construct the full path to the CSV file and create it with headers
+            file_path = os.path.join(folder_path, "activity_log.csv")
+            with open(file_path, mode='w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(["Timestamp", "Command"])  # Define headers for the CSV
+            print(f"Activity log CSV file created at: {file_path}")
         except Exception as e:
-            print(f"Failed to create folder: {str(e)}")
-            self.error.emit(f"Failed to create folder: {str(e)}")
-            return None
-
+            print(f"Failed to create folder or CSV file: {str(e)}")
+    
     def save_non_pg_data_to_csv(self, folder_name):
         """Saves the aggregated data to a CSV file."""
         # Use string formatting to insert the folder name
@@ -125,8 +132,31 @@ class DataSavingWorker(QObject):
         except Exception as e:
             print(f"Failed to save header info to CSV: {str(e)}")
 
+    def save_activity_log(self, command, folder_name):
+        """
+        Appends a command and the current timestamp to the CSV log file.
 
-    # Methods to set flags based on GUI interactions or other logic
+        :param command: The command string to log.
+        :param folder_name: The folder name where the log file resides.
+        """
+        # Hard-coded base path where the folder was created
+        base_path = r"C:\Users\BSG2_UI\OneDrive\Desktop"
+        
+        # Construct the full path to the log file
+        log_file_path = os.path.join(base_path, folder_name, "activity_log.csv")
+
+        # Get the current timestamp
+        now = datetime.now()
+        timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Open the log file and append the new row
+        with open(log_file_path, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([timestamp, command])
+
+        print(f"Logged command: {command}")
+    # endregion
+    # region: Methods to set flags based on GUI interactions or other logic
     def set_save_temp(self, value):
         self.flag_save_temp = value
 
@@ -147,3 +177,4 @@ class DataSavingWorker(QObject):
 
     def start_saving_live_non_pg_data(self, value):
         self.flag_start_saving_live_data = value
+    #endregion
