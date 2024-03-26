@@ -139,6 +139,7 @@ class DataSavingWorker(QObject):
         :param command: The command string to log.
         :param folder_name: The folder name where the log file resides.
         """
+        command = command.strip()
         # Hard-coded base path where the folder was created
         base_path = r"C:\Users\BSG2_UI\OneDrive\Desktop"
         
