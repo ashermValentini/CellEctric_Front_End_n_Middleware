@@ -92,15 +92,19 @@ class Functionality(QtWidgets.QMainWindow):
         self.pressure_release_valve_open = True # the pressure release valve always at start up is open  
         self.resetting_pressure = False # in this context resetting pressure means increasing the systems pressure 
 
+        #flags to control system functionality if the motors have not been homed and to control the states of the homing buttons for the motors
         self.flask_vertical_gantry_is_home= False  
         self.all_motors_are_home= False 
         self.flask_horizontal_gantry_is_home= False 
         self.cartrige_gantry_is_home= False 
 
+        #flag to control the lights button on the side bar
         self.lights_are_on= False 
 
-        self.flag_live_data_saving_applied = False
+        #flags for live data saving outside of a worklow
         self.starting_a_live_data_session = False
+
+        self.flag_live_data_saving_applied = False
         self.live_data_is_logging = False
         self.live_tracking_temperature = False
         self.live_tracking_ethanol_flowrate = False 
@@ -108,10 +112,22 @@ class Functionality(QtWidgets.QMainWindow):
         self.live_tracking_pressure = False 
         self.live_tracking_current = False 
         self.live_tracking_voltage = False
-
+        
+        #flag to control the pulse generator button
         self.signal_is_enabled=False 
 
+        #flags for live data saving outside of a worklow
         self.experiment_choice_is_locked_in = False
+
+        self.flag_workflow_live_data_saving_applied = False
+        self.workflow_live_data_is_logging = False
+        self.workflow_live_tracking_temperature = False
+        self.workflow_live_tracking_ethanol_flowrate = False 
+        self.workflow_live_tracking_sucrose_flowrate = False
+        self.workflow_live_tracking_pressure = False 
+        self.workflow_live_tracking_current = False 
+        self.workflow_live_tracking_voltage = False
+
         #endregion
         #==============================================================================================================================================================================================================================
         # Initialize display variables for line edits and plotting canvas 
@@ -239,7 +255,6 @@ class Functionality(QtWidgets.QMainWindow):
         #================================================================================================================================================================================================================================
         #region:        
         if self.flag_connections[2]:
-            self.ui.button_lights.clicked.connect(self.skakel_ligte)
             self.ui.button_motors_home.clicked.connect(lambda: self.movement_homing(0))     
        
         self.ui.button_experiment_route.clicked.connect(self.go_to_route2)             
@@ -356,7 +371,7 @@ class Functionality(QtWidgets.QMainWindow):
         # Experiment selection 
         #================================================================================================================================================================================================================================================================================================
         #region:
-        self.ui.user_info_lockin_button.pressed.connect(self.lock_unlock_experiment_choice)
+        self.ui.user_info_lockin_button.pressed.connect(self.toggle_LDA_workflow_popup)
         #endregion
         #================================================================================================================================================================================================================================================================================================
         # Experiment page Demo Automation Functionality (im trying to use dictionaries for the first time with an easy application, so yes i could be using intergers here with no real advantage loss but i need to learn dictionaries)
@@ -410,12 +425,11 @@ class Functionality(QtWidgets.QMainWindow):
             "save_experiment_data_frame": 2
         }
 
-        self.ui.frame_DEMO_close_fluidic_circuit.start_stop_button.pressed.connect(self.start_demo)
         self.ui.save_experiment_data_frame.reset_button.pressed.connect(self.reset_all_DEMO_progress_bars)
         #endregion
 
 
-# region: PG LIVE DATA SAVING NOTE: move this method to the data saving class 
+# region : PG LIVE DATA SAVING NOTE: move this method to the data saving class 
 
     def save_pg_data_to_csv(self, pg_data, temp_data):
         # Construct the file name based on the current date and time
@@ -454,10 +468,17 @@ class Functionality(QtWidgets.QMainWindow):
         # Save to CSV
         combined_output_df.to_csv(full_path, index=False, header=False)
         print(f"Saving experiment data to {filename}...")
-
+    
+    def showFolderExistsDialog(self):
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Warning)
+        msgBox.setText("The folder already exists. Please try a different name.")
+        msgBox.setWindowTitle("Folder Exists")
+        msgBox.setStandardButtons(QMessageBox.Ok)
+        msgBox.exec_()
 #endregion
 
-# region: TEMPERATURE  
+# region : TEMPERATURE  
     def update_temp_data(self, temp_data): 
         self.current_temp = temp_data
 
@@ -991,149 +1012,15 @@ class Functionality(QtWidgets.QMainWindow):
             print("TRYING TO STOP JOGGING: motor: {}".format(motornumber))  
 #endregion
 
-# region : LEDS 
-
-    def skakel_ligte(self): 
-        if not self.lights_are_on: 
-            self.lights_are_on = True  
-            self.set_button_style(self.ui.button_lights)
-
-            writeLedStatus(self.device_serials[2], 1, 1, 1)
-            writeLogoStatus(self.device_serials[2], 1)
-
-        else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
-            self.lights_are_on = False 
-            self.reset_button_style(self.ui.button_lights)
-            writeLogoStatus(self.device_serials[2], 0)
-            writeLedStatus(self.device_serials[2], 0, 0, 0)
-   
-#endregion
-
-# region : DEMO
-
-    def start_demo(self):
-        self.step_two()                                             # start the automation sequence (AS)
-
-    def step_two(self):
-        if self.flag_connections[2]: 
-            writeMotorDistance(self.device_serials[2], 2, 31, 2)    # connect fluidics to cartridge (move motor two down a distance 31mm)
-            writeLedStatus(self.device_serials[2], 0, 1, 0)         # syringe region LED on
-
-        frame_name = "frame_DEMO_close_fluidic_circuit"
-        self.DEMO_counters[frame_name][0] = 0
-        self.DEMO_timers[frame_name].start(1000)  
-
-        QTimer.singleShot(5000, self.step_three)
-
-
-    def step_three(self):
-        if self.flag_connections[2]: 
-            writeMotorDistance(self.device_serials[2], 4, 37, 1)    # connect waste flask to cartridge (move motor 4 up a distance 38mm)
-        
-        frame_name = "frame_DEMO_connect_waste_flask"
-        self.DEMO_counters[frame_name][0] = 0
-        self.DEMO_timers[frame_name].start(1000)    
-
-        QTimer.singleShot(6500, self.step_four)                     # give the motor 6.5 seconds to reach its posistion before executing the next step in the AS
-
-
-    def step_four(self):
-        if self.flag_connections[2]: 
-            self.start_ethanol_pump()                               # flush ethanol
-            writeLedStatus(self.device_serials[2], 0, 0, 2)         # blink the resevoir region LED  
-
-        frame_name = "frame_DEMO_ethanol_flush"
-        self.DEMO_counters[frame_name][0] = 0
-        self.DEMO_timers[frame_name].start(1000)    
-
-        QTimer.singleShot(30000, self.step_four_part_two)           # let ethanol flush for 30 seconds 
-
-
-    def step_four_part_two(self):
-        if self.flag_connections[2]: 
-            self.start_ethanol_pump()                               # stop ethanol 
-            writeLedStatus(self.device_serials[2], 0, 0, 0)         # turn of all LEDs
-        QTimer.singleShot(3000, self.step_five)                     # wait 3 seconds before proceeding to next step (can reduce this time) 
-
-    def step_five(self):
-        if self.flag_connections[2]: 
-            writeMotorDistance(self.device_serials[2], 4, 37, 2)    # disconnect waste flask (move motor 4 down a distance of 37mm)
-            writeLedStatus(self.device_serials[2], 1, 0, 0)         # flask region led on 
-
-        frame_name = "frame_DEMO_connect_to_harvest_flask"
-        self.DEMO_counters[frame_name][0] = 0
-        self.DEMO_timers[frame_name].start(1000)    
-
-        QTimer.singleShot(6500, self.step_five_part_two)            # give motor 4 6.5 seconds to get to its position before proceeding to the next step in the AS
-    
-    def step_five_part_two(self):
-        if self.flag_connections[2]: 
-            writeMotorDistance(self.device_serials[2], 3, 60, 1)    # connect mixing flask to cartridge (move motor three left a distance of 60mm)
-        QTimer.singleShot(10000, self.step_five_part_three)         # give motor 3 10 seconds to get to its position before proceeding to the next step in the AS
-    
-    def step_five_part_three(self): 
-        if self.flag_connections[2]: 
-            writeMotorDistance(self.device_serials[2], 4, 37 , 1)   # connect mixing flask to cartridge (move motor 3 up a distance of 38mm)
-        QTimer.singleShot(7000, self.step_six)                      # give motor 4 7 seconds to get to its position before proceeding to the next step in the AS
-    
-    def step_six(self): 
-        if self.flag_connections[2]: 
-            writeBloodSyringe(self.device_serials[2], 0.115, 0.125) # flush blood 
-            writeLedStatus(self.device_serials[2], 0, 2, 0)         # blink syring region LED 
-
-        frame_name = "frame_DEMO_blood_sucrose_mix"
-        self.DEMO_counters[frame_name][0] = 0
-        self.DEMO_timers[frame_name].start(1000)    
-
-        QTimer.singleShot(50, self.step_six_part_two)               # wait 50ms before proceeding to the next step in the AS to allow the serial coms to complete
-    
-    def step_six_part_two(self): 
-        if self.flag_connections[2]: 
-            self.start_sucrose_pump()                               # flush sucrose (with blood running)
-        QTimer.singleShot(60000, self.step_six_part_three)          # let sucrose flush with blood for 60 seconds
-
-    def step_six_part_three(self): 
-        if self.flag_connections[2]: 
-            self.start_sucrose_pump()                               # stop sucrose
-            writeLedStatus(self.device_serials[2], 0, 0, 0)         # turn off all LEDs
-        QTimer.singleShot(7000, self.step_seven)                
-
-    def step_seven(self): 
-        if self.flag_connections[2]: 
-            writeMotorDistance(self.device_serials[2], 4, 37, 2)    # disconnect mixing flask (move motor 4 down a distnace of 38 mm)
-            writeLedStatus(self.device_serials[2], 1, 0, 0)         # flask region led on 
-
-        frame_name = "frame_DEMO_sample_retrieval"
-        self.DEMO_counters[frame_name][0] = 0
-        self.DEMO_timers[frame_name].start(1000)   
-        
-        QTimer.singleShot(7000, self.step_seven_part_two)           # give motor 4 7 seconds to get to its position before proceeding to the next step in the AS
-
-    def step_seven_part_two(self): 
-        if self.flag_connections[2]: 
-            writeMotorDistance(self.device_serials[2], 3, 62, 1)    # retrieve mixing flask (move motor three a distance of 62 mm left)
-        QTimer.singleShot(7000, self.end_demo)                      # give motor 3 7 seconds to get to its posistion before proceeding to the next step
-    
-    def end_demo(self): 
-        if self.flag_connections[2]: 
-            writeLedStatus(self.device_serials[2], 2, 2, 2)         # blink lights to take the flask
-        QTimer.singleShot(10000, self.end_demo_part_two)            # let the lights blink for 10 seconds
-    
-    def end_demo_part_two(self):
-        if self.flag_connections[2]: 
-            writeLedStatus(self.device_serials[2], 1, 0, 0)         # turn light back on 
-            
-#endregion
-
-# region : LIVE DATA AQUISITION 
+# region : LIVE DATA AQUISITION OUTSIDE OF AUTOMATED WORKFLOW 
     def toggle_LDA_popup(self):
         if not self.starting_a_live_data_session:
-            self.showLDAPopup()
+            self.show_LDA_popup()
         else:
-            self.showEndLDAPopup()
+            self.show_end_LDA_popup()
 
-    def showLDAPopup(self):
-        self.popup = PopupWindow()
+    def show_LDA_popup(self):
+        self.popup = PopupWindow(title="Live Data Aquisition", description="Live data aquisition will allow you to save work done outside of traditional workflows. Please populate the fields below and save your changes before going live.")
         self.popup.button_LDA_go_live.clicked.connect(self.go_live)
         self.popup.button_LDA_apply.clicked.connect(self.toggle_LDA_apply)
         self.popup.button_LDA_go_live.clicked.connect(self.popup.close)
@@ -1146,7 +1033,7 @@ class Functionality(QtWidgets.QMainWindow):
         
         self.popup.exec_()
 
-    def showEndLDAPopup(self):
+    def show_end_LDA_popup(self):
         self.endpopup = EndPopupWindow()
         self.endpopup.button_end_LDA.clicked.connect(self.end_go_live)
         self.endpopup.button_end_LDA.clicked.connect(self.endpopup.close)
@@ -1257,14 +1144,184 @@ class Functionality(QtWidgets.QMainWindow):
             self.flag_live_data_saving_applied = False
             self.reset_button_style(self.popup.button_LDA_apply, 23)
 
-    def showFolderExistsDialog(self):
-        msgBox = QMessageBox()
-        msgBox.setIcon(QMessageBox.Warning)
-        msgBox.setText("The folder already exists. Please try a different name.")
-        msgBox.setWindowTitle("Folder Exists")
-        msgBox.setStandardButtons(QMessageBox.Ok)
-        msgBox.exec_()
 #endregion 
+            
+# region : LIVE DATA AQUISITION INSIDE OF AN AUTOMATED WORKFLOW    
+    def toggle_LDA_workflow_popup(self): 
+        if not self.experiment_choice_is_locked_in: 
+            self.show_LDA_workflow_popup()
+            self.lock_experiment_choice()
+        else: 
+            self.experiment_choice_is_locked_in = False
+            self.show_end_LDA_workflow_popup()
+            self.unlock_experiment_choice()
+
+    def lock_experiment_choice(self): 
+        self.set_button_style(self.ui.user_info_lockin_button)
+        self.ui.application_combobox.setEnabled(False)
+
+        if self.ui.application_combobox.currentText() == "POCII":
+            self.create_POCII_experiment_page()
+            pass
+        elif self.ui.application_combobox.currentText() == "Ethanol to Sucrose Flush":
+            # Do something for Ethanol to Sucrose Flush
+            pass
+        elif self.ui.application_combobox.currentText() == "CG2 QC":
+            # Do something for CG2 QC
+            pass
+        elif self.ui.application_combobox.currentText() == "Autotune":
+            # Do something for Autotune
+            pass
+        elif self.ui.application_combobox.currentText() == "Demonstration":
+            self.create_DEMO_experiment_page()
+            pass
+
+    def unlock_experiment_choice(self): 
+        self.reset_button_style(self.ui.user_info_lockin_button)
+        self.ui.application_combobox.setEnabled(True)
+
+        if self.ui.application_combobox.currentText() == "POCII":
+            self.destroy_POCII_experiment_page()
+            pass
+        elif self.ui.application_combobox.currentText() == "Ethanol to Sucrose Flush":
+            # Do something for Ethanol to Sucrose Flush
+            pass
+        elif self.ui.application_combobox.currentText() == "CG2 QC":
+            # Do something for CG2 QC
+            pass
+        elif self.ui.application_combobox.currentText() == "Autotune":
+            # Do something for Autotune
+            pass
+        elif self.ui.application_combobox.currentText() == "Demonstration":
+            self.destroy_DEMO_experiment_page()
+            pass
+ 
+    def show_LDA_workflow_popup(self):
+        self.workflow_LDA_popup = PopupWindow(title="Workflow Live Data Aquisition", description="Workflow Live data aquisition will allow you to save work done inside of traditional workflows. Please populate the fields below and save your changes before going live.")
+        self.workflow_LDA_popup.button_LDA_go_live.clicked.connect(self.workflow_go_live)
+        self.workflow_LDA_popup.button_LDA_apply.clicked.connect(self.toggle_LDA_workflow_apply)
+        self.workflow_LDA_popup.button_LDA_go_live.clicked.connect(self.workflow_LDA_popup.close)
+        self.workflow_LDA_popup.button_LDA_temperature.clicked.connect(self.toggle_LDA_workflow_temperature_button)
+        self.workflow_LDA_popup.button_LDA_pressure.clicked.connect(self.toggle_LDA_workflow_pressure_button)
+        self.workflow_LDA_popup.button_LDA_Sucrose.clicked.connect(self.toggle_LDA_workflow_sucrose_button)
+        self.workflow_LDA_popup.button_LDA_Ethanol.clicked.connect(self.toggle_LDA_workflow_ethanol_button)
+        self.workflow_LDA_popup.button_LDA_current.clicked.connect(self.toggle_LDA_workflow_current_button)
+        self.workflow_LDA_popup.button_LDA_voltage.clicked.connect(self.toggle_LDA_workflow_voltage_button)
+        
+        self.workflow_LDA_popup.exec_()
+
+    def show_end_LDA_workflow_popup(self):
+        self.workflow_endpopup = EndPopupWindow()
+        self.workflow_endpopup.button_end_LDA.clicked.connect(self.workflow_end_go_live)
+        self.workflow_endpopup.button_end_LDA.clicked.connect(self.workflow_endpopup.close)
+        self.workflow_endpopup.exec_()
+    
+    def toggle_LDA_workflow_temperature_button(self): 
+        if not self.workflow_live_tracking_temperature:
+            self.workflow_live_tracking_temperature = True   # GUI thread flag
+            #self.liveDataWorker.set_save_temp(True) # Data saving thread flag
+            self.set_button_style(self.workflow_LDA_popup.button_LDA_temperature)
+        else: 
+            self.workflow_live_tracking_temperature = False  # GUI thread flag 
+            #self.liveDataWorker.set_save_temp(False) # Data saving thread flag
+            self.reset_button_style(self.workflow_LDA_popup.button_LDA_temperature)
+
+    def toggle_LDA_workflow_current_button(self): 
+        if not self.workflow_live_tracking_current:
+            self.workflow_live_tracking_current = True
+            self.set_button_style(self.workflow_LDA_popup.button_LDA_current)
+        else: 
+            self.workflow_live_tracking_current = False
+            self.reset_button_style(self.workflow_LDA_popup.button_LDA_current)
+    
+    def toggle_LDA_workflow_voltage_button(self): 
+        if not self.workflow_live_tracking_voltage: 
+            self.workflow_live_tracking_voltage = True 
+            self.set_button_style(self.workflow_LDA_popup.button_LDA_voltage)
+        else: 
+            self.workflow_live_tracking_voltage = False 
+            self.reset_button_style(self.workflow_LDA_popup.button_LDA_voltage)
+    
+    def toggle_LDA_workflow_pressure_button(self): 
+        if not self.workflow_live_tracking_pressure: 
+            self.workflow_live_tracking_pressure = True 
+            #self.liveDataWorker.set_save_pressure(True)
+            self.set_button_style(self.workflow_LDA_popup.button_LDA_pressure)
+        else: 
+            self.workflow_live_tracking_pressure = False 
+            #self.liveDataWorker.set_save_pressure(False)
+            self.reset_button_style(self.workflow_LDA_popup.button_LDA_pressure)
+
+    def toggle_LDA_workflow_ethanol_button(self): 
+        if not self.workflow_live_tracking_ethanol_flowrate: 
+            self.workflow_live_tracking_ethanol_flowrate = True 
+            #self.liveDataWorker.set_save_ethanol_flowrate(True)
+            self.set_button_style(self.workflow_LDA_popup.button_LDA_Ethanol)
+        else: 
+            self.workflow_live_tracking_ethanol_flowrate = False
+            #self.liveDataWorker.set_save_ethanol_flowrate(False)
+            self.reset_button_style(self.workflow_LDA_popup.button_LDA_Ethanol)
+
+    def toggle_LDA_workflow_sucrose_button(self): 
+        if not self.workflow_live_tracking_sucrose_flowrate: 
+            self.workflow_live_tracking_sucrose_flowrate = True 
+            #self.liveDataWorker.set_save_sucrose_flowrate(True)
+            self.set_button_style(self.workflow_LDA_popup.button_LDA_Sucrose)
+        else: 
+            self.workflow_live_tracking_sucrose_flowrate = False
+            #self.liveDataWorker.set_save_sucrose_flowrate(False)
+            self.reset_button_style(self.workflow_LDA_popup.button_LDA_Sucrose)
+    
+    def workflow_go_live(self):
+        self.workflow_live_data_is_logging = True                            # GUI thread flag once go live has been pressed
+        self.experiment_choice_is_locked_in = True                    # GUI thread flag for the side bar button being pressed
+        #self.liveDataWorker.start_saving_live_non_pg_data(True)     # Live data saving thread flag
+
+        border_style = "#centralwidget { border: 7px solid blue; }"
+        self.ui.centralwidget.setStyleSheet(border_style)
+
+        print("Going live and starting data saving...")
+    
+    def workflow_end_go_live(self):
+        border_style = "#centralwidget { border: 0px solid green; }"
+        self.ui.centralwidget.setStyleSheet(border_style)
+
+        header_values = {
+            "Name": self.workflow_LDA_popup.combobox_LDA_user_name.currentText(),
+            "Email": self.workflow_LDA_popup.combobox_LDA_user_email.currentText(),
+            "Purpose": self.workflow_LDA_popup.line_edit_LDA_experiment_purpose.text(), 
+            "ID": self.workflow_LDA_popup.line_edit_LDA_experiment_number.text(),  
+            "Strain Name": self.workflow_LDA_popup.combobox_LDA_strain.currentText(),
+            "Fresh Sucrose": self.workflow_LDA_popup.combobox_LDA_fresh_sucrose.currentText()
+        }
+
+        #folder_name = self.workflow_.line_edit_LDA_folder_name.text()
+        #self.liveDataWorker.save_header_info_to_csv(header_values, folder_name)
+        #self.liveDataWorker.save_non_pg_data_to_csv(folder_name)
+
+        self.workflow_live_data_is_logging = False
+        #self.liveDataWorker.start_saving_live_non_pg_data(False)
+        self.workflow_starting_a_live_data_session = False
+        self.workflow_live_tracking_temperature = False
+        self.workflow_live_tracking_ethanol_flowrate = False 
+        self.workflow_live_tracking_sucrose_flowrate = False
+        self.workflow_live_tracking_pressure = False 
+        self.workflow_live_tracking_current = False 
+        self.workflow_live_tracking_voltage = False
+        self.pulse_number = 1
+        print("Ending live data saving...")
+    
+    def toggle_LDA_workflow_apply(self): 
+        if not self.flag_workflow_live_data_saving_applied:
+            self.flag_workflow_live_data_saving_applied = True
+            self.set_button_style(self.popup.button_LDA_apply, 23)
+            #folder_name = self.popup.line_edit_LDA_folder_name.text()
+            #self.liveDataWorker.create_live_data_folder(folder_name)
+        else: 
+            self.flag_worklow_live_data_saving_applied = False
+            self.reset_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
+
+# endregion
 
 # region : GENERIC UI ELEMENT UPDATES 
     
@@ -1346,49 +1403,6 @@ class Functionality(QtWidgets.QMainWindow):
         for progress_bar in self.DEMO_progress_bar_dict.values():
             progress_bar.setValue(0)   
 
-    def lock_unlock_experiment_choice(self): 
-        if not self.experiment_choice_is_locked_in: 
-            self.experiment_choice_is_locked_in=True
-            self.set_button_style(self.ui.user_info_lockin_button)
-            self.ui.application_combobox.setEnabled(False)
-
-            if self.ui.application_combobox.currentText() == "POCII":
-                self.create_POCII_experiment_page()
-                pass
-            elif self.ui.application_combobox.currentText() == "Ethanol to Sucrose Flush":
-                # Do something for Ethanol to Sucrose Flush
-                pass
-            elif self.ui.application_combobox.currentText() == "CG2 QC":
-                # Do something for CG2 QC
-                pass
-            elif self.ui.application_combobox.currentText() == "Autotune":
-                # Do something for Autotune
-                pass
-            elif self.ui.application_combobox.currentText() == "Demonstration":
-                self.create_DEMO_experiment_page()
-                pass
-
-        else: 
-            self.experiment_choice_is_locked_in = False
-            self.reset_button_style(self.ui.user_info_lockin_button)
-            self.ui.application_combobox.setEnabled(True)
-
-            if self.ui.application_combobox.currentText() == "POCII":
-                self.destroy_POCII_experiment_page()
-                pass
-            elif self.ui.application_combobox.currentText() == "Ethanol to Sucrose Flush":
-                # Do something for Ethanol to Sucrose Flush
-                pass
-            elif self.ui.application_combobox.currentText() == "CG2 QC":
-                # Do something for CG2 QC
-                pass
-            elif self.ui.application_combobox.currentText() == "Autotune":
-                # Do something for Autotune
-                pass
-            elif self.ui.application_combobox.currentText() == "Demonstration":
-                self.destroy_DEMO_experiment_page()
-                pass
-
     def create_POCII_experiment_page(self):
         self.ui.frame_POCII_system_sterilaty.show()
         self.ui.frame_POCII_decontaminate_cartridge.show()
@@ -1462,11 +1476,9 @@ class Functionality(QtWidgets.QMainWindow):
 # region : CHANGING PAGES 
 
     def go_to_route1(self):
-        # This is the slot that gets called when the button is clicked
         self.ui.stack.setCurrentIndex(0)
 
     def go_to_route2(self):
-        # This is the slot that gets called when the button is clicked
         self.ui.stack.setCurrentIndex(1)
         
 #endregion 
