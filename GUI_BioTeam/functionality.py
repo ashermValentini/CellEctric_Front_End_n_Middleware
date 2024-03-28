@@ -256,6 +256,7 @@ class Functionality(QtWidgets.QMainWindow):
         #region:        
         if self.flag_connections[2]:
             self.ui.button_motors_home.clicked.connect(lambda: self.movement_homing(0))     
+            self.ui.button_motors_home.clicked.connect(self.enable_motor_buttons)
        
         self.ui.button_experiment_route.clicked.connect(self.go_to_route2)             
         self.ui.button_dashboard_route.clicked.connect(self.go_to_route1)             
@@ -1314,7 +1315,7 @@ class Functionality(QtWidgets.QMainWindow):
     def toggle_LDA_workflow_apply(self): 
         if not self.flag_workflow_live_data_saving_applied:
             self.flag_workflow_live_data_saving_applied = True
-            self.set_button_style(self.popup.button_LDA_apply, 23)
+            self.set_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
             #folder_name = self.popup.line_edit_LDA_folder_name.text()
             #self.liveDataWorker.create_live_data_folder(folder_name)
         else: 
@@ -1388,7 +1389,20 @@ class Functionality(QtWidgets.QMainWindow):
                 background-color: #0796FF;
             }}
         """)
-    
+
+    def enable_motor_buttons(self): 
+        self.reset_button_style(self.ui.button_blood_up)
+        self.reset_button_style(self.ui.button_blood_down)
+        self.reset_button_style(self.ui.button_blood_play_pause)
+
+        self.reset_button_style(self.ui.button_flask_down)
+        self.reset_button_style(self.ui.button_flask_up)
+        self.reset_button_style(self.ui.button_flask_left)
+        self.reset_button_style(self.ui.button_flask_right)
+
+        self.reset_button_style(self.ui.button_cartridge_down)
+        self.reset_button_style(self.ui.button_cartridge_up)
+
     def update_experiment_step_progress_bar(self, counter, timer, progress_bar, frame_name):
         interval = self.DEMO_time_intervals[frame_name]
         

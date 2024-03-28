@@ -463,14 +463,6 @@ class Ui_MainWindow(object):
 
     def setupUi(self, MainWindow):
 
-        # Set up styles for labels
-        title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px; font-weight: bold; }"
-        text_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px; }"
-        header_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 50px; font-weight: bold;  }"
-        input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 25px;  }"
-        temperature_number_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px;  }"
-        voltage_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px;  }"
-
         # Set up the main window 
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1280, 1920)
@@ -660,7 +652,7 @@ class Ui_MainWindow(object):
         # Create label for topbar
         self.label = QtWidgets.QLabel(self.frame_d_topbar)
         self.label.setText("DASHBOARD")
-        self.label.setStyleSheet(header_style)
+        self.label.setStyleSheet(application_style.main_window_header_style)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
 
         # Add the lable to the topbar's layout 
@@ -695,7 +687,7 @@ class Ui_MainWindow(object):
 
         # region: label
         label_sucrose = QtWidgets.QLabel(self.frame_sucrose)
-        label_sucrose.setStyleSheet(title_style)
+        label_sucrose.setStyleSheet(application_style.main_window_title_style)
         label_sucrose.setText("SUCROSE")
         label_sucrose.setAlignment(QtCore.Qt.AlignCenter)
         layout_sucrose.addWidget(label_sucrose)  # add label to layout
@@ -753,7 +745,7 @@ class Ui_MainWindow(object):
         group_box_sucrose.setLayout(group_box_layout)  # set layout to groupbox
 
         unit_label = QtWidgets.QLabel("ml/min")
-        unit_label.setStyleSheet(input_style)
+        unit_label.setStyleSheet(application_style.main_window_input_style)
 
         self.line_edit_sucrose = QtWidgets.QLineEdit()
         self.line_edit_sucrose.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
@@ -770,7 +762,7 @@ class Ui_MainWindow(object):
         group_box_sucrose_2.setLayout(group_box_layout_2)  # set layout to second groupbox
 
         unit_label_2 = QtWidgets.QLabel("ml")  # unit for time variable
-        unit_label_2.setStyleSheet(input_style)
+        unit_label_2.setStyleSheet(application_style.main_window_input_style)
 
         self.line_edit_sucrose_2 = QtWidgets.QLineEdit()
         self.line_edit_sucrose_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
@@ -797,7 +789,7 @@ class Ui_MainWindow(object):
 
         # region: label
         label_blood = QtWidgets.QLabel(self.frame_blood)
-        label_blood.setStyleSheet(title_style)
+        label_blood.setStyleSheet(application_style.main_window_title_style)
         label_blood.setText("BLOOD")
         label_blood.setAlignment(QtCore.Qt.AlignCenter)
         layout_blood.addWidget(label_blood)  # add label to layout
@@ -833,69 +825,21 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(":/images/up_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_blood_up.setIcon(icon)
         self.button_blood_up.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.button_blood_up.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
+        self.set_button_style(self.button_blood_up, 30, False)
 
         self.button_blood_down = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/down_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_blood_down.setIcon(icon)
         self.button_blood_down.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.button_blood_down.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
+        self.set_button_style(self.button_blood_down, 30, False)
 
         self.button_blood_play_pause = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/play_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_blood_play_pause.setIcon(icon)
         self.button_blood_play_pause.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.button_blood_play_pause.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
-
-
-
-
+        self.set_button_style(self.button_blood_play_pause, 30, False)
 
         progress_button_layout.addWidget(self.button_blood_top)  # add button to the layout
         progress_button_layout.addWidget(self.button_blood_up)
@@ -914,7 +858,7 @@ class Ui_MainWindow(object):
         group_box_blood.setLayout(group_box_layout)  # set layout to groupbox
 
         unit_label = QtWidgets.QLabel("ml/min")
-        unit_label.setStyleSheet(input_style)
+        unit_label.setStyleSheet(application_style.main_window_input_style)
 
         self.line_edit_blood = QtWidgets.QLineEdit()
         self.line_edit_blood.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
@@ -930,7 +874,7 @@ class Ui_MainWindow(object):
         group_box_blood_2.setLayout(group_box_layout_2)  # set layout to second groupbox
 
         unit_label_2 = QtWidgets.QLabel("ml")  # unit for time variable
-        unit_label_2.setStyleSheet(input_style)
+        unit_label_2.setStyleSheet(application_style.main_window_input_style)
 
         self.line_edit_blood_2 = QtWidgets.QLineEdit()
         self.line_edit_blood_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
@@ -956,7 +900,7 @@ class Ui_MainWindow(object):
 
         # region: label
         label_ethanol = QtWidgets.QLabel(self.frame_ethanol)
-        label_ethanol.setStyleSheet(title_style)
+        label_ethanol.setStyleSheet(application_style.main_window_title_style)
         label_ethanol.setText("ETHANOL")
         label_ethanol.setAlignment(QtCore.Qt.AlignCenter)
         layout_ethanol.addWidget(label_ethanol)  # add label to layout
@@ -1014,7 +958,7 @@ class Ui_MainWindow(object):
         group_box_ethanol.setLayout(group_box_layout)  # set layout to groupbox
 
         unit_label = QtWidgets.QLabel("ml/min")
-        unit_label.setStyleSheet(input_style)
+        unit_label.setStyleSheet(application_style.main_window_input_style)
 
         self.line_edit_ethanol = QtWidgets.QLineEdit()
         self.line_edit_ethanol.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
@@ -1030,7 +974,7 @@ class Ui_MainWindow(object):
         group_box_ethanol_2.setLayout(group_box_layout_2)  # set layout to second groupbox
 
         unit_label_2 = QtWidgets.QLabel("ml")  # unit for time variable
-        unit_label_2.setStyleSheet(input_style)
+        unit_label_2.setStyleSheet(application_style.main_window_input_style)
 
         self.line_edit_ethanol_2 = QtWidgets.QLineEdit()
         self.line_edit_ethanol_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
@@ -1067,7 +1011,7 @@ class Ui_MainWindow(object):
 
         # Create the label and add it to the layout
         label = QtWidgets.QLabel()
-        label.setStyleSheet(title_style)
+        label.setStyleSheet(application_style.main_window_title_style)
         label.setText("CONNECTIONS")
         label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(label)  # Add the label to the layout
@@ -1087,7 +1031,7 @@ class Ui_MainWindow(object):
             
             # Create the module label and add it to the layout
             module_label = QtWidgets.QLabel()
-            module_label.setStyleSheet(text_style) 
+            module_label.setStyleSheet(application_style.main_window_text_style) 
             module_label.setText(module)
             module_label.setAlignment(QtCore.Qt.AlignLeft)
             module_layout.addWidget(module_label)
@@ -1123,7 +1067,7 @@ class Ui_MainWindow(object):
         plot_button_frame.setLayout(layout)
         # Label
         label = QtWidgets.QLabel()
-        label.setStyleSheet(title_style)
+        label.setStyleSheet(application_style.main_window_title_style)
         label.setText("PLOTS")
         label.setAlignment(QtCore.Qt.AlignCenter)
 
@@ -1212,7 +1156,7 @@ class Ui_MainWindow(object):
 
         # region: label
         label_cartridge = QtWidgets.QLabel(self.frame_cartridge)
-        label_cartridge.setStyleSheet(title_style)
+        label_cartridge.setStyleSheet(application_style.main_window_title_style)
         label_cartridge.setText("FLUIDICS")
         label_cartridge.setAlignment(QtCore.Qt.AlignCenter)
         layout_cartridge.addWidget(label_cartridge)  # add label to layout
@@ -1227,65 +1171,21 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(":/images/top_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_cartridge_bottom.setIcon(icon)
         self.button_cartridge_bottom.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.button_cartridge_bottom.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
+        self.set_button_style(self.button_cartridge_bottom, 30, True)
 
         self.button_cartridge_up  = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/up_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_cartridge_up.setIcon(icon)
         self.button_cartridge_up.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.button_cartridge_up.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
+        self.set_button_style(self.button_cartridge_up, 30, False)
 
         self.button_cartridge_down = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/down_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_cartridge_down.setIcon(icon)
         self.button_cartridge_down.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.button_cartridge_down.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
+        self.set_button_style(self.button_cartridge_down, 30, False)
 
         progress_button_layout.addWidget(self.button_cartridge_bottom)  # add button to the layout
         progress_button_layout.addWidget(self.button_cartridge_up)
@@ -1316,7 +1216,7 @@ class Ui_MainWindow(object):
 
         # Title for temperature frame
         title_label = QtWidgets.QLabel("TEMPERATURE")
-        title_label.setStyleSheet(title_style)
+        title_label.setStyleSheet(application_style.main_window_title_style)
         title_label.setAlignment(QtCore.Qt.AlignCenter)
         temp_layout.addWidget(title_label)
         temp_layout.addSpacing(25)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
@@ -1331,11 +1231,11 @@ class Ui_MainWindow(object):
         temp_details_layout.addLayout(temp_stats_labels_layout)
 
         self.max_temp_label = QtWidgets.QLabel("Max")
-        self.max_temp_label.setStyleSheet(temperature_number_style)
+        self.max_temp_label.setStyleSheet(application_style.main_window_temperature_number_style)
         temp_stats_labels_layout.addWidget(self.max_temp_label, alignment=QtCore.Qt.AlignTop )
 
         self.min_temp_label = QtWidgets.QLabel("Current")
-        self.min_temp_label.setStyleSheet(temperature_number_style)
+        self.min_temp_label.setStyleSheet(application_style.main_window_temperature_number_style)
         temp_stats_labels_layout.addWidget(self.min_temp_label, alignment=QtCore.Qt.AlignBottom)
 
 
@@ -1345,11 +1245,11 @@ class Ui_MainWindow(object):
 
         
         self.max_temp_data = QtWidgets.QLabel("-")
-        self.max_temp_data.setStyleSheet(temperature_number_style)
+        self.max_temp_data.setStyleSheet(application_style.main_window_temperature_number_style)
         temp_stats_layout.addWidget(self.max_temp_data, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
 
         self.current_temp_data = QtWidgets.QLabel("-")
-        self.current_temp_data.setStyleSheet(temperature_number_style)
+        self.current_temp_data.setStyleSheet(application_style.main_window_temperature_number_style)
         temp_stats_layout.addWidget(self.current_temp_data, alignment=QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
 
         #endregion
@@ -1365,7 +1265,7 @@ class Ui_MainWindow(object):
 
         # Title for pressure frame
         title_label = QtWidgets.QLabel("PRESSURE")
-        title_label.setStyleSheet(title_style)
+        title_label.setStyleSheet(application_style.main_window_title_style)
         title_label.setAlignment(QtCore.Qt.AlignCenter)
         pressure_layout.addWidget(title_label)
         pressure_layout.addSpacing(15)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
@@ -1406,7 +1306,7 @@ class Ui_MainWindow(object):
 
         pressure_details_layout.addStretch(1) 
         self.pressure_data = QtWidgets.QLabel("-    Bar")
-        self.pressure_data.setStyleSheet(temperature_number_style)
+        self.pressure_data.setStyleSheet(application_style.main_window_temperature_number_style)
         pressure_details_layout.addWidget(self.pressure_data, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
         #endregion
 
@@ -1482,7 +1382,7 @@ class Ui_MainWindow(object):
         # Create a label for this frame
         label = QtWidgets.QLabel("SIGNAL", frame_d_signal)
         label.setAlignment(QtCore.Qt.AlignCenter)
-        label.setStyleSheet(title_style)  # Set the color of the text as needed
+        label.setStyleSheet(application_style.main_window_title_style)  # Set the color of the text as needed
         
         frame_d_signal_layout.addWidget(label)   #Place SIGNAL at the top of the frame
         frame_d_signal_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
@@ -1503,11 +1403,11 @@ class Ui_MainWindow(object):
 
         # Create the QLabel for the unit
         unit_label = QtWidgets.QLabel("V")
-        unit_label.setStyleSheet(voltage_style)
+        unit_label.setStyleSheet(application_style.main_window_voltage_style)
 
         # Create the QLabel for the higher pk-pk voltage
         MAX_label = QtWidgets.QLabel("Vp+ :")
-        MAX_label.setStyleSheet(voltage_style)
+        MAX_label.setStyleSheet(application_style.main_window_voltage_style)
 
         # Create the QLineEdit for the value
         self.line_edit_max_signal = QtWidgets.QLineEdit()
@@ -1532,11 +1432,11 @@ class Ui_MainWindow(object):
 
         # Create the QLabel for the unit
         min_unit_label = QtWidgets.QLabel("V")
-        min_unit_label.setStyleSheet(voltage_style)
+        min_unit_label.setStyleSheet(application_style.main_window_voltage_style)
 
         # Create the QLabel for the higher pk-pk voltage
         MIN_label = QtWidgets.QLabel("Vp- : ")
-        MIN_label.setStyleSheet(voltage_style)
+        MIN_label.setStyleSheet(application_style.main_window_voltage_style)
 
         # Create the QLineEdit for the value
         self.line_edit_min_signal = QtWidgets.QLineEdit()
@@ -1593,7 +1493,7 @@ class Ui_MainWindow(object):
 
         # region: label
         label_flask = QtWidgets.QLabel(self.frame_flask)
-        label_flask.setStyleSheet(title_style)
+        label_flask.setStyleSheet(application_style.main_window_title_style)
         label_flask.setText("FLASKS")
         label_flask.setAlignment(QtCore.Qt.AlignCenter)
         layout_flask.addWidget(label_flask)  # add label to layout
@@ -1629,44 +1529,14 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(":/images/up_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_flask_up.setIcon(icon)
         self.button_flask_up.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.button_flask_up.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
+        self.set_button_style(self.button_flask_up, 30, False)
 
         self.button_flask_down = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/down_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_flask_down.setIcon(icon)
         self.button_flask_down.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.button_flask_down.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
+        self.set_button_style(self.button_flask_down, 30, False)
 
         flask_up_down_button_layout.addWidget(self.button_flask_bottom)  # add button to the layout
         flask_up_down_button_layout.addWidget(self.button_flask_up)
@@ -1704,42 +1574,14 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(":/images/left_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_flask_left.setIcon(icon)
         self.button_flask_left.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.button_flask_left.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
+        self.set_button_style(self.button_flask_left, 30, False)
 
         self.button_flask_right = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/right_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_flask_right.setIcon(icon)
         self.button_flask_right.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.button_flask_right.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
+        self.set_button_style(self.button_flask_right, 30, False)
 
         flask_left_right_button_layout.addWidget(self.button_flask_rightmost)  # add button to the layout
         flask_left_right_button_layout.addWidget(self.button_flask_left)
@@ -1918,7 +1760,7 @@ class Ui_MainWindow(object):
         # Add "experiment" label to top bar
         self.experiment_page_label = QtWidgets.QLabel(self.frame_e_topbar)
         self.experiment_page_label.setText("EXPERIMENT")
-        self.experiment_page_label.setStyleSheet(header_style)
+        self.experiment_page_label.setStyleSheet(application_style.main_window_header_style)
         self.experiment_page_label.setAlignment(QtCore.Qt.AlignCenter)
 
         # Add the lable to the topbar's layout 
@@ -1947,7 +1789,7 @@ class Ui_MainWindow(object):
 
         # region: add label for which application
         label_application = QtWidgets.QLabel(self.frame_user_info)
-        label_application.setStyleSheet(input_style)
+        label_application.setStyleSheet(application_style.main_window_input_style)
         label_application.setText("Application: ")
         #endregion
 
@@ -2206,8 +2048,35 @@ class Ui_MainWindow(object):
     #endregion
     
 #endregion    
-    
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+     
+    def set_button_style(self, button, font_size=30, enabled=True):
+        if enabled:
+            button.setStyleSheet(f"""
+                QPushButton {{
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #222222;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: {font_size}px;
+                }}
 
+                QPushButton:hover {{
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }}
+
+                QPushButton:pressed {{
+                    background-color: #0796FF;
+                }}
+            """)
+        else:
+            button.setStyleSheet(f"""
+                QPushButton {{
+                    border: 2px solid #444444;
+                    border-radius: 10px;
+                    background-color: #333333;
+                    color: #AAAAAA;
+                    font-family: Archivo;
+                    font-size: {font_size}px;
+                }}
+            """)
