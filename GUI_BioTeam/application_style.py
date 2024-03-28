@@ -41,3 +41,13 @@ line_edit_style = """
         padding: 7px;
     }
 """
+
+#===============================================================================
+# Main Window Stylings
+#===============================================================================
+main_window_title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px; font-weight: bold; }"
+main_window_text_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px; }"
+main_window_header_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 50px; font-weight: bold;  }"
+main_window_input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 25px;  }"
+main_window_temperature_number_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px;  }"
+main_window_voltage_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px;  }"
