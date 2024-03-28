@@ -102,7 +102,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.lights_are_on= False 
 
         #flags for live data saving outside of a worklow
-        self.starting_a_live_data_session = False
+        self.live_data_saving_button_pressed = False
 
         self.flag_live_data_saving_applied = False
         self.live_data_is_logging = False
@@ -182,8 +182,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.liveDataWorker = DataSavingWorker()
         self.liveDataThread = QThread()
         self.liveDataWorker.moveToThread(self.liveDataThread)
-        self.liveDataWorker.folderExistsSignal.connect(self.showFolderExistsDialog)
-        self.liveDataWorker.folderExistsSignal.connect(self.toggle_LDA_apply)
+        #self.liveDataWorker.folderExistsSignal.connect(self.toggle_LDA_apply)
+        #self.liveDataWorker.folderExistsSignal.connect(self.showFolderExistsDialog)
 
         self.liveDataThread.start()
 
@@ -470,13 +470,6 @@ class Functionality(QtWidgets.QMainWindow):
         combined_output_df.to_csv(full_path, index=False, header=False)
         print(f"Saving experiment data to {filename}...")
     
-    def showFolderExistsDialog(self):
-        msgBox = QMessageBox()
-        msgBox.setIcon(QMessageBox.Warning)
-        msgBox.setText("The folder already exists. Please try a different name.")
-        msgBox.setWindowTitle("Folder Exists")
-        msgBox.setStandardButtons(QMessageBox.Ok)
-        msgBox.exec_()
 #endregion
 
 # region : TEMPERATURE  
@@ -1015,10 +1008,13 @@ class Functionality(QtWidgets.QMainWindow):
 
 # region : LIVE DATA AQUISITION OUTSIDE OF AUTOMATED WORKFLOW 
     def toggle_LDA_popup(self):
-        if not self.starting_a_live_data_session:
-            self.show_LDA_popup()
-        else:
-            self.show_end_LDA_popup()
+        if self.workflow_live_data_is_logging: 
+            self.warning_dialogue("Attention", "You are currently in a worfklow. Please end worfklow before starting live data saving session")
+        else: 
+            if not self.live_data_saving_button_pressed:
+                self.show_LDA_popup()
+            else:
+                self.show_end_LDA_popup()
 
     def show_LDA_popup(self):
         self.popup = PopupWindow(title="Live Data Aquisition", description="Live data aquisition will allow you to save work done outside of traditional workflows. Please populate the fields below and save your changes before going live.")
@@ -1098,12 +1094,10 @@ class Functionality(QtWidgets.QMainWindow):
 
     def go_live(self):
         self.live_data_is_logging = True                            # GUI thread flag once go live has been pressed
-        self.starting_a_live_data_session = True                    # GUI thread flag for the side bar button being pressed
+        self.live_data_saving_button_pressed = True                 # GUI thread flag for the side bar button being pressed
         self.liveDataWorker.start_saving_live_non_pg_data(True)     # Live data saving thread flag
-
         border_style = "#centralwidget { border: 7px solid green; }"
         self.ui.centralwidget.setStyleSheet(border_style)
-
         print("Going live and starting data saving...")
     
     def end_go_live(self):
@@ -1125,7 +1119,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.live_data_is_logging = False
         self.liveDataWorker.start_saving_live_non_pg_data(False)
-        self.starting_a_live_data_session = False
+        self.live_data_saving_button_pressed = False
         self.live_tracking_temperature = False
         self.live_tracking_ethanol_flowrate = False 
         self.live_tracking_sucrose_flowrate = False
@@ -1137,25 +1131,44 @@ class Functionality(QtWidgets.QMainWindow):
     
     def toggle_LDA_apply(self): 
         if not self.flag_live_data_saving_applied:
-            self.flag_live_data_saving_applied = True
-            self.set_button_style(self.popup.button_LDA_apply, 23)
             folder_name = self.popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.create_live_data_folder(folder_name)
+            folder_created = self.liveDataWorker.create_live_data_folder(folder_name)
+            if folder_created:    
+                self.flag_live_data_saving_applied = True
+                self.set_button_style(self.popup.button_LDA_apply, 23)
+                self.popup.button_LDA_go_live.setEnabled(True)
+                self.reset_button_style(self.popup.button_LDA_go_live, 23)
+            else: 
+                self.flag_live_data_saving_applied = False
+                self.reset_button_style(self.popup.button_LDA_apply, 23)
+                self.grey_out_button(self.popup.button_LDA_go_live, 23)
+                self.popup.button_LDA_go_live.setEnabled(False)
+                self.showFolderExistsDialog()
         else: 
             self.flag_live_data_saving_applied = False
             self.reset_button_style(self.popup.button_LDA_apply, 23)
-
+            self.popup.button_LDA_go_live.setEnabled(False)
+            self.grey_out_button(self.popup.button_LDA_go_live, 23)
+    
+    def showFolderExistsDialog(self):
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Warning)
+        msgBox.setText("The folder already exists. Please try a different name.")
+        msgBox.setWindowTitle("Folder Exists")
+        msgBox.setStandardButtons(QMessageBox.Ok)
+        msgBox.exec_()
 #endregion 
             
 # region : LIVE DATA AQUISITION INSIDE OF AN AUTOMATED WORKFLOW    
     def toggle_LDA_workflow_popup(self): 
-        if not self.experiment_choice_is_locked_in: 
-            self.show_LDA_workflow_popup()
-            self.lock_experiment_choice()
+        if self.live_data_is_logging: 
+            self.warning_dialogue("Attention", "You are currently tracking data outside of a workflow. Please end your live data aquisition session before starting your workflow session")
         else: 
-            self.experiment_choice_is_locked_in = False
-            self.show_end_LDA_workflow_popup()
-            self.unlock_experiment_choice()
+            if not self.experiment_choice_is_locked_in: 
+                self.show_LDA_workflow_popup()
+            else: 
+                self.experiment_choice_is_locked_in = False
+                self.show_end_LDA_workflow_popup()
 
     def lock_experiment_choice(self): 
         self.set_button_style(self.ui.user_info_lockin_button)
@@ -1275,17 +1288,17 @@ class Functionality(QtWidgets.QMainWindow):
     
     def workflow_go_live(self):
         self.workflow_live_data_is_logging = True                            # GUI thread flag once go live has been pressed
-        self.experiment_choice_is_locked_in = True                    # GUI thread flag for the side bar button being pressed
+        self.experiment_choice_is_locked_in = True                   # GUI thread flag for the side bar button being pressed
         #self.liveDataWorker.start_saving_live_non_pg_data(True)     # Live data saving thread flag
-
         border_style = "#centralwidget { border: 7px solid blue; }"
         self.ui.centralwidget.setStyleSheet(border_style)
-
+        self.lock_experiment_choice()
         print("Going live and starting data saving...")
     
     def workflow_end_go_live(self):
         border_style = "#centralwidget { border: 0px solid green; }"
         self.ui.centralwidget.setStyleSheet(border_style)
+        self.unlock_experiment_choice()
 
         header_values = {
             "Name": self.workflow_LDA_popup.combobox_LDA_user_name.currentText(),
@@ -1302,7 +1315,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.workflow_live_data_is_logging = False
         #self.liveDataWorker.start_saving_live_non_pg_data(False)
-        self.workflow_starting_a_live_data_session = False
+        self.live_data_saving_button_pressed = False
         self.workflow_live_tracking_temperature = False
         self.workflow_live_tracking_ethanol_flowrate = False 
         self.workflow_live_tracking_sucrose_flowrate = False
@@ -1316,11 +1329,17 @@ class Functionality(QtWidgets.QMainWindow):
         if not self.flag_workflow_live_data_saving_applied:
             self.flag_workflow_live_data_saving_applied = True
             self.set_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
+            
+            self.reset_button_style(self.workflow_LDA_popup.button_LDA_go_live, 23)
+            self.workflow_LDA_popup.button_LDA_go_live.setEnabled(True)
+
             #folder_name = self.popup.line_edit_LDA_folder_name.text()
             #self.liveDataWorker.create_live_data_folder(folder_name)
         else: 
-            self.flag_worklow_live_data_saving_applied = False
+            self.flag_workflow_live_data_saving_applied = False
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
+            self.grey_out_button(self.workflow_LDA_popup.button_LDA_go_live)
+            self.workflow_LDA_popup.button_LDA_go_live.setEnabled(True)
 
 # endregion
 
@@ -1387,6 +1406,18 @@ class Functionality(QtWidgets.QMainWindow):
 
             QPushButton:pressed {{
                 background-color: #0796FF;
+            }}
+        """)
+
+    def grey_out_button(self, button, font_size =30): 
+        button.setStyleSheet(f"""
+            QPushButton {{
+                border: 2px solid #444444;
+                border-radius: 10px;
+                background-color: #333333;
+                color: #AAAAAA;
+                font-family: Archivo;
+                font-size: {font_size}px;
             }}
         """)
 
@@ -1485,6 +1516,15 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.spacing_placeholder11.hide()
         self.ui.spacing_placeholder12.hide()
 
+    def warning_dialogue(self, title="Default Title", description="Default Description"):
+        self.title = title
+        self.description = description
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Warning)
+        msgBox.setText(self.description)
+        msgBox.setWindowTitle(self.title)
+        msgBox.setStandardButtons(QMessageBox.Ok)
+        msgBox.exec_()
 #endregion
 
 # region : CHANGING PAGES 
