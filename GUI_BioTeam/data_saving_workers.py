@@ -65,6 +65,7 @@ class DataSavingWorker(QObject):
         Creates a data folder at a predefined base path and an empty 'activity_log.csv' file within that folder.
 
         :param folder_name: The name of the folder where the file will be created.
+        :returns: True if the folder and file were successfully created, False otherwise.
         """
         # Hard-coded base path where the folder will be created
         base_path = r"C:\Users\BSG2_UI\OneDrive\Desktop"
@@ -75,8 +76,7 @@ class DataSavingWorker(QObject):
         # Check if the folder already exists
         if os.path.exists(folder_path):
             print(f"Folder '{folder_path}' already exists.")
-            self.folderExistsSignal.emit()  # Emit the signal
-            return
+            return False
         
         try:
             # Create the folder if it doesn't exist
@@ -89,9 +89,11 @@ class DataSavingWorker(QObject):
                 writer = csv.writer(file)
                 writer.writerow(["Timestamp", "Command"])  # Define headers for the CSV
             print(f"Activity log CSV file created at: {file_path}")
+            return True
         except Exception as e:
             print(f"Failed to create folder or CSV file: {str(e)}")
- 
+            return False
+    
     def save_non_pg_data_to_csv(self, folder_name):
         """Saves the aggregated data to a CSV file."""
         # Use string formatting to insert the folder name

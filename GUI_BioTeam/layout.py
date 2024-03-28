@@ -349,7 +349,8 @@ class PopupWindow(QDialog):
         self.reset_button_style(self.button_LDA_apply)
 
         self.button_LDA_go_live = QtWidgets.QPushButton("Go Live")  # Set the text to empty since we are using an image
-        self.reset_button_style(self.button_LDA_go_live)
+        self.button_LDA_go_live.setEnabled(False)
+        self.set_button_style(self.button_LDA_go_live, 23, False)
 
 
         layout_LDA_apply_live.addWidget(self.button_LDA_apply)
@@ -374,21 +375,6 @@ class PopupWindow(QDialog):
         self.setLayout(main_vertical_layout)
         self.setStyleSheet("background-color: #222222;")
 
-    def set_button_style(self, button, font_size=30):
-        button.setStyleSheet(f"""
-            QPushButton {{
-                border: 2px solid white;
-                border-radius: 10px;
-                background-color: #0796FF;
-                color: #FFFFFF;
-                font-family: Archivo;
-                font-size: {font_size}px;
-            }}
-
-            QPushButton:hover {{
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }}
-        """)
 
     def reset_button_style(self, button, font_size=23):
         button.setStyleSheet(f"""
@@ -409,6 +395,38 @@ class PopupWindow(QDialog):
                 background-color: #0796FF;
             }}
         """)
+
+    def set_button_style(self, button, font_size=23, enabled=True):
+        if enabled:
+            button.setStyleSheet(f"""
+                QPushButton {{
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #222222;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: {font_size}px;
+                }}
+
+                QPushButton:hover {{
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }}
+
+                QPushButton:pressed {{
+                    background-color: #0796FF;
+                }}
+            """)
+        else:
+            button.setStyleSheet(f"""
+                QPushButton {{
+                    border: 2px solid #444444;
+                    border-radius: 10px;
+                    background-color: #333333;
+                    color: #AAAAAA;
+                    font-family: Archivo;
+                    font-size: {font_size}px;
+                }}
+            """)
 
 class EndPopupWindow(QDialog):
     def __init__(self):

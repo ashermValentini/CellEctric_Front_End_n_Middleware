@@ -1,7 +1,8 @@
-
+#===============================================================================
+# Live Data Aquisition Pop Up Stylings
+#===============================================================================
 medium_temperature_number_style = "QLabel { color : #FF940A; font-family: Archivo; font-size: 30px;  }"
 high_temperature_number_style = "QLabel { color : #FF0000; font-family: Archivo; font-size: 30px;  }"
-
 title_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 40px; font-weight: bold; }"
 subtitle_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px;  }"
 input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 23px;  }"
