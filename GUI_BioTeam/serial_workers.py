@@ -80,7 +80,7 @@ class ESP32SerialWorker(QObject):
 
     def parse_and_emit_data(self, line):
         # Print the raw line for debugging
-        print(f"Raw line received: {line}")
+        #print(f"Raw line received: {line}")
 
         try:
             # Find the second occurrence of 'P' and the first occurrence of 'F'
@@ -111,7 +111,7 @@ class ESP32SerialWorker(QObject):
         self._lock.lock()
         try:
             if self.esp32_RTOS_serial.serial_device and self.esp32_RTOS_serial.serial_device.is_open:
-                print(f"Sending message: {message}")
+                print(f"Sending message to 3PAC: {message}")
                 self.esp32_RTOS_serial.serial_device.write(message.encode())
         finally:
             self._lock.unlock()
@@ -171,3 +171,48 @@ class PulseGeneratorSerialWorker(QObject):
         self._is_running = False
         self._lock.unlock()
 
+class PeristalticDriverWorker(QObject):
+
+    interval = 250  
+    def __init__(self, esp32_RTOS_serial):
+        super(PeristalticDriverWorker, self).__init__()
+        self.esp32_RTOS_serial = esp32_RTOS_serial
+        self._is_running = False
+        self._lock = QMutex()
+
+    @pyqtSlot()
+    def run(self):
+        self._is_running = True
+        while self._is_running:
+            QThread.msleep(self.interval)
+            self._lock.lock()
+            line = self.read_serial_line()
+            self._lock.unlock()
+            if line:
+                self.parse_and_emit_data(line)
+
+    def read_serial_line(self):
+        if self.esp32_RTOS_serial.serial_device.in_waiting:
+            return self.esp32_RTOS_serial.serial_device.readline().decode('utf-8').strip()
+        return None
+
+    def parse_and_emit_data(self, line):
+        print(f"Raw line received: {line}")
+
+    def write_serial_message(self, message):
+        self._lock.lock()
+        try:
+            if self.esp32_RTOS_serial.serial_device and self.esp32_RTOS_serial.serial_device.is_open:
+                try: 
+                    print(f"Message '{message}'sent to the peristaltic driver.")
+                    self.esp32_RTOS_serial.serial_device.write(message.encode())
+                except Exception as e: 
+                    print(f"Failed to send message Error: {e}")
+        finally:
+            self._lock.unlock()
+
+    @pyqtSlot()
+    def stop(self):
+        self._lock.lock()
+        self._is_running = False
+        self._lock.unlock()

@@ -25,10 +25,12 @@ from data_saving_workers import DataSavingWorker
 from serial_connections import SerialConnections
 from serial_connections import TemperatureSensorSerial
 from serial_connections import ESP32Serial
+from serial_connections import SerialDeviceBySerialNumber
 
 from serial_workers import TempWorker
 from serial_workers import ESP32SerialWorker
 from serial_workers import PulseGeneratorSerialWorker
+from serial_workers import PeristalticDriverWorker
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -56,6 +58,7 @@ PSU_PRODUCT_ID = 0x0100
 PG_PRODUCT_ID = 0x0200       
 TEMPERATURE_SENSOR_VENDOR_ID = 0x0403  
 TEMPERATURE_SENSOR_PRODUCT_ID = 0x6015
+PERISTALTIC_DRIVER_1_SERIAL_NUMBER = "5E4E48DBEFE6ED11B506BB5E0B2AF5AB"
 
 #========================
 # MAIN GUI THREAD
@@ -75,7 +78,7 @@ class Functionality(QtWidgets.QMainWindow):
         # Initialize application flags 
         #==============================================================================================================================================================================================================================
         #region:
-        self.flag_connections = [False, False, False, False]# These flags should be changed to true if a serial device is succesfully created AND the port is opened 
+        self.flag_connections = [False, False, False, False, False]# These flags should be changed to true if a serial device is succesfully created AND the port is opened 
 
         self.temp_is_plotting = False
         self.voltage_is_plotting = False
@@ -153,17 +156,19 @@ class Functionality(QtWidgets.QMainWindow):
         # Start serial connections
         #==============================================================================================================================================================================================================================
         #region:
-        self.device_serials= [None, None,None, None]                                # device_serials = [PSU, PG, 3PAC, temperature_sensor]
+        self.device_serials= [None, None,None, None, None]                                # device_serials = [PSU, PG, 3PAC, temperature_sensor]
         
         esp32_RTOS_serial = ESP32Serial()
         temperature_sensor_serial = TemperatureSensorSerial(TEMPERATURE_SENSOR_VENDOR_ID, TEMPERATURE_SENSOR_PRODUCT_ID) # Create Instance of TemperatureSensorSerial Class   
         pulse_generator_serial = SerialConnections(PG_PSU_VENDOR_ID, PG_PRODUCT_ID)
         psu_serial = SerialConnections(PG_PSU_VENDOR_ID, PSU_PRODUCT_ID)
+        peristaltic_driver_serial = SerialDeviceBySerialNumber(serial_number = PERISTALTIC_DRIVER_1_SERIAL_NUMBER)
         
         self.device_serials[0] = psu_serial.establish_connection()
         self.device_serials[1] = pulse_generator_serial.establish_connection()
         self.device_serials[2] = esp32_RTOS_serial.establish_connection()        
-        self.device_serials[3] = temperature_sensor_serial.establish_connection() # Create a temperature sensor serial device 
+        self.device_serials[3] = temperature_sensor_serial.establish_connection() 
+        self.device_serials[4] = peristaltic_driver_serial.establish_connection(baud_rate = 115200)
 
         if self.device_serials[0] is not None and self.device_serials[0].isOpen():
             self.flag_connections[0] = True
@@ -173,6 +178,8 @@ class Functionality(QtWidgets.QMainWindow):
             self.flag_connections[2] = True
         if self.device_serials[3] is not None:
             self.flag_connections[3] = True
+        if self.device_serials[4] is not None and self.device_serials[4].isOpen():
+            self.flag_connections[4] = True
 
         #endregion
         #==============================================================================================================================================================================================================================
@@ -182,9 +189,6 @@ class Functionality(QtWidgets.QMainWindow):
         self.liveDataWorker = DataSavingWorker()
         self.liveDataThread = QThread()
         self.liveDataWorker.moveToThread(self.liveDataThread)
-        #self.liveDataWorker.folderExistsSignal.connect(self.toggle_LDA_apply)
-        #self.liveDataWorker.folderExistsSignal.connect(self.showFolderExistsDialog)
-
         self.liveDataThread.start()
 
         #data saving initation for current and voltage which is different to non pg data since the bio team is using octave for the time being
@@ -231,6 +235,18 @@ class Functionality(QtWidgets.QMainWindow):
 
             self.esp32Thread.started.connect(self.esp32Worker.run)  
             self.esp32Thread.start() 
+        #endregion
+        #===========================================================================================================================================================================================================
+        # Setup ESP32 (3PAC) Worker and Thread
+        #===========================================================================================================================================================================================================
+        #region:
+        if self.flag_connections[4]: 
+            self.peristalticDriverWorker = PeristalticDriverWorker(peristaltic_driver_serial)
+            self.peristalticDriverThread = QThread()
+            self.peristalticDriverWorker.moveToThread(self.peristalticDriverThread) 
+
+            self.peristalticDriverThread.started.connect(self.peristalticDriverWorker.run)  
+            self.peristalticDriverThread.start() 
         #endregion
         #======================================================================================================================================================================================================================================================================================================
         # Setup Pulse Generator and Power Supply Unit Worker and Thread
@@ -533,25 +549,28 @@ class Functionality(QtWidgets.QMainWindow):
                 except ValueError:
                     print("Invalid input in line_edit_sucrose")
                     return 
-                message = f'wFS-418-{FR:.2f}-{V:.1f}\n'
-                print(message)  
-                self.esp32Worker.write_serial_message(message)
+                message3PAC = f'wFS-240-{FR:.2f}-{V:.1f}\n'
+                messagePeristalticDriver = f'sB-{FR}-{V}\n'
+                self.esp32Worker.write_serial_message(message3PAC)
+                self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
 
                 if self.live_data_is_logging: 
                     folder_name = self.popup.line_edit_LDA_folder_name.text()
-                    self.liveDataWorker.save_activity_log(message, folder_name)
+                    self.liveDataWorker.save_activity_log(message3PAC, folder_name)
 
             else: 
                 self.reset_button_style(self.ui.button_sucrose)
                 self.sucrose_is_pumping = False 
                 self.liveDataWorker.set_sucrose_is_running(False) # Data saving thread flag
-                message = f'wFO\n'
-                self.esp32Worker.write_serial_message(message)
+                message3PAC = f'wFO\n'
+                messagePeristalticDriver = f'o\n'
+                self.esp32Worker.write_serial_message(message3PAC)
+                self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
                 self.updateSucroseProgressBar(0)
 
                 if self.live_data_is_logging: 
                     folder_name = self.popup.line_edit_LDA_folder_name.text()
-                    self.liveDataWorker.save_activity_log(message, folder_name)
+                    self.liveDataWorker.save_activity_log(message3PAC, folder_name)
 
     def updateSucroseProgressBar(self, value):
         if self.sucrose_is_pumping:
@@ -583,24 +602,27 @@ class Functionality(QtWidgets.QMainWindow):
                 except ValueError:
                     print("Invalid input in line_edit_sucrose")
                     return 
-                message = f'wFE-168-{FR:.2f}-{V:.1f}\n'  
-                print(message)
-                self.esp32Worker.write_serial_message(message)
+                message3PAC = f'wFE-168-{FR:.2f}-{V:.1f}\n'  
+                messagePeristalticDriver = f'sE-{FR}-{V}\n'  
+                self.esp32Worker.write_serial_message(message3PAC)
+                self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
 
                 if self.live_data_is_logging: 
                     folder_name = self.popup.line_edit_LDA_folder_name.text()
-                    self.liveDataWorker.save_activity_log(message, folder_name)
+                    self.liveDataWorker.save_activity_log(message3PAC, folder_name)
 
             else: 
                 self.reset_button_style(self.ui.button_ethanol)
                 self.ethanol_is_pumping = False 
                 self.liveDataWorker.set_ethanol_is_running(False) # Live data saving flag
-                message = f'wFO\n'
-                self.esp32Worker.write_serial_message(message)
+                message3PAC = f'wFO\n'
+                messagePeristalticDriver = f'o\n'
+                self.esp32Worker.write_serial_message(message3PAC)
+                self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
                 self.updateEthanolProgressBar(0)
                 if self.live_data_is_logging: 
                     folder_name = self.popup.line_edit_LDA_folder_name.text()
-                    self.liveDataWorker.save_activity_log(message, folder_name)
+                    self.liveDataWorker.save_activity_log(message3PAC, folder_name)
                 
     def updateEthanolProgressBar(self, value):
         if self.ethanol_is_pumping:

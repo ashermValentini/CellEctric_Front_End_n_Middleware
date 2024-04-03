@@ -8,7 +8,7 @@ class DataSavingWorker(QObject):
     error = pyqtSignal(str)
     folderExistsSignal = pyqtSignal()
 
-    def __init__(self, aggregation_interval=1000):
+    def __init__(self, aggregation_interval=250):
         super(DataSavingWorker, self).__init__()
         self.data_aggregated = pd.DataFrame(columns=['timestamp', 'temperature', 'pressure', 'ethanol_flowrate', 'sucrose_flowrate'])
 
