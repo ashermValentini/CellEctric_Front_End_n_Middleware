@@ -104,7 +104,7 @@ class ESP32SerialWorker(QObject):
                 self.update_fluidic_play_pause_buttons.emit(target_volume_reached_state)
                 #print("cb")
         except ValueError as e:
-            #print(f"Error parsing pressure or flow rate: {e}")
+            print(f"Error parsing pressure or flow rate: {e}")
             pass
 
     def write_serial_message(self, message):
@@ -172,6 +172,8 @@ class PulseGeneratorSerialWorker(QObject):
         self._lock.unlock()
 
 class PeristalticDriverWorker(QObject):
+    stop_sucrose = pyqtSignal(bool)
+    stop_ethanol = pyqtSignal(bool)
 
     interval = 250  
     def __init__(self, esp32_RTOS_serial):
@@ -198,6 +200,14 @@ class PeristalticDriverWorker(QObject):
 
     def parse_and_emit_data(self, line):
         print(f"Raw line received: {line}")
+        if line == "Motor 1 has reached its target position.": 
+            print('sending ethanol stop')
+            self.stop_ethanol.emit(1)
+
+        elif line == "Motor 2 has reached its target position.": 
+            print('sending sucrose stop')
+            self.stop_sucrose.emit(1)
+
 
     def write_serial_message(self, message):
         self._lock.lock()

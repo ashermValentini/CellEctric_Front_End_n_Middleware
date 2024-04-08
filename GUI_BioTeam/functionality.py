@@ -58,7 +58,8 @@ PSU_PRODUCT_ID = 0x0100
 PG_PRODUCT_ID = 0x0200       
 TEMPERATURE_SENSOR_VENDOR_ID = 0x0403  
 TEMPERATURE_SENSOR_PRODUCT_ID = 0x6015
-PERISTALTIC_DRIVER_1_SERIAL_NUMBER = "5E4E48DBEFE6ED11B506BB5E0B2AF5AB"
+#PERISTALTIC_DRIVER_1_SERIAL_NUMBER = "5E4E48DBEFE6ED11B506BB5E0B2AF5AB"
+PERISTALTIC_DRIVER_1_SERIAL_NUMBER = "B04F1588CDE6ED118145B45E0B2AF5AB"
 
 #========================
 # MAIN GUI THREAD
@@ -237,13 +238,16 @@ class Functionality(QtWidgets.QMainWindow):
             self.esp32Thread.start() 
         #endregion
         #===========================================================================================================================================================================================================
-        # Setup ESP32 (3PAC) Worker and Thread
+        # Setup Peristaltic Driver Worker and Thread
         #===========================================================================================================================================================================================================
         #region:
         if self.flag_connections[4]: 
             self.peristalticDriverWorker = PeristalticDriverWorker(peristaltic_driver_serial)
             self.peristalticDriverThread = QThread()
             self.peristalticDriverWorker.moveToThread(self.peristalticDriverThread) 
+
+            self.peristalticDriverWorker.stop_sucrose.connect(self.stop_sucrose_pump)
+            self.peristalticDriverWorker.stop_ethanol.connect(self.stop_ethanol_pump)
 
             self.peristalticDriverThread.started.connect(self.peristalticDriverWorker.run)  
             self.peristalticDriverThread.start() 
@@ -282,15 +286,15 @@ class Functionality(QtWidgets.QMainWindow):
         # 1 Sucrose frame functionality 
         #==============================================================================================================================================================================================================================
         #region:
-        if self.flag_connections[2]: 
-            self.ui.button_sucrose.pressed.connect(self.start_stop_sucrose_pump)
+        if self.flag_connections[2] or self.flag_connections[4]: 
+            self.ui.button_sucrose.pressed.connect(self.toggle_sucrose_button)
         #endregion
         #==============================================================================================================================================================================================================================
         # 2 Ethanol frame functionality 
         #==============================================================================================================================================================================================================================
         #region:
-        if self.flag_connections[2]: 
-            self.ui.button_ethanol.pressed.connect(self.start_stop_ethanol_pump)  
+        if self.flag_connections[2] or self.flag_connections[4]: 
+            self.ui.button_ethanol.pressed.connect(self.toggle_ethanol_pump)  
         #endregion
         #==============================================================================================================================================================================================================================
         # 2 Pressure frame functionality 
@@ -444,7 +448,8 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.ui.save_experiment_data_frame.reset_button.pressed.connect(self.reset_all_DEMO_progress_bars)
         #endregion
-
+        #just for now so that i dont have to home the motors every single fucking time 
+        self.enable_motor_buttons()
 
 # region : PG LIVE DATA SAVING NOTE: move this method to the data saving class 
 
@@ -536,41 +541,49 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion
 
 # region : PUMPS
-    def start_stop_sucrose_pump(self):
-        if not self.ethanol_is_pumping:
-            if not self.sucrose_is_pumping:   
-                self.close_pressure_release_valve()
-                self.set_button_style(self.ui.button_sucrose)
-                self.sucrose_is_pumping = True                      # GUI flag 
-                self.liveDataWorker.set_sucrose_is_running(True)    # Data saving thread flag
-                try:
-                    FR = float(self.ui.line_edit_sucrose.text())
-                    V = float(self.ui.line_edit_sucrose_2.text())
-                except ValueError:
-                    print("Invalid input in line_edit_sucrose")
-                    return 
-                message3PAC = f'wFS-240-{FR:.2f}-{V:.1f}\n'
-                messagePeristalticDriver = f'sB-{FR}-{V}\n'
-                self.esp32Worker.write_serial_message(message3PAC)
-                self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
 
-                if self.live_data_is_logging: 
-                    folder_name = self.popup.line_edit_LDA_folder_name.text()
-                    self.liveDataWorker.save_activity_log(message3PAC, folder_name)
-
+    def toggle_sucrose_button(self): 
+        if not self.ethanol_is_pumping: 
+            if not self.sucrose_is_pumping: 
+                self.start_sucrose_pump()
             else: 
-                self.reset_button_style(self.ui.button_sucrose)
-                self.sucrose_is_pumping = False 
-                self.liveDataWorker.set_sucrose_is_running(False) # Data saving thread flag
-                message3PAC = f'wFO\n'
-                messagePeristalticDriver = f'o\n'
-                self.esp32Worker.write_serial_message(message3PAC)
-                self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
-                self.updateSucroseProgressBar(0)
+                self.stop_sucrose_pump()
 
-                if self.live_data_is_logging: 
-                    folder_name = self.popup.line_edit_LDA_folder_name.text()
-                    self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+    def start_sucrose_pump(self): 
+        self.close_pressure_release_valve()
+        self.set_button_style(self.ui.button_sucrose)
+        self.sucrose_is_pumping = True                      # GUI flag 
+        self.liveDataWorker.set_sucrose_is_running(True)    # Data saving thread flag
+        try:
+
+            FR = float(self.ui.line_edit_sucrose.text())
+            V = float(self.ui.line_edit_sucrose_2.text())
+
+        except ValueError:
+            print("Invalid input in line_edit_sucrose")
+            return 
+        message3PAC = f'wFS-405-{FR:.2f}-{V:.1f}\n'
+        messagePeristalticDriver = f'sB-{FR}-{V}-0.175\n'
+        self.esp32Worker.write_serial_message(message3PAC)
+        self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
+
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+
+    def stop_sucrose_pump(self): 
+        self.reset_button_style(self.ui.button_sucrose)
+        self.sucrose_is_pumping = False 
+        self.liveDataWorker.set_sucrose_is_running(False) # Data saving thread flag
+        message3PAC = f'wFO\n'
+        messagePeristalticDriver = f'o\n'
+        self.esp32Worker.write_serial_message(message3PAC)
+        self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
+        self.updateSucroseProgressBar(0)
+
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
 
     def updateSucroseProgressBar(self, value):
         if self.sucrose_is_pumping:
@@ -588,7 +601,45 @@ class Functionality(QtWidgets.QMainWindow):
                 self.ui.progress_bar_sucrose.setValue(0)
         else: 
             self.ui.progress_bar_sucrose.setValue(0)
-         
+
+    def toggle_ethanol_pump(self): 
+        if not self.sucrose_is_pumping:
+            if not self.ethanol_is_pumping: 
+                self.start_ethanol_pump()
+            else: 
+                self.stop_ethanol_pump()
+    def start_ethanol_pump(self): 
+        self.close_pressure_release_valve()
+        self.ethanol_is_pumping = True  # GUI flag 
+        self.liveDataWorker.set_ethanol_is_running(True) # Live data saving flag
+        self.set_button_style(self.ui.button_ethanol)
+        try:
+            FR = float(self.ui.line_edit_ethanol.text())
+            V = float(self.ui.line_edit_ethanol_2.text())
+        except ValueError:
+            print("Invalid input in line_edit_sucrose")
+            return 
+        message3PAC = f'wFE-168-{FR:.2f}-{V:.1f}\n'  
+        messagePeristalticDriver = f'sE-{FR}-{V}-0.175\n'  
+        self.esp32Worker.write_serial_message(message3PAC)
+        self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
+
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+    def stop_ethanol_pump(self): 
+        self.reset_button_style(self.ui.button_ethanol)
+        self.ethanol_is_pumping = False 
+        self.liveDataWorker.set_ethanol_is_running(False) # Live data saving flag
+        message3PAC = f'wFO\n'
+        messagePeristalticDriver = f'o\n'
+        self.esp32Worker.write_serial_message(message3PAC)
+        self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
+        self.updateEthanolProgressBar(0)
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+
     def start_stop_ethanol_pump(self):
         if not self.sucrose_is_pumping:
             if not self.ethanol_is_pumping: 
@@ -603,7 +654,7 @@ class Functionality(QtWidgets.QMainWindow):
                     print("Invalid input in line_edit_sucrose")
                     return 
                 message3PAC = f'wFE-168-{FR:.2f}-{V:.1f}\n'  
-                messagePeristalticDriver = f'sE-{FR}-{V}\n'  
+                messagePeristalticDriver = f'sE-{FR}-{V}-0.182\n'  
                 self.esp32Worker.write_serial_message(message3PAC)
                 self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
 
@@ -922,7 +973,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         message = f'wMB-{volume_str}-{speed_str}\n'
         #print(message)   
-        #self.esp32Worker.write_serial_message(message)
+        self.esp32Worker.write_serial_message(message)
         writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
@@ -989,15 +1040,6 @@ class Functionality(QtWidgets.QMainWindow):
 
             if motornumber == 0:
                 print("HOMING STARTED FOR ALL MOTORS")
-                self.ui.button_blood_down.setEnabled(True)
-                self.ui.button_blood_up.setEnabled(True)
-                self.ui.button_blood_play_pause.setEnabled(True)
-                self.ui.button_flask_up.setEnabled(True)
-                self.ui.button_flask_down.setEnabled(True)
-                self.ui.button_flask_right.setEnabled(True)
-                self.ui.button_flask_left.setEnabled(True)
-                self.ui.button_cartridge_up.setEnabled(True)
-                self.ui.button_cartridge_down.setEnabled(True)
             else:
                 print("HOMING STARTED FOR MOTOR {}".format(motornumber))      
 
@@ -1444,15 +1486,23 @@ class Functionality(QtWidgets.QMainWindow):
         """)
 
     def enable_motor_buttons(self): 
+
+        self.ui.button_blood_down.setEnabled(True)
+        self.ui.button_blood_up.setEnabled(True)
+        self.ui.button_blood_play_pause.setEnabled(True)
+        self.ui.button_flask_up.setEnabled(True)
+        self.ui.button_flask_down.setEnabled(True)
+        self.ui.button_flask_right.setEnabled(True)
+        self.ui.button_flask_left.setEnabled(True)
+        self.ui.button_cartridge_up.setEnabled(True)
+        self.ui.button_cartridge_down.setEnabled(True)
         self.reset_button_style(self.ui.button_blood_up)
         self.reset_button_style(self.ui.button_blood_down)
         self.reset_button_style(self.ui.button_blood_play_pause)
-
         self.reset_button_style(self.ui.button_flask_down)
         self.reset_button_style(self.ui.button_flask_up)
         self.reset_button_style(self.ui.button_flask_left)
         self.reset_button_style(self.ui.button_flask_right)
-
         self.reset_button_style(self.ui.button_cartridge_down)
         self.reset_button_style(self.ui.button_cartridge_up)
 
