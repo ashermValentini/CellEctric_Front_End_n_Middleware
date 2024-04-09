@@ -540,7 +540,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.current_temp_data.setText(f"{self.current_temp}°")
 #endregion
 
-# region : PUMPS
+# region : SUCROSE PUMP
 
     def toggle_sucrose_button(self): 
         if not self.ethanol_is_pumping: 
@@ -562,8 +562,8 @@ class Functionality(QtWidgets.QMainWindow):
         except ValueError:
             print("Invalid input in line_edit_sucrose")
             return 
-        message3PAC = f'wFS-405-{FR:.2f}-{V:.1f}\n'
-        messagePeristalticDriver = f'sB-{FR}-{V}-0.175\n'
+        message3PAC = f'wFS-410-{FR:.2f}-{V:.1f}\n'
+        messagePeristalticDriver = f'sB-{FR}-{V}-0.171\n'
         self.esp32Worker.write_serial_message(message3PAC)
         self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
 
@@ -601,13 +601,16 @@ class Functionality(QtWidgets.QMainWindow):
                 self.ui.progress_bar_sucrose.setValue(0)
         else: 
             self.ui.progress_bar_sucrose.setValue(0)
+#endregion
 
+# region: ETHANOL PUMP
     def toggle_ethanol_pump(self): 
         if not self.sucrose_is_pumping:
             if not self.ethanol_is_pumping: 
                 self.start_ethanol_pump()
             else: 
                 self.stop_ethanol_pump()
+    
     def start_ethanol_pump(self): 
         self.close_pressure_release_valve()
         self.ethanol_is_pumping = True  # GUI flag 
@@ -619,14 +622,15 @@ class Functionality(QtWidgets.QMainWindow):
         except ValueError:
             print("Invalid input in line_edit_sucrose")
             return 
-        message3PAC = f'wFE-168-{FR:.2f}-{V:.1f}\n'  
-        messagePeristalticDriver = f'sE-{FR}-{V}-0.175\n'  
+        message3PAC = f'wFE-172-{FR:.2f}-{V:.1f}\n'  
+        messagePeristalticDriver = f'sE-{FR}-{V}-0.169\n'  
         self.esp32Worker.write_serial_message(message3PAC)
         self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
 
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+    
     def stop_ethanol_pump(self): 
         self.reset_button_style(self.ui.button_ethanol)
         self.ethanol_is_pumping = False 
@@ -639,42 +643,7 @@ class Functionality(QtWidgets.QMainWindow):
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message3PAC, folder_name)
-
-    def start_stop_ethanol_pump(self):
-        if not self.sucrose_is_pumping:
-            if not self.ethanol_is_pumping: 
-                self.close_pressure_release_valve()
-                self.ethanol_is_pumping = True  # GUI flag 
-                self.liveDataWorker.set_ethanol_is_running(True) # Live data saving flag
-                self.set_button_style(self.ui.button_ethanol)
-                try:
-                    FR = float(self.ui.line_edit_ethanol.text())
-                    V = float(self.ui.line_edit_ethanol_2.text())
-                except ValueError:
-                    print("Invalid input in line_edit_sucrose")
-                    return 
-                message3PAC = f'wFE-168-{FR:.2f}-{V:.1f}\n'  
-                messagePeristalticDriver = f'sE-{FR}-{V}-0.182\n'  
-                self.esp32Worker.write_serial_message(message3PAC)
-                self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
-
-                if self.live_data_is_logging: 
-                    folder_name = self.popup.line_edit_LDA_folder_name.text()
-                    self.liveDataWorker.save_activity_log(message3PAC, folder_name)
-
-            else: 
-                self.reset_button_style(self.ui.button_ethanol)
-                self.ethanol_is_pumping = False 
-                self.liveDataWorker.set_ethanol_is_running(False) # Live data saving flag
-                message3PAC = f'wFO\n'
-                messagePeristalticDriver = f'o\n'
-                self.esp32Worker.write_serial_message(message3PAC)
-                self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
-                self.updateEthanolProgressBar(0)
-                if self.live_data_is_logging: 
-                    folder_name = self.popup.line_edit_LDA_folder_name.text()
-                    self.liveDataWorker.save_activity_log(message3PAC, folder_name)
-                
+         
     def updateEthanolProgressBar(self, value):
         if self.ethanol_is_pumping:
             if value:
@@ -690,7 +659,9 @@ class Functionality(QtWidgets.QMainWindow):
             else:
                 self.ui.progress_bar_ethanol.setValue(0)
         else: self.ui.progress_bar_ethanol.setValue(0)  
+#endregion
 
+# region: PRESSURE
     def toggle_pressure_release_button(self): 
         if self.pressure_release_valve_open: 
             self.close_pressure_release_valve()
@@ -759,7 +730,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.pressure_progress_bar.setValue(int((self.counter / 20) * 100))
         else:
             self.start_stop_increasing_system_pressure()
-
+    #this is a function that is called when the feedback from the 3PAC for volume reached is sent, will not be applicable if peristaltic is chosen
     def update_play_pause_buttons(self): 
         if self.ethanol_is_pumping: 
             self.start_stop_ethanol_pump()
