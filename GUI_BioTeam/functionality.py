@@ -59,7 +59,8 @@ PG_PRODUCT_ID = 0x0200
 TEMPERATURE_SENSOR_VENDOR_ID = 0x0403  
 TEMPERATURE_SENSOR_PRODUCT_ID = 0x6015
 #PERISTALTIC_DRIVER_1_SERIAL_NUMBER = "5E4E48DBEFE6ED11B506BB5E0B2AF5AB"
-PERISTALTIC_DRIVER_1_SERIAL_NUMBER = "B04F1588CDE6ED118145B45E0B2AF5AB"
+#PERISTALTIC_DRIVER_2_SERIAL_NUMBER = "B04F1588CDE6ED118145B45E0B2AF5AB"
+PERISTALTIC_DRIVER_1_SERIAL_NUMBER= "AC16B1A0FBE6ED119069D1770B2AF5AB"
 
 #========================
 # MAIN GUI THREAD
@@ -131,6 +132,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.workflow_live_tracking_pressure = False 
         self.workflow_live_tracking_current = False 
         self.workflow_live_tracking_voltage = False
+
+        #flags for POCII WF
+        self.WF_HV_is_running = False
 
         #endregion
         #==============================================================================================================================================================================================================================
@@ -372,9 +376,9 @@ class Functionality(QtWidgets.QMainWindow):
         #======================================================================================================================================================================================================================================================================================================
         #region:
         if self.flag_connections[0] and self.flag_connections[1]:
-            self.ui.psu_button.pressed.connect(self.start_psu_pg)
+            self.ui.psu_button.pressed.connect(self.toggle_PSU_PG_signal_button)
         
-        self.ui.line_edit_min_signal.setReadOnly(True)                                  #negative value should not be able to be edited
+        self.ui.line_edit_min_signal.setReadOnly(True)                                              #negative value should not be able to be edited
         self.ui.line_edit_max_signal.textChanged.connect(self.line_edit_min_signal_text_changed)    #updates to the positive signal value must be reflected in the negative line edit
 
         #endregion
@@ -447,6 +451,9 @@ class Functionality(QtWidgets.QMainWindow):
         }
 
         self.ui.save_experiment_data_frame.reset_button.pressed.connect(self.reset_all_DEMO_progress_bars)
+        
+        self.ui.high_voltage_frame.start_stop_button.pressed.connect(self.toggle_WF_HV_start_stop_button)
+        
         #endregion
         #just for now so that i dont have to home the motors every single fucking time 
         self.enable_motor_buttons()
@@ -562,7 +569,7 @@ class Functionality(QtWidgets.QMainWindow):
         except ValueError:
             print("Invalid input in line_edit_sucrose")
             return 
-        message3PAC = f'wFS-410-{FR:.2f}-{V:.1f}\n'
+        message3PAC = f'wFS-405-{FR:.2f}-{V:.1f}\n'
         messagePeristalticDriver = f'sB-{FR}-{V}-0.171\n'
         self.esp32Worker.write_serial_message(message3PAC)
         self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
@@ -603,7 +610,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.progress_bar_sucrose.setValue(0)
 #endregion
 
-# region: ETHANOL PUMP
+# region : ETHANOL PUMP
     def toggle_ethanol_pump(self): 
         if not self.sucrose_is_pumping:
             if not self.ethanol_is_pumping: 
@@ -622,7 +629,7 @@ class Functionality(QtWidgets.QMainWindow):
         except ValueError:
             print("Invalid input in line_edit_sucrose")
             return 
-        message3PAC = f'wFE-172-{FR:.2f}-{V:.1f}\n'  
+        message3PAC = f'wFE-160-{FR:.2f}-{V:.1f}\n'  
         messagePeristalticDriver = f'sE-{FR}-{V}-0.169\n'  
         self.esp32Worker.write_serial_message(message3PAC)
         self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
@@ -661,7 +668,7 @@ class Functionality(QtWidgets.QMainWindow):
         else: self.ui.progress_bar_ethanol.setValue(0)  
 #endregion
 
-# region: PRESSURE
+# region : PRESSURE
     def toggle_pressure_release_button(self): 
         if self.pressure_release_valve_open: 
             self.close_pressure_release_valve()
@@ -827,97 +834,100 @@ class Functionality(QtWidgets.QMainWindow):
         self.set_plot_canvas('Voltage (V)', 'Voltage Signal')
 
         self.ui.canvas_voltage.draw()
-   
-    def start_psu_pg(self): 
-        if not self.signal_is_enabled:  
-            
-            pos_setpoint_text = self.ui.line_edit_max_signal.text().strip()
-            neg_setpoint_text = self.ui.line_edit_min_signal.text().strip()
 
-            #self.ui.line_edit_max_signal.setEnabled(False)
-            #self.ui.line_edit_min_signal.setEnabled(False)
-
-            # Validate positive setpoint
-            if not pos_setpoint_text:
-                QMessageBox.warning(self, "Input Error", "The positive setpoint cannot be blank. Please enter a value.")
-                self.ui.line_edit_max_signal.clear()
-                return
-
-            try:
-                pos_setpoint = int(pos_setpoint_text)
-                if not (20 <= pos_setpoint <= 90):
-                    raise ValueError("Positive setpoint out of range.")
-            except ValueError:
-                QMessageBox.warning(self, "Input Error", "Invalid positive setpoint. Please enter an integer between 20 and 90.")
-                self.ui.line_edit_max_signal.clear()
-                return
-
-            # Validate negative setpoint
-            if not neg_setpoint_text:
-                QMessageBox.warning(self, "Input Error", "The negative setpoint cannot be blank. Please enter a value.")
-                self.ui.line_edit_min_signal.clear()
-                return
-
-            try:
-                neg_setpoint = int(neg_setpoint_text)
-                if not (-90 <= neg_setpoint <= -20):
-                    raise ValueError("Negative setpoint out of range.")
-            except ValueError:
-                QMessageBox.warning(self, "Input Error", "Invalid negative setpoint. Please enter an integer between -90 and -20.")
-                self.ui.line_edit_min_signal.clear()
-                return
-
-            print("Setpoints are valid.")
-
-            self.set_button_style(self.ui.psu_button)
-            
-            self.signal_is_enabled = True
-
-            neg_setpoint = abs(neg_setpoint)
-            
-            print(pos_setpoint)
-            print(neg_setpoint)
-            send_PSU_enable(self.device_serials[0], 1)
-            message = "Enabled PSU"
-            if self.live_data_is_logging: 
-                folder_name = self.popup.line_edit_LDA_folder_name.text()
-                self.liveDataWorker.save_activity_log(message, folder_name)
-            time.sleep(.1)
-
-            send_PSU_setpoints(self.device_serials[0], 20, 20, 0)
-            time.sleep(.1)
-
-            send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
-            message = "Sent PSU setpoints"
-            if self.live_data_is_logging: 
-                folder_name = self.popup.line_edit_LDA_folder_name.text()
-                self.liveDataWorker.save_activity_log(message, folder_name)
-
-            self.pgWorker.start_pg()
-            message = "Started PG"
-            if self.live_data_is_logging: 
-                folder_name = self.popup.line_edit_LDA_folder_name.text()
-                self.liveDataWorker.save_activity_log(message, folder_name)
-
+    def toggle_PSU_PG_signal_button(self): 
+        if not self.signal_is_enabled: 
+            self.start_psu_pg()
         else: 
-            
-            self.reset_button_style(self.ui.psu_button)
-            self.signal_is_enabled = False         
-            
-            #self.ui.line_edit_max_signal.setEnabled(True)
-            #self.ui.line_edit_min_signal.setEnabled(True)
+            self.stop_psu_pg()
 
-            send_PSU_disable(self.device_serials[0], 1)
-            message = "Disabled PSU"
-            if self.live_data_is_logging: 
-                folder_name = self.popup.line_edit_LDA_folder_name.text()
-                self.liveDataWorker.save_activity_log(message, folder_name)
+    def start_psu_pg(self):   
+        pos_setpoint_text = self.ui.line_edit_max_signal.text().strip()
+        neg_setpoint_text = self.ui.line_edit_min_signal.text().strip()
 
-            self.pgWorker.stop_pg()
-            message = "Stopped PG"
-            if self.live_data_is_logging: 
-                folder_name = self.popup.line_edit_LDA_folder_name.text()
-                self.liveDataWorker.save_activity_log(message, folder_name)
+        #self.ui.line_edit_max_signal.setEnabled(False)
+        #self.ui.line_edit_min_signal.setEnabled(False)
+
+        # Validate positive setpoint
+        if not pos_setpoint_text:
+            QMessageBox.warning(self, "Input Error", "The positive setpoint cannot be blank. Please enter a value.")
+            self.ui.line_edit_max_signal.clear()
+            return
+
+        try:
+            pos_setpoint = int(pos_setpoint_text)
+            if not (20 <= pos_setpoint <= 90):
+                raise ValueError("Positive setpoint out of range.")
+        except ValueError:
+            QMessageBox.warning(self, "Input Error", "Invalid positive setpoint. Please enter an integer between 20 and 90.")
+            self.ui.line_edit_max_signal.clear()
+            return
+
+        # Validate negative setpoint
+        if not neg_setpoint_text:
+            QMessageBox.warning(self, "Input Error", "The negative setpoint cannot be blank. Please enter a value.")
+            self.ui.line_edit_min_signal.clear()
+            return
+
+        try:
+            neg_setpoint = int(neg_setpoint_text)
+            if not (-90 <= neg_setpoint <= -20):
+                raise ValueError("Negative setpoint out of range.")
+        except ValueError:
+            QMessageBox.warning(self, "Input Error", "Invalid negative setpoint. Please enter an integer between -90 and -20.")
+            self.ui.line_edit_min_signal.clear()
+            return
+
+        print("Setpoints are valid.")
+
+        self.set_button_style(self.ui.psu_button)
+        
+        self.signal_is_enabled = True
+
+        neg_setpoint = abs(neg_setpoint)
+        
+        print(pos_setpoint)
+        print(neg_setpoint)
+        send_PSU_enable(self.device_serials[0], 1)
+        message = "Enabled PSU"
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+        time.sleep(.1)
+
+        send_PSU_setpoints(self.device_serials[0], 20, 20, 0)
+        time.sleep(.1)
+
+        send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
+        message = "Sent PSU setpoints"
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+
+        self.pgWorker.start_pg()
+        message = "Started PG"
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+
+    def stop_psu_pg(self):
+        self.reset_button_style(self.ui.psu_button)
+        self.signal_is_enabled = False         
+        
+        #self.ui.line_edit_max_signal.setEnabled(True)
+        #self.ui.line_edit_min_signal.setEnabled(True)
+
+        send_PSU_disable(self.device_serials[0], 1)
+        message = "Disabled PSU"
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+
+        self.pgWorker.stop_pg()
+        message = "Stopped PG"
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
 
 #endregion
 
@@ -1579,3 +1589,38 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.stack.setCurrentIndex(1)
         
 #endregion 
+
+# region : WF-HV
+    def toggle_WF_HV_start_stop_button(self): 
+        if self.WF_HV_is_running: 
+            self.stop_WF_HV()
+            self.WF_HV_is_running = False
+        else: 
+            self.start_WF_HV()
+            self.WF_HV_is_running = True
+
+    def start_WF_HV(self): 
+        self.start_sucrose_pump()
+        self.start_psu_pg()
+        QTimer.singleShot(10000, self.WF_start_blood_pump)
+        QTimer.singleShot(135000, self.WF_stop_psu_pg)
+
+    def WF_start_blood_pump(self):
+        if self.WF_HV_is_running: 
+            self.start_blood_pump()
+        else: 
+            pass
+    def WF_stop_psu_pg(self): 
+        if self.WF_HV_is_running: 
+            self.stop_psu_pg()
+        else: 
+            pass 
+
+    def stop_WF_HV(self): 
+        self.stop_sucrose_pump()
+        self.stop_psu_pg()
+        self.stop_blood_pump()
+
+
+
+#endregion
