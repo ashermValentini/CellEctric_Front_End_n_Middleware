@@ -449,12 +449,60 @@ class Functionality(QtWidgets.QMainWindow):
             "frame_DEMO_sample_retrieval": 14,
             "save_experiment_data_frame": 2
         }
-
-        self.ui.save_experiment_data_frame.reset_button.pressed.connect(self.reset_all_DEMO_progress_bars)
-        
-        self.ui.high_voltage_frame.start_stop_button.pressed.connect(self.toggle_WF_HV_start_stop_button)
-        
         #endregion
+        #================================================================================================================================================================================================================================================================================================
+        # Experiment page POCII Automation Functionality (im trying to use dictionaries for the first time with an easy application, so yes i could be using intergers here with no real advantage loss but i need to learn dictionaries)
+        #================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
+        #region:
+        POCII_frame_names = [
+            "frame_POCII_system_sterilaty",
+            "frame_POCII_decontaminate_cartridge",
+            "high_voltage_frame",
+            "flush_out_frame",
+            "zero_volt_frame",
+            "safe_disconnect_frame"
+        ]
+
+        self.POCII_timers = {}
+
+        self.POCII_counters = {frame_name: [0] for frame_name in POCII_frame_names}
+
+        for POCII_frame_name in POCII_frame_names:
+            POCII_timer = QtCore.QTimer(self)
+            self.POCII_timers[POCII_frame_name] = POCII_timer
+            POCII_timer.timeout.connect(
+                lambda frame_name=POCII_frame_name: 
+                    self.update_experiment_step_progress_bar(
+                        self.POCII_counters[frame_name], 
+                        self.POCII_timers[frame_name], 
+                        self.POCII_progress_bar_dict[frame_name],
+                        frame_name  
+                    )
+            )
+
+        self.POCII_progress_bar_dict = {
+            "frame_POCII_system_sterilaty": self.ui.frame_POCII_system_sterilaty.progress_bar,
+            "frame_POCII_decontaminate_cartridge": self.ui.frame_POCII_decontaminate_cartridge.progress_bar,
+            "high_voltage_frame": self.ui.high_voltage_frame.progress_bar,
+            "flush_out_frame": self.ui.flush_out_frame.progress_bar,
+            "zero_volt_frame": self.ui.zero_volt_frame.progress_bar,
+            "safe_disconnect_frame": self.ui.safe_disconnect_frame.progress_bar
+        }
+
+        self.POCII_time_intervals = { 
+
+            "frame_POCII_system_sterilaty": 5,
+            "frame_POCII_decontaminate_cartridge": 6,
+            "high_voltage_frame": 33,
+            "flush_out_frame": 26,
+            "zero_volt_frame": 67,
+            "safe_disconnect_frame": 14
+        }
+
+        self.ui.high_voltage_frame.start_stop_button.pressed.connect(self.toggle_WF_HV_start_stop_button)
+        self.ui.high_voltage_frame.reset_button.pressed.connect(self.reset_high_voltage_frame_progress_bar)
+        #endregion
+
         #just for now so that i dont have to home the motors every single fucking time 
         self.enable_motor_buttons()
 
@@ -1009,7 +1057,27 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion 
 
-# region : MOTOR MOVEMENTS (NOT INCLUDING BLOOD MOTOR) NOTE: use the esp worker to send motor commands not the comminication file
+# region : MOTOR (MOVEMENT FUNCTIONS DO NOT INCLUDE BLOOD MOTOR) NOTE: use the esp worker to send motor commands not the comminication file
+    def enable_motor_buttons(self): 
+        self.ui.button_blood_down.setEnabled(True)
+        self.ui.button_blood_up.setEnabled(True)
+        self.ui.button_blood_play_pause.setEnabled(True)
+        self.ui.button_flask_up.setEnabled(True)
+        self.ui.button_flask_down.setEnabled(True)
+        self.ui.button_flask_right.setEnabled(True)
+        self.ui.button_flask_left.setEnabled(True)
+        self.ui.button_cartridge_up.setEnabled(True)
+        self.ui.button_cartridge_down.setEnabled(True)
+        self.reset_button_style(self.ui.button_blood_up)
+        self.reset_button_style(self.ui.button_blood_down)
+        self.reset_button_style(self.ui.button_blood_play_pause)
+        self.reset_button_style(self.ui.button_flask_down)
+        self.reset_button_style(self.ui.button_flask_up)
+        self.reset_button_style(self.ui.button_flask_left)
+        self.reset_button_style(self.ui.button_flask_right)
+        self.reset_button_style(self.ui.button_cartridge_down)
+        self.reset_button_style(self.ui.button_cartridge_up)
+    
     def movement_homing(self, motornumber=0):
         # motornumber = 0 --> ALL MOTORS
         if self.flag_connections[2]:
@@ -1172,6 +1240,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.live_tracking_current = False 
         self.live_tracking_voltage = False
         self.pulse_number = 1
+        self.flag_live_data_saving_applied = False
+
         print("Ending live data saving...")
     
     def toggle_LDA_apply(self): 
@@ -1368,6 +1438,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.workflow_live_tracking_current = False 
         self.workflow_live_tracking_voltage = False
         self.pulse_number = 1
+        self.flag_workflow_live_data_saving_applied = False
         print("Ending live data saving...")
     
     def toggle_LDA_workflow_apply(self): 
@@ -1383,8 +1454,8 @@ class Functionality(QtWidgets.QMainWindow):
         else: 
             self.flag_workflow_live_data_saving_applied = False
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
-            self.grey_out_button(self.workflow_LDA_popup.button_LDA_go_live)
-            self.workflow_LDA_popup.button_LDA_go_live.setEnabled(True)
+            self.grey_out_button(self.workflow_LDA_popup.button_LDA_go_live, 23)
+            self.workflow_LDA_popup.button_LDA_go_live.setEnabled(False)
 
 # endregion
 
@@ -1466,74 +1537,10 @@ class Functionality(QtWidgets.QMainWindow):
             }}
         """)
 
-    def enable_motor_buttons(self): 
-
-        self.ui.button_blood_down.setEnabled(True)
-        self.ui.button_blood_up.setEnabled(True)
-        self.ui.button_blood_play_pause.setEnabled(True)
-        self.ui.button_flask_up.setEnabled(True)
-        self.ui.button_flask_down.setEnabled(True)
-        self.ui.button_flask_right.setEnabled(True)
-        self.ui.button_flask_left.setEnabled(True)
-        self.ui.button_cartridge_up.setEnabled(True)
-        self.ui.button_cartridge_down.setEnabled(True)
-        self.reset_button_style(self.ui.button_blood_up)
-        self.reset_button_style(self.ui.button_blood_down)
-        self.reset_button_style(self.ui.button_blood_play_pause)
-        self.reset_button_style(self.ui.button_flask_down)
-        self.reset_button_style(self.ui.button_flask_up)
-        self.reset_button_style(self.ui.button_flask_left)
-        self.reset_button_style(self.ui.button_flask_right)
-        self.reset_button_style(self.ui.button_cartridge_down)
-        self.reset_button_style(self.ui.button_cartridge_up)
-
-    def update_experiment_step_progress_bar(self, counter, timer, progress_bar, frame_name):
-        interval = self.DEMO_time_intervals[frame_name]
-        
-        counter[0] += 1
-        if counter[0] <= interval:
-            progress_bar.setValue(int((counter[0] / interval) * 100))
-        else:
-            timer.stop()
-            counter[0] = 0
-
     def reset_all_DEMO_progress_bars(self):
         for progress_bar in self.DEMO_progress_bar_dict.values():
             progress_bar.setValue(0)   
-
-    def create_POCII_experiment_page(self):
-        self.ui.frame_POCII_system_sterilaty.show()
-        self.ui.frame_POCII_decontaminate_cartridge.show()
-        self.ui.high_voltage_frame.show()
-        self.ui.flush_out_frame.show()
-        self.ui.zero_volt_frame.show()
-        self.ui.safe_disconnect_frame.show()
-        self.ui.save_experiment_data_frame.show()
-
-        self.ui.spacing_placeholder1.show()
-        self.ui.spacing_placeholder2.show()
-        self.ui.spacing_placeholder3.show()
-        self.ui.spacing_placeholder4.show()
-        self.ui.spacing_placeholder5.show()
-        self.ui.spacing_placeholder6.show()
-    
-    def destroy_POCII_experiment_page(self): 
-
-        self.ui.frame_POCII_system_sterilaty.hide()
-        self.ui.frame_POCII_decontaminate_cartridge.hide()
-        self.ui.high_voltage_frame.hide()
-        self.ui.flush_out_frame.hide()
-        self.ui.zero_volt_frame.hide()
-        self.ui.safe_disconnect_frame.hide()
-        self.ui.save_experiment_data_frame.hide()
-
-        self.ui.spacing_placeholder1.hide()
-        self.ui.spacing_placeholder2.hide()
-        self.ui.spacing_placeholder3.hide()
-        self.ui.spacing_placeholder4.hide()
-        self.ui.spacing_placeholder5.hide()
-        self.ui.spacing_placeholder6.hide()
-   
+ 
     def create_DEMO_experiment_page(self):
 
         self.ui.frame_DEMO_close_fluidic_circuit.show()
@@ -1590,37 +1597,108 @@ class Functionality(QtWidgets.QMainWindow):
         
 #endregion 
 
+# region : POCII
+
+# region : UI FRAMES
+    def create_POCII_experiment_page(self):
+        self.ui.frame_POCII_system_sterilaty.show()
+        self.ui.frame_POCII_decontaminate_cartridge.show()
+        self.ui.high_voltage_frame.show()
+        self.ui.flush_out_frame.show()
+        self.ui.zero_volt_frame.show()
+        self.ui.safe_disconnect_frame.show()
+
+
+        self.ui.spacing_placeholder1.show()
+        self.ui.spacing_placeholder2.show()
+        self.ui.spacing_placeholder3.show()
+        self.ui.spacing_placeholder4.show()
+        self.ui.spacing_placeholder5.show()
+
+    
+    def destroy_POCII_experiment_page(self): 
+
+        self.ui.frame_POCII_system_sterilaty.hide()
+        self.ui.frame_POCII_decontaminate_cartridge.hide()
+        self.ui.high_voltage_frame.hide()
+        self.ui.flush_out_frame.hide()
+        self.ui.zero_volt_frame.hide()
+        self.ui.safe_disconnect_frame.hide()
+
+
+        self.ui.spacing_placeholder1.hide()
+        self.ui.spacing_placeholder2.hide()
+        self.ui.spacing_placeholder3.hide()
+        self.ui.spacing_placeholder4.hide()
+        self.ui.spacing_placeholder5.hide()
+    
+    def update_experiment_step_progress_bar(self, counter, timer, progress_bar, frame_name):
+        FR = float(self.ui.line_edit_sucrose.text())
+        V = float(self.ui.line_edit_sucrose.text())
+        interval = (1/FR) * V * 60 
+        
+        counter[0] += 1
+        if counter[0] <= interval:
+            progress_bar.setValue(int((counter[0] / interval) * 100))
+        else:
+            timer.stop()
+            counter[0] = 0
+
+    def reset_high_voltage_frame_progress_bar(self):
+        self.ui.high_voltage_frame.progress_bar.setValue(0)   
+#endregion
 # region : WF-HV
     def toggle_WF_HV_start_stop_button(self): 
         if self.WF_HV_is_running: 
-            self.stop_WF_HV()
+            self.stop_interrupt_WF_HV()
             self.WF_HV_is_running = False
         else: 
             self.start_WF_HV()
             self.WF_HV_is_running = True
 
     def start_WF_HV(self): 
+        self.set_button_style(self.ui.high_voltage_frame.start_stop_button)
         self.start_sucrose_pump()
         self.start_psu_pg()
+        FR = float(self.ui.line_edit_sucrose.text())
+        V = float(self.ui.line_edit_sucrose.text())
+        total_HV_WF_time = (1/FR) * V * 60 * 1000
+        total_HV_WF_time_int = int(round(total_HV_WF_time))
         QTimer.singleShot(10000, self.WF_start_blood_pump)
-        QTimer.singleShot(135000, self.WF_stop_psu_pg)
+        QTimer.singleShot(total_HV_WF_time_int, self.WF_stop_psu_pg)
+        QTimer.singleShot(total_HV_WF_time_int, self.stop_timed_WF_HV)
+        frame_name = "high_voltage_frame"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].start(1000)  
 
     def WF_start_blood_pump(self):
         if self.WF_HV_is_running: 
             self.start_blood_pump()
         else: 
             pass
+    
     def WF_stop_psu_pg(self): 
         if self.WF_HV_is_running: 
             self.stop_psu_pg()
         else: 
             pass 
 
-    def stop_WF_HV(self): 
+    def stop_interrupt_WF_HV(self): 
+        self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
         self.stop_sucrose_pump()
         self.stop_psu_pg()
         self.stop_blood_pump()
-
-
-
+        frame_name = "high_voltage_frame"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].stop()
+        
+    
+    def stop_timed_WF_HV(self): 
+        if self.WF_HV_is_running: 
+            self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
+            self.stop_psu_pg()
+            self.WF_HV_is_running = False
+        else:
+            pass
+#endregion
 #endregion
