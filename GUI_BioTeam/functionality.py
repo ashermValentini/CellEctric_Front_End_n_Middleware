@@ -3,7 +3,7 @@ import sys
 import os
 import serial
 import pandas as pd
-import datetime
+from datetime import datetime  # This allows you to use datetime.now()
 
 from scipy.signal import butter, filtfilt
 
@@ -236,7 +236,6 @@ class Functionality(QtWidgets.QMainWindow):
             self.esp32Worker.update_flowrate.connect(self.liveDataWorker.update_sucrose_flowrate_data)
             self.esp32Worker.update_flowrate.connect(self.liveDataWorker.update_ethanol_flowrate_data)
             self.esp32Worker.update_pressure.connect(self.liveDataWorker.update_pressure_data)
-            self.esp32Worker.update_fluidic_play_pause_buttons.connect(self.update_play_pause_buttons) 
 
             self.esp32Thread.started.connect(self.esp32Worker.run)  
             self.esp32Thread.start() 
@@ -506,48 +505,6 @@ class Functionality(QtWidgets.QMainWindow):
         #just for now so that i dont have to home the motors every single fucking time 
         self.enable_motor_buttons()
 
-# region : PG LIVE DATA SAVING NOTE: move this method to the data saving class 
-
-    def save_pg_data_to_csv(self, pg_data, temp_data):
-        # Construct the file name based on the current date and time
-        current_time = datetime.datetime.now()
-        filename = current_time.strftime("%Y%m%d_%H%M%S") + "_experiment_data.csv"
-
-        # Define the directory where the file will be saved
-        save_directory = r"C:\Users\BSG2_UI\OneDrive\Desktop\Experiments"  # Use raw string for Windows paths
-        full_path = os.path.join(save_directory, filename)
-        
-        # Create a DataFrame for the header information
-        header_info = [
-                f"Date: {current_time.strftime("%Y-%m-%d %H:%M:%S")}",
-                f"#Pulse Number: {self.pulse_number}",
-                f"#Voltage Pos: {self.ui.line_edit_max_signal.text()}",
-                f"#Voltage Neg: {self.ui.line_edit_min_signal.text()}",
-                f"#Temperature: {temp_data}",
-                "#Pulse Length: 75,00",
-                "#Transistor on time: 75",
-                "#Rate: 200"
-            ]
-        
-
-        # Calculate the pulse number (assuming the method is called every 10 seconds)
-        self.pulse_number = self.pulse_number + 1
-
-        header_df = pd.DataFrame({'Column1': header_info,'Column2': ['']*len(header_info)})
-
-        # Create a DataFrame for the data
-        voltage_data_df = pd.DataFrame({'Column1': pg_data[:, 0]})
-        current_data_df = pd.DataFrame({'Column2': pg_data[:, 1] })
-
-        combined_pg_data_df = pd.concat([voltage_data_df, current_data_df], axis=1)
-        combined_output_df = pd.concat([header_df, combined_pg_data_df], ignore_index=True)
-
-        # Save to CSV
-        combined_output_df.to_csv(full_path, index=False, header=False)
-        print(f"Saving experiment data to {filename}...")
-    
-#endregion
-
 # region : TEMPERATURE  
     def update_temp_data(self, temp_data): 
         self.current_temp = temp_data
@@ -610,10 +567,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.sucrose_is_pumping = True                      # GUI flag 
         self.liveDataWorker.set_sucrose_is_running(True)    # Data saving thread flag
         try:
-
             FR = float(self.ui.line_edit_sucrose.text())
             V = float(self.ui.line_edit_sucrose_2.text())
-
         except ValueError:
             print("Invalid input in line_edit_sucrose")
             return 
@@ -624,6 +579,10 @@ class Functionality(QtWidgets.QMainWindow):
 
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+        
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message3PAC, folder_name)
 
     def stop_sucrose_pump(self): 
@@ -638,6 +597,10 @@ class Functionality(QtWidgets.QMainWindow):
 
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+        
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message3PAC, folder_name)
 
     def updateSucroseProgressBar(self, value):
@@ -685,7 +648,11 @@ class Functionality(QtWidgets.QMainWindow):
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message3PAC, folder_name)
-    
+
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+  
     def stop_ethanol_pump(self): 
         self.reset_button_style(self.ui.button_ethanol)
         self.ethanol_is_pumping = False 
@@ -698,7 +665,10 @@ class Functionality(QtWidgets.QMainWindow):
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message3PAC, folder_name)
-         
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+   
     def updateEthanolProgressBar(self, value):
         if self.ethanol_is_pumping:
             if value:
@@ -785,12 +755,6 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.pressure_progress_bar.setValue(int((self.counter / 20) * 100))
         else:
             self.start_stop_increasing_system_pressure()
-    #this is a function that is called when the feedback from the 3PAC for volume reached is sent, will not be applicable if peristaltic is chosen
-    def update_play_pause_buttons(self): 
-        if self.ethanol_is_pumping: 
-            self.start_stop_ethanol_pump()
-        elif self.sucrose_is_pumping: 
-            self.start_stop_sucrose_pump()
 #endregion
 
 # region : PULSE GENENRATOR AND POWER SUP 
@@ -833,28 +797,23 @@ class Functionality(QtWidgets.QMainWindow):
         self.voltage_y[:, 0] -= self.zerodata[0]           # voltage data
         self.voltage_y[:, 1] -= self.zerodata[1]           # current data  
         self.voltage_y[:, 0] *= 0.15        # Nico original guess for voltage scaling 
-        self.voltage_y[:, 1] *= 0.15        # Nico original guess for current scaling
-        #self.voltage_y[:, 0] *= 0.456812   # Hans value for voltage scaling as calculated by Nico  
-        #self.voltage_y[:, 1] *= 0.034      # Hans value fo current scaling as calculated by Nico
+        self.voltage_y[:, 1] *= 0.034       # Hans value fo current scaling as calculated by Nico
 
         # before we chop up the data to display on the UI we will save the data to csv as the Octave script potentially requires the full data set to be analyzed
         current_time = time.time()
+        # saving data for live data sessions 
         if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
-            self.save_pg_data_to_csv(self.voltage_y, self.current_temp)
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.line_edit_max_signal.text(), self.ui.line_edit_min_signal.text(), self.current_temp, self.pulse_number, folder_name)
+            self.last_save_time = current_time
+        
+        if self.workflow_live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.line_edit_max_signal.text(), self.ui.line_edit_min_signal.text(), self.current_temp, self.pulse_number, folder_name)
             self.last_save_time = current_time
 
         length_of_data = self.voltage_y.shape[0] 
         self.voltage_xdata = np.linspace(1, 300, length_of_data)
-
-        # Sample rate and desired cutoff frequency of the filter
-        #fs = 1000.0  # Sample rate, adjust to your data
-        #cutoff = 40  # Desired cutoff frequency, adjust based on your data
-
-        #self.voltage_y[:, 1] = self.butter_lowpass_filter(self.voltage_y[:, 1], cutoff, fs, order=5)
-
-        # Apply the filter to the current data
-        #window_size = 10  # Adjust this based on your data
-        #self.voltage_y[:, 1] = self.moving_average(self.voltage_y[:, 1], window_size)
 
         if self.voltage_is_plotting: 
             self.update_voltage_plot()
@@ -941,6 +900,10 @@ class Functionality(QtWidgets.QMainWindow):
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+  
         time.sleep(.1)
 
         send_PSU_setpoints(self.device_serials[0], 20, 20, 0)
@@ -951,11 +914,17 @@ class Functionality(QtWidgets.QMainWindow):
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
 
         self.pgWorker.start_pg()
         message = "Started PG"
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
 
     def stop_psu_pg(self):
@@ -970,11 +939,17 @@ class Functionality(QtWidgets.QMainWindow):
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
 
         self.pgWorker.stop_pg()
         message = "Stopped PG"
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
 
 #endregion
@@ -1007,6 +982,9 @@ class Functionality(QtWidgets.QMainWindow):
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
 
         blood_pump_time = int((blood_volume / blood_speed) * 60 * 1000)
 
@@ -1026,6 +1004,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.esp32Worker.write_serial_message(message)
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
         self.blood_is_pumping = False
 
@@ -1348,11 +1329,11 @@ class Functionality(QtWidgets.QMainWindow):
     def toggle_LDA_workflow_temperature_button(self): 
         if not self.workflow_live_tracking_temperature:
             self.workflow_live_tracking_temperature = True   # GUI thread flag
-            #self.liveDataWorker.set_save_temp(True) # Data saving thread flag
+            self.liveDataWorker.set_save_temp(True) # Data saving thread flag
             self.set_button_style(self.workflow_LDA_popup.button_LDA_temperature)
         else: 
             self.workflow_live_tracking_temperature = False  # GUI thread flag 
-            #self.liveDataWorker.set_save_temp(False) # Data saving thread flag
+            self.liveDataWorker.set_save_temp(False) # Data saving thread flag
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_temperature)
 
     def toggle_LDA_workflow_current_button(self): 
@@ -1374,37 +1355,37 @@ class Functionality(QtWidgets.QMainWindow):
     def toggle_LDA_workflow_pressure_button(self): 
         if not self.workflow_live_tracking_pressure: 
             self.workflow_live_tracking_pressure = True 
-            #self.liveDataWorker.set_save_pressure(True)
+            self.liveDataWorker.set_save_pressure(True)
             self.set_button_style(self.workflow_LDA_popup.button_LDA_pressure)
         else: 
             self.workflow_live_tracking_pressure = False 
-            #self.liveDataWorker.set_save_pressure(False)
+            self.liveDataWorker.set_save_pressure(False)
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_pressure)
 
     def toggle_LDA_workflow_ethanol_button(self): 
         if not self.workflow_live_tracking_ethanol_flowrate: 
             self.workflow_live_tracking_ethanol_flowrate = True 
-            #self.liveDataWorker.set_save_ethanol_flowrate(True)
+            self.liveDataWorker.set_save_ethanol_flowrate(True)
             self.set_button_style(self.workflow_LDA_popup.button_LDA_Ethanol)
         else: 
             self.workflow_live_tracking_ethanol_flowrate = False
-            #self.liveDataWorker.set_save_ethanol_flowrate(False)
+            self.liveDataWorker.set_save_ethanol_flowrate(False)
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_Ethanol)
 
     def toggle_LDA_workflow_sucrose_button(self): 
         if not self.workflow_live_tracking_sucrose_flowrate: 
             self.workflow_live_tracking_sucrose_flowrate = True 
-            #self.liveDataWorker.set_save_sucrose_flowrate(True)
+            self.liveDataWorker.set_save_sucrose_flowrate(True)
             self.set_button_style(self.workflow_LDA_popup.button_LDA_Sucrose)
         else: 
             self.workflow_live_tracking_sucrose_flowrate = False
-            #self.liveDataWorker.set_save_sucrose_flowrate(False)
+            self.liveDataWorker.set_save_sucrose_flowrate(False)
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_Sucrose)
     
     def workflow_go_live(self):
         self.workflow_live_data_is_logging = True                            # GUI thread flag once go live has been pressed
         self.experiment_choice_is_locked_in = True                   # GUI thread flag for the side bar button being pressed
-        #self.liveDataWorker.start_saving_live_non_pg_data(True)     # Live data saving thread flag
+        self.liveDataWorker.start_saving_live_non_pg_data(True)     # Live data saving thread flag
         border_style = "#centralwidget { border: 7px solid blue; }"
         self.ui.centralwidget.setStyleSheet(border_style)
         self.lock_experiment_choice()
@@ -1424,12 +1405,12 @@ class Functionality(QtWidgets.QMainWindow):
             "Fresh Sucrose": self.workflow_LDA_popup.combobox_LDA_fresh_sucrose.currentText()
         }
 
-        #folder_name = self.workflow_.line_edit_LDA_folder_name.text()
-        #self.liveDataWorker.save_header_info_to_csv(header_values, folder_name)
-        #self.liveDataWorker.save_non_pg_data_to_csv(folder_name)
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.save_header_info_to_csv(header_values, folder_name)
+        self.liveDataWorker.save_non_pg_data_to_csv(folder_name)
 
         self.workflow_live_data_is_logging = False
-        #self.liveDataWorker.start_saving_live_non_pg_data(False)
+        self.liveDataWorker.start_saving_live_non_pg_data(False)
         self.live_data_saving_button_pressed = False
         self.workflow_live_tracking_temperature = False
         self.workflow_live_tracking_ethanol_flowrate = False 
@@ -1449,8 +1430,8 @@ class Functionality(QtWidgets.QMainWindow):
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_go_live, 23)
             self.workflow_LDA_popup.button_LDA_go_live.setEnabled(True)
 
-            #folder_name = self.popup.line_edit_LDA_folder_name.text()
-            #self.liveDataWorker.create_live_data_folder(folder_name)
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.create_live_data_folder(folder_name)
         else: 
             self.flag_workflow_live_data_saving_applied = False
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
@@ -1598,7 +1579,6 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion 
 
 # region : POCII
-
 # region : UI FRAMES
     def create_POCII_experiment_page(self):
         self.ui.frame_POCII_system_sterilaty.show()
@@ -1614,8 +1594,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.spacing_placeholder3.show()
         self.ui.spacing_placeholder4.show()
         self.ui.spacing_placeholder5.show()
-
-    
+ 
     def destroy_POCII_experiment_page(self): 
 
         self.ui.frame_POCII_system_sterilaty.hide()
@@ -1691,8 +1670,7 @@ class Functionality(QtWidgets.QMainWindow):
         frame_name = "high_voltage_frame"
         self.POCII_counters[frame_name][0] = 0
         self.POCII_timers[frame_name].stop()
-        
-    
+
     def stop_timed_WF_HV(self): 
         if self.WF_HV_is_running: 
             self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
