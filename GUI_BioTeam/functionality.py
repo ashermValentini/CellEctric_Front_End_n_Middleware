@@ -135,6 +135,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         #flags for POCII WF
         self.WF_HV_is_running = False
+        self.WF_0V_is_running = False
 
         #endregion
         #==============================================================================================================================================================================================================================
@@ -488,19 +489,12 @@ class Functionality(QtWidgets.QMainWindow):
             "safe_disconnect_frame": self.ui.safe_disconnect_frame.progress_bar
         }
 
-        self.POCII_time_intervals = { 
-
-            "frame_POCII_system_sterilaty": 5,
-            "frame_POCII_decontaminate_cartridge": 6,
-            "high_voltage_frame": 33,
-            "flush_out_frame": 26,
-            "zero_volt_frame": 67,
-            "safe_disconnect_frame": 14
-        }
-
         self.ui.high_voltage_frame.start_stop_button.pressed.connect(self.toggle_WF_HV_start_stop_button)
         self.ui.high_voltage_frame.reset_button.pressed.connect(self.reset_high_voltage_frame_progress_bar)
-        #endregion
+        self.ui.zero_volt_frame.start_stop_button.pressed.connect(self.toggle_WF_0V_start_stop_button)
+        self.ui.zero_volt_frame.reset_button.pressed.connect(self.reset_high_voltage_frame_progress_bar)
+            
+       #endregion
 
         #just for now so that i dont have to home the motors every single fucking time 
         self.enable_motor_buttons()
@@ -994,7 +988,8 @@ class Functionality(QtWidgets.QMainWindow):
             
     def stop_blood_pump(self):
         self.reset_button_style(self.ui.button_blood_play_pause)
-        self.blood_pump_timer.stop()  
+        if self.blood_pump_timer: 
+            self.blood_pump_timer.stop()  
         blood_volume = float(0) 
         blood_speed = float(0)
         volume_str = f"0{blood_volume:02.1f}"  
@@ -1613,8 +1608,8 @@ class Functionality(QtWidgets.QMainWindow):
     
     def update_experiment_step_progress_bar(self, counter, timer, progress_bar, frame_name):
         FR = float(self.ui.line_edit_sucrose.text())
-        V = float(self.ui.line_edit_sucrose.text())
-        interval = (1/FR) * V * 60 
+        V = float(self.ui.line_edit_sucrose_2.text())
+        interval = (V/FR) * 60 
         
         counter[0] += 1
         if counter[0] <= interval:
@@ -1624,7 +1619,11 @@ class Functionality(QtWidgets.QMainWindow):
             counter[0] = 0
 
     def reset_high_voltage_frame_progress_bar(self):
-        self.ui.high_voltage_frame.progress_bar.setValue(0)   
+        self.ui.high_voltage_frame.progress_bar.setValue(0)
+    
+    #more lazy methods, my mental health is depleating faster than our deadlines       
+    def reset_zero_volt_frame_progress_bar(self):
+        self.ui.zero_volt_frame.progress_bar.setValue(0)   
 #endregion
 # region : WF-HV
     def toggle_WF_HV_start_stop_button(self): 
@@ -1634,34 +1633,46 @@ class Functionality(QtWidgets.QMainWindow):
         else: 
             self.start_WF_HV()
             self.WF_HV_is_running = True
-
     def start_WF_HV(self): 
         self.set_button_style(self.ui.high_voltage_frame.start_stop_button)
         self.start_sucrose_pump()
-        self.start_psu_pg()
         FR = float(self.ui.line_edit_sucrose.text())
-        V = float(self.ui.line_edit_sucrose.text())
-        total_HV_WF_time = (1/FR) * V * 60 * 1000
+        V = float(self.ui.line_edit_sucrose_2.text())
+        total_HV_WF_time = (V/FR) * 60 * 1000
         total_HV_WF_time_int = int(round(total_HV_WF_time))
+        #NOTE this is lazy but klemens and TJ are rushing me
+        self.POCII_time_intervals = { 
+
+            "frame_POCII_system_sterilaty": total_HV_WF_time_int,
+            "frame_POCII_decontaminate_cartridge": total_HV_WF_time_int,
+            "high_voltage_frame": total_HV_WF_time_int,
+            "flush_out_frame": total_HV_WF_time_int,
+            "zero_volt_frame": total_HV_WF_time_int,
+            "safe_disconnect_frame": total_HV_WF_time_int
+        } 
+        #ENDNOTE fuck i hate being rushed
         QTimer.singleShot(10000, self.WF_start_blood_pump)
-        QTimer.singleShot(total_HV_WF_time_int, self.WF_stop_psu_pg)
+        QTimer.singleShot(5000, self.WF_start_psu_pg)
+        QTimer.singleShot(total_HV_WF_time_int-5000, self.WF_stop_psu_pg)
         QTimer.singleShot(total_HV_WF_time_int, self.stop_timed_WF_HV)
         frame_name = "high_voltage_frame"
         self.POCII_counters[frame_name][0] = 0
         self.POCII_timers[frame_name].start(1000)  
-
     def WF_start_blood_pump(self):
         if self.WF_HV_is_running: 
             self.start_blood_pump()
         else: 
             pass
-    
+    def WF_start_psu_pg(self): 
+        if self.WF_HV_is_running: 
+            self.start_psu_pg()
+        else: 
+            pass 
     def WF_stop_psu_pg(self): 
         if self.WF_HV_is_running: 
             self.stop_psu_pg()
         else: 
             pass 
-
     def stop_interrupt_WF_HV(self): 
         self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
         self.stop_sucrose_pump()
@@ -1670,12 +1681,55 @@ class Functionality(QtWidgets.QMainWindow):
         frame_name = "high_voltage_frame"
         self.POCII_counters[frame_name][0] = 0
         self.POCII_timers[frame_name].stop()
-
     def stop_timed_WF_HV(self): 
         if self.WF_HV_is_running: 
             self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
             self.stop_psu_pg()
             self.WF_HV_is_running = False
+        else:
+            pass
+#endregion
+# region : WF-0V
+    def toggle_WF_0V_start_stop_button(self): 
+        if self.WF_0V_is_running: 
+            self.stop_interrupt_WF_0V()
+            self.WF_0V_is_running = False
+        else: 
+            self.start_WF_0V()
+            self.WF_0V_is_running = True
+    
+    def start_WF_0V(self): 
+        self.set_button_style(self.ui.zero_volt_frame.start_stop_button)
+        self.start_sucrose_pump()
+        FR = float(self.ui.line_edit_sucrose.text())
+        V = float(self.ui.line_edit_sucrose_2.text())
+        total_0V_WF_time = (V/FR) * 60 * 1000
+        total_0V_WF_time_int = int(round(total_0V_WF_time))
+
+        QTimer.singleShot(10000, self.WF_0V_start_blood_pump)
+        QTimer.singleShot(total_0V_WF_time_int, self.stop_timed_WF_0V)
+        frame_name = "zero_volt_frame"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].start(1000)  
+    
+    def WF_0V_start_blood_pump(self):
+        if self.WF_0V_is_running: 
+            self.start_blood_pump()
+        else: 
+            pass
+   
+    def stop_interrupt_WF_0V(self): 
+        self.reset_button_style(self.ui.zero_volt_frame.start_stop_button)
+        self.stop_sucrose_pump()
+        self.stop_blood_pump()
+        frame_name = "zero_volt_frame"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].stop()
+   
+    def stop_timed_WF_0V(self): 
+        if self.WF_0V_is_running: 
+            self.reset_button_style(self.ui.zero_volt_frame.start_stop_button)
+            self.WF_0V_is_running = False
         else:
             pass
 #endregion

@@ -208,7 +208,6 @@ class PeristalticDriverWorker(QObject):
             print('sending sucrose stop')
             self.stop_sucrose.emit(1)
 
-
     def write_serial_message(self, message):
         self._lock.lock()
         try:

@@ -29,7 +29,6 @@ class SerialConnections:
     def close_connection(self):
         if self.serial_device and self.serial_device.is_open:
             self.serial_device.close()
-
 # CHILD SERIAL DEVICE CLASS FOR TEMPERATURE SENSOR
 class TemperatureSensorSerial(SerialConnections):
     def establish_connection(self):
@@ -46,7 +45,6 @@ class TemperatureSensorSerial(SerialConnections):
         else:
             print(f"Temperature sensor with VID: {self.vendor_id} and PID: {self.product_id} not found")
             return None
-
 # CHILD SERIAL DEVICE CLASS for ESP32 RTOS dubbed 3PAC
 class ESP32Serial(SerialConnections):
     def __init__(self):
@@ -68,8 +66,8 @@ class ESP32Serial(SerialConnections):
             return self.serial_device
         else:
             print("ESP32 device not found")
-            return None
-        
+            return None  
+# CHILD SERIAL DEVICE CLASS for DEVICES THAT NEED TO BE FOUND BY FTDI SERIAL NUMBERS
 class SerialDeviceBySerialNumber(SerialConnections):
     def __init__(self, serial_number):
         super().__init__(vendor_id=None, product_id=None)
