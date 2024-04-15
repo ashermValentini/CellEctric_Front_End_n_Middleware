@@ -15,6 +15,7 @@ from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTi
 from PyQt5.QtWidgets import QProgressBar, QMessageBox
 
 import application_style
+import POCII_timing
 
 from layout import Ui_MainWindow
 from layout import PopupWindow
@@ -37,22 +38,36 @@ from matplotlib.figure import Figure
 import matplotlib.ticker as ticker
 import numpy as np
 
-#========================
+#================================================
 # DIRECTIONS FOR MOTORS 
-#========================
+#================================================
 
 DIR_M1_UP = 1
 DIR_M1_DOWN = -1
 DIR_M2_UP = -1
 DIR_M2_DOWN = 1
 DIR_M3_RIGHT = 1
-DIR_M3_LEFT = -1
-DIR_M4_UP = -1
+DIR_M3_LEFT = 2
+DIR_M4_UP = 2
 DIR_M4_DOWN = 1
 
-#==========================
+#================================================
+# POSITIONS FOR MOTORS 
+#================================================
+
+FLASK_INCREMENT = 40                    #value between flasks 
+FLASK_1 = 216                           #position of first flask from homed position
+FLASK_2 = FLASK_1 + FLASK_INCREMENT
+FLASK_3 = FLASK_1 + 2 * FLASK_INCREMENT
+FLASK_4 = FLASK_1 + 3 * FLASK_INCREMENT
+FLASK_5 = FLASK_1 + 4 * FLASK_INCREMENT
+FLASK_6 = FLASK_1 + 5 * FLASK_INCREMENT
+
+PIERCE = 30
+
+#==================================================
 # IDS FOR THE BSG2 DEVICES
-#==========================
+#==================================================
 PG_PSU_VENDOR_ID = 0x6666     
 PSU_PRODUCT_ID = 0x0100      
 PG_PRODUCT_ID = 0x0200       
@@ -134,8 +149,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.workflow_live_tracking_voltage = False
 
         #flags for POCII WF
-        self.WF_HV_is_running = False
-        self.WF_0V_is_running = False
+        self.POCII_is_running = False
+
+
 
         #endregion
         #==============================================================================================================================================================================================================================
@@ -489,13 +505,18 @@ class Functionality(QtWidgets.QMainWindow):
             "safe_disconnect_frame": self.ui.safe_disconnect_frame.progress_bar
         }
 
+        self.current_session_token = None
+
+        #NOTE I know this is lazy unfortunately TJ and Klemens are rushing the finish line
         self.ui.high_voltage_frame.start_stop_button.pressed.connect(self.toggle_WF_HV_start_stop_button)
         self.ui.high_voltage_frame.reset_button.pressed.connect(self.reset_high_voltage_frame_progress_bar)
+        
         self.ui.zero_volt_frame.start_stop_button.pressed.connect(self.toggle_WF_0V_start_stop_button)
-        self.ui.zero_volt_frame.reset_button.pressed.connect(self.reset_high_voltage_frame_progress_bar)
-            
-       #endregion
-
+        self.ui.zero_volt_frame.reset_button.pressed.connect(self.reset_zero_volt_frame_progress_bar)   
+        
+        self.ui.frame_POCII_system_sterilaty.start_stop_button.pressed.connect(self.toggle_system_sterilaty_start_stop_button)
+        self.ui.frame_POCII_system_sterilaty.reset_button.pressed.connect(self.reset_frame_POCII_system_sterilaty_progress_bar)   
+        #endregion
         #just for now so that i dont have to home the motors every single fucking time 
         self.enable_motor_buttons()
 
@@ -551,22 +572,22 @@ class Functionality(QtWidgets.QMainWindow):
     def toggle_sucrose_button(self): 
         if not self.ethanol_is_pumping: 
             if not self.sucrose_is_pumping: 
-                self.start_sucrose_pump()
+                self.start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text() )
             else: 
                 self.stop_sucrose_pump()
 
-    def start_sucrose_pump(self): 
+    def start_sucrose_pump(self, FR, V): 
         self.close_pressure_release_valve()
         self.set_button_style(self.ui.button_sucrose)
         self.sucrose_is_pumping = True                      # GUI flag 
         self.liveDataWorker.set_sucrose_is_running(True)    # Data saving thread flag
         try:
-            FR = float(self.ui.line_edit_sucrose.text())
-            V = float(self.ui.line_edit_sucrose_2.text())
+            FR = float(FR)
+            V = float(V)
         except ValueError:
             print("Invalid input in line_edit_sucrose")
             return 
-        message3PAC = f'wFS-405-{FR:.2f}-{V:.1f}\n'
+        message3PAC = f'wFS-350-{FR:.2f}-{V:.1f}\n'
         messagePeristalticDriver = f'sB-{FR}-{V}-0.171\n'
         self.esp32Worker.write_serial_message(message3PAC)
         self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
@@ -619,18 +640,18 @@ class Functionality(QtWidgets.QMainWindow):
     def toggle_ethanol_pump(self): 
         if not self.sucrose_is_pumping:
             if not self.ethanol_is_pumping: 
-                self.start_ethanol_pump()
+                self.start_ethanol_pump(self.ui.line_edit_ethanol.text(), self.ui.line_edit_ethanol_2.text())
             else: 
                 self.stop_ethanol_pump()
     
-    def start_ethanol_pump(self): 
+    def start_ethanol_pump(self, FR, V): 
         self.close_pressure_release_valve()
         self.ethanol_is_pumping = True  # GUI flag 
         self.liveDataWorker.set_ethanol_is_running(True) # Live data saving flag
         self.set_button_style(self.ui.button_ethanol)
         try:
-            FR = float(self.ui.line_edit_ethanol.text())
-            V = float(self.ui.line_edit_ethanol_2.text())
+            FR = float(FR)
+            V = float(V)
         except ValueError:
             print("Invalid input in line_edit_sucrose")
             return 
@@ -1574,7 +1595,8 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion 
 
 # region : POCII
-# region : UI FRAMES
+
+# region : UI METHODS
     def create_POCII_experiment_page(self):
         self.ui.frame_POCII_system_sterilaty.show()
         self.ui.frame_POCII_decontaminate_cartridge.show()
@@ -1621,116 +1643,206 @@ class Functionality(QtWidgets.QMainWindow):
     def reset_high_voltage_frame_progress_bar(self):
         self.ui.high_voltage_frame.progress_bar.setValue(0)
     
-    #more lazy methods, my mental health is depleating faster than our deadlines       
     def reset_zero_volt_frame_progress_bar(self):
         self.ui.zero_volt_frame.progress_bar.setValue(0)   
+    
+    def reset_frame_POCII_system_sterilaty_progress_bar(self):
+        self.ui.frame_POCII_system_sterilaty.progress_bar.setValue(0)   
 #endregion
-# region : WF-HV
+
+# region : SS 
+    def toggle_system_sterilaty_start_stop_button(self): 
+        if self.POCII_is_running: 
+            self.stop_interrupt_WF_system_sterilaty()
+            self.POCII_is_running = False
+        else: 
+            self.WF_start_system_sterility()
+            self.set_button_style(self.ui.frame_POCII_system_sterilaty.start_stop_button)
+            self.POCII_is_running = True
+
+    def WF_start_system_sterility(self): 
+        #session token 
+        self.generate_new_token()
+        current_token = self.current_session_token
+        #operations 
+        QTimer.singleShot(POCII_timing.SSD1, lambda: self.WF_move_motor(3, FLASK_1, DIR_M3_RIGHT, current_token)) #move to waste 
+        QTimer.singleShot(POCII_timing.SSD2, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_UP, current_token)) #pierce 
+        #QTimer.singleShot(POCII_timing.SSD3, lambda: self.WF_start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text(), current_token)) #pump sucrose at fixed maximum system flowrate  for a total volume of 2*(pi*r^2)L [ml]
+        QTimer.singleShot(POCII_timing.SSD4, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_DOWN, current_token)) #retract 
+        QTimer.singleShot(POCII_timing.SSD5, lambda: self.WF_move_motor(3, FLASK_INCREMENT, DIR_M3_LEFT, current_token)) #move to sterility 
+        QTimer.singleShot(POCII_timing.SSD6, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_UP, current_token)) #pierce 
+        #QTimer.singleShot(POCII_timing.SSD7, lambda: self.WF_start_sucrose_pump(5, 5, current_token)) #pump 5 ml of sucrose at a fixed maximum system flowrate
+        QTimer.singleShot(POCII_timing.SSD8, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_DOWN, current_token)) #retract
+        QTimer.singleShot(POCII_timing.SSD9, lambda: self.WF_move_motor(3, FLASK_INCREMENT, DIR_M3_RIGHT, current_token)) #move to waste
+        QTimer.singleShot(POCII_timing.SSD10, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_UP, current_token)) #pierce 
+        #QTimer.singleShot(POCII_timing.SSD11, lambda: self.WF_start_ethanol_pump(self.ui.line_edit_ethanol.text(), self.ui.line_edit_ethanol_2.text(), current_token)) #pump 2*(pi*r&2)L [ml] of ethanol
+        QTimer.singleShot(POCII_timing.SSD12, lambda: self.stop_timed_WF_system_sterilaty(current_token)) #timed end 
+        #progress bar 
+        frame_name = "frame_POCII_system_sterilaty"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].start(1000)  
+
+    def stop_interrupt_WF_system_sterilaty(self): 
+        #null the session
+        self.current_session_token = None  
+        #shut down operations 
+        self.reset_button_style(self.ui.frame_POCII_system_sterilaty.start_stop_button)
+        self.stop_sucrose_pump()
+        self.stop_ethanol_pump()
+        writeMotorDistance(self.device_serials[2], 3, 0, 1) # two is to the left one is to the right for motor 3 
+        writeMotorDistance(self.device_serials[2], 4, 0, 1) # two is to the left one is to the right for motor 3 
+        #pause progress bar 
+        frame_name = "frame_POCII_system_sterilaty"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].stop()
+
+    def stop_timed_WF_system_sterilaty(self, token): 
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.reset_button_style(self.ui.frame_POCII_system_sterilaty.start_stop_button)
+            self.POCII_is_running = False
+        else:
+            pass
+#endregion
+
+# region : HV
     def toggle_WF_HV_start_stop_button(self): 
-        if self.WF_HV_is_running: 
+        if self.POCII_is_running: 
             self.stop_interrupt_WF_HV()
-            self.WF_HV_is_running = False
+            self.POCII_is_running = False
         else: 
             self.start_WF_HV()
-            self.WF_HV_is_running = True
+            self.POCII_is_running = True
+            self.set_button_style(self.ui.high_voltage_frame.start_stop_button)
+
     def start_WF_HV(self): 
-        self.set_button_style(self.ui.high_voltage_frame.start_stop_button)
-        self.start_sucrose_pump()
+        #session token
+        self.generate_new_token()
+        current_token = self.current_session_token
+        #operation
+        self.start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text())
         FR = float(self.ui.line_edit_sucrose.text())
         V = float(self.ui.line_edit_sucrose_2.text())
         total_HV_WF_time = (V/FR) * 60 * 1000
         total_HV_WF_time_int = int(round(total_HV_WF_time))
-        #NOTE this is lazy but klemens and TJ are rushing me
-        self.POCII_time_intervals = { 
-
-            "frame_POCII_system_sterilaty": total_HV_WF_time_int,
-            "frame_POCII_decontaminate_cartridge": total_HV_WF_time_int,
-            "high_voltage_frame": total_HV_WF_time_int,
-            "flush_out_frame": total_HV_WF_time_int,
-            "zero_volt_frame": total_HV_WF_time_int,
-            "safe_disconnect_frame": total_HV_WF_time_int
-        } 
-        #ENDNOTE fuck i hate being rushed
-        QTimer.singleShot(10000, self.WF_start_blood_pump)
-        QTimer.singleShot(5000, self.WF_start_psu_pg)
-        QTimer.singleShot(total_HV_WF_time_int-5000, self.WF_stop_psu_pg)
-        QTimer.singleShot(total_HV_WF_time_int, self.stop_timed_WF_HV)
+        QTimer.singleShot(10000, lambda: self.WF_start_blood_pump(current_token))
+        QTimer.singleShot(5000, lambda: self.WF_start_psu_pg(current_token))
+        QTimer.singleShot(total_HV_WF_time_int-5000, lambda: self.WF_stop_psu_pg(current_token))
+        QTimer.singleShot(total_HV_WF_time_int, lambda: self.stop_timed_WF_HV(current_token))
         frame_name = "high_voltage_frame"
         self.POCII_counters[frame_name][0] = 0
         self.POCII_timers[frame_name].start(1000)  
-    def WF_start_blood_pump(self):
-        if self.WF_HV_is_running: 
-            self.start_blood_pump()
-        else: 
-            pass
-    def WF_start_psu_pg(self): 
-        if self.WF_HV_is_running: 
-            self.start_psu_pg()
-        else: 
-            pass 
-    def WF_stop_psu_pg(self): 
-        if self.WF_HV_is_running: 
-            self.stop_psu_pg()
-        else: 
-            pass 
+    
     def stop_interrupt_WF_HV(self): 
+        #null the session
+        self.current_session_token = None  
+        #shut down operations 
         self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
         self.stop_sucrose_pump()
         self.stop_psu_pg()
         self.stop_blood_pump()
+        #pause the progress bar
         frame_name = "high_voltage_frame"
         self.POCII_counters[frame_name][0] = 0
         self.POCII_timers[frame_name].stop()
-    def stop_timed_WF_HV(self): 
-        if self.WF_HV_is_running: 
+    
+    def stop_timed_WF_HV(self, token): 
+        if self.POCII_is_running and token == self.current_session_token : 
             self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
             self.stop_psu_pg()
-            self.WF_HV_is_running = False
+            self.POCII_is_running = False
         else:
             pass
 #endregion
-# region : WF-0V
+
+# region : 0V
     def toggle_WF_0V_start_stop_button(self): 
-        if self.WF_0V_is_running: 
+        if self.POCII_is_running: 
             self.stop_interrupt_WF_0V()
-            self.WF_0V_is_running = False
+            self.POCII_is_running = False
         else: 
             self.start_WF_0V()
-            self.WF_0V_is_running = True
+            self.set_button_style(self.ui.zero_volt_frame.start_stop_button)
+            self.POCII_is_running = True
     
     def start_WF_0V(self): 
-        self.set_button_style(self.ui.zero_volt_frame.start_stop_button)
-        self.start_sucrose_pump()
+        #session token
+        self.generate_new_token()
+        current_token = self.current_session_token
+        #operations 
+        self.start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text())
         FR = float(self.ui.line_edit_sucrose.text())
         V = float(self.ui.line_edit_sucrose_2.text())
         total_0V_WF_time = (V/FR) * 60 * 1000
         total_0V_WF_time_int = int(round(total_0V_WF_time))
-
-        QTimer.singleShot(10000, self.WF_0V_start_blood_pump)
-        QTimer.singleShot(total_0V_WF_time_int, self.stop_timed_WF_0V)
+        QTimer.singleShot(10000, lambda: self.WF_start_blood_pump(current_token))
+        QTimer.singleShot(total_0V_WF_time_int, lambda: self.stop_timed_WF_0V(current_token))
+        #progress bar
         frame_name = "zero_volt_frame"
         self.POCII_counters[frame_name][0] = 0
         self.POCII_timers[frame_name].start(1000)  
     
-    def WF_0V_start_blood_pump(self):
-        if self.WF_0V_is_running: 
-            self.start_blood_pump()
-        else: 
-            pass
-   
     def stop_interrupt_WF_0V(self): 
+        #null the session
+        self.current_session_token = None  
+        #shut down operations 
         self.reset_button_style(self.ui.zero_volt_frame.start_stop_button)
         self.stop_sucrose_pump()
         self.stop_blood_pump()
+        #pause the progress bar token
         frame_name = "zero_volt_frame"
         self.POCII_counters[frame_name][0] = 0
         self.POCII_timers[frame_name].stop()
    
-    def stop_timed_WF_0V(self): 
-        if self.WF_0V_is_running: 
+    def stop_timed_WF_0V(self, token): 
+        if self.POCII_is_running and token == self.current_session_token : 
             self.reset_button_style(self.ui.zero_volt_frame.start_stop_button)
-            self.WF_0V_is_running = False
+            self.POCII_is_running = False
         else:
             pass
 #endregion
+
+# region : OPERATIONAL METHODS 
+    def generate_new_token(self):
+        import time
+        self.current_session_token = time.time() 
+
+    def WF_start_blood_pump(self, token):
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.start_blood_pump()
+        else: 
+            pass
+
+    def WF_start_psu_pg(self, token): 
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.start_psu_pg()
+        else: 
+            pass 
+
+    def WF_stop_psu_pg(self, token): 
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.stop_psu_pg()
+        else: 
+            pass 
+
+    def WF_start_sucrose_pump(self, FR, V, token): 
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.start_sucrose_pump(FR, V )
+        else: 
+            pass
+
+    def WF_start_ethanol_pump(self, FR, V, token): 
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.start_ethanol_pump(FR, V)
+        else: 
+            pass
+
+    def WF_move_motor(self, motor, distance, direction, token): 
+        if self.POCII_is_running and token == self.current_session_token    : 
+            #NOTE try to check motor position here for now timers will suffice
+            writeMotorDistance(self.device_serials[2], motor, distance, direction) # two is to the left one is to the right for motor 3 
+        else: 
+            pass
+
+#endregion
+
 #endregion

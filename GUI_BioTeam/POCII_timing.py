@@ -1,0 +1,16 @@
+# region : System Sterility Delays between substeps 
+SSD1 = 1
+SSD2 = SSD1 + 23000
+SSD3 = SSD2 + 1
+SSD4 = SSD3 + 10000
+SSD5 = SSD4 + 10000
+SSD6 = SSD5 + 10000
+SSD7 = SSD6 + 1
+SSD8 = SSD7 + 10000
+SSD9 = SSD8 + 10000
+SSD10 = SSD9 + 10000
+SSD11 = SSD10 + 1
+SSD12 = SSD11 + 10000
+
+
+

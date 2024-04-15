@@ -80,7 +80,7 @@ class ESP32SerialWorker(QObject):
 
     def parse_and_emit_data(self, line):
         # Print the raw line for debugging
-        #print(f"Raw line received: {line}")
+        print(f"Raw line received: {line}")
 
         try:
             # Find the second occurrence of 'P' and the first occurrence of 'F'
