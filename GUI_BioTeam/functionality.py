@@ -52,18 +52,24 @@ DIR_M4_UP = 2
 DIR_M4_DOWN = 1
 
 #================================================
-# POSITIONS FOR MOTORS 
+# POSITION AND NAMES FOR MOTORS 
 #================================================
 
-FLASK_INCREMENT = 40                    #value between flasks 
-FLASK_1 = 216                           #position of first flask from homed position
-FLASK_2 = FLASK_1 + FLASK_INCREMENT
-FLASK_3 = FLASK_1 + 2 * FLASK_INCREMENT
-FLASK_4 = FLASK_1 + 3 * FLASK_INCREMENT
-FLASK_5 = FLASK_1 + 4 * FLASK_INCREMENT
-FLASK_6 = FLASK_1 + 5 * FLASK_INCREMENT
+FLASK_MOTOR = 3
+PIERCE_MOTOR = 4
+BLOOD_SYRINGE = 1 
+FLUIDICS_MOTOR = 2
 
-PIERCE = 30
+FLASK_1 = 216                          
+FLASK_2 = 176
+FLASK_3 = 136
+FLASK_4 = 96
+FLASK_5 = 56
+FLASK_6 = 16
+
+DEPIERCED = 40 
+PIERCED = 10
+
 
 #==================================================
 # IDS FOR THE BSG2 DEVICES
@@ -514,8 +520,13 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.zero_volt_frame.start_stop_button.pressed.connect(self.toggle_WF_0V_start_stop_button)
         self.ui.zero_volt_frame.reset_button.pressed.connect(self.reset_zero_volt_frame_progress_bar)   
         
-        self.ui.frame_POCII_system_sterilaty.start_stop_button.pressed.connect(self.toggle_system_sterilaty_start_stop_button)
-        self.ui.frame_POCII_system_sterilaty.reset_button.pressed.connect(self.reset_frame_POCII_system_sterilaty_progress_bar)   
+        self.ui.frame_POCII_system_sterilaty.start_stop_button.clicked.connect(self.warning_dialogue("Attention", "This workflow subevent is currently underdevelopment, please perform this step manually from the dashboard"))
+        #self.ui.frame_POCII_decontaminate_cartridge.start_stop_button.clicked.connect(self.warning_dialogue("Attention", "This workflow subevent is currently underdevelopment, please perform this step manually from the dashboard"))
+        #self.ui.flush_out_frame.start_stop_button.clicked.connect(self.warning_dialogue("Attention", "This workflow subevent is currently underdevelopment, please perform this step manually from the dashboard"))
+        #self.ui.safe_disconnect_frame.start_stop_button.clicked.connect(self.warning_dialogue("Attention", "This workflow subevent is currently underdevelopment, please perform this step manually from the dashboard"))
+
+        #self.ui.frame_POCII_system_sterilaty.start_stop_button.pressed.connect(self.toggle_system_sterilaty_start_stop_button)
+        #self.ui.frame_POCII_system_sterilaty.reset_button.pressed.connect(self.reset_frame_POCII_system_sterilaty_progress_bar)   
         #endregion
         #just for now so that i dont have to home the motors every single fucking time 
         self.enable_motor_buttons()
@@ -1440,14 +1451,19 @@ class Functionality(QtWidgets.QMainWindow):
     
     def toggle_LDA_workflow_apply(self): 
         if not self.flag_workflow_live_data_saving_applied:
-            self.flag_workflow_live_data_saving_applied = True
-            self.set_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
-            
-            self.reset_button_style(self.workflow_LDA_popup.button_LDA_go_live, 23)
-            self.workflow_LDA_popup.button_LDA_go_live.setEnabled(True)
-
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.create_live_data_folder(folder_name)
+            folder_created = self.liveDataWorker.create_live_data_folder(folder_name)
+            if folder_created: 
+                    self.flag_workflow_live_data_saving_applied = True
+                    self.set_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
+                    self.reset_button_style(self.workflow_LDA_popup.button_LDA_go_live, 23)
+                    self.workflow_LDA_popup.button_LDA_go_live.setEnabled(True)
+            else: 
+                self.flag_workflow_live_data_saving_applied = False
+                self.reset_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
+                self.grey_out_button(self.workflow_LDA_popup.button_LDA_go_live, 23)
+                self.workflow_LDA_popup.button_LDA_go_live.setEnabled(False)
+                self.showFolderExistsDialog()
         else: 
             self.flag_workflow_live_data_saving_applied = False
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
@@ -1665,18 +1681,35 @@ class Functionality(QtWidgets.QMainWindow):
         self.generate_new_token()
         current_token = self.current_session_token
         #operations 
-        QTimer.singleShot(POCII_timing.SSD1, lambda: self.WF_move_motor(3, FLASK_1, DIR_M3_RIGHT, current_token)) #move to waste 
-        QTimer.singleShot(POCII_timing.SSD2, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_UP, current_token)) #pierce 
+        QTimer.singleShot(POCII_timing.SSD1, lambda: self.WF_move_motor(3, FLASK_1, current_token)) #move to waste 
+        QTimer.singleShot(POCII_timing.SSD2, lambda: self.WF_move_motor(4, PIERCED, current_token)) #pierce 
+        QTimer.singleShot(POCII_timing.SSD3, lambda: self.WF_move_motor(4, DEPIERCED, current_token)) #depierce 
+        QTimer.singleShot(POCII_timing.SSD4, lambda: self.WF_move_motor(3, FLASK_2, current_token)) #move to flask 2 
+        QTimer.singleShot(POCII_timing.SSD5, lambda: self.WF_move_motor(4, PIERCED, current_token)) #pierce 
+        QTimer.singleShot(POCII_timing.SSD6, lambda: self.WF_move_motor(4, DEPIERCED, current_token)) #depierce 
+        QTimer.singleShot(POCII_timing.SSD7, lambda: self.WF_move_motor(3, FLASK_3, current_token)) #move to flask 3 
+        QTimer.singleShot(POCII_timing.SSD8, lambda: self.WF_move_motor(4, PIERCED, current_token)) #pierce 
+        QTimer.singleShot(POCII_timing.SSD9, lambda: self.WF_move_motor(4, DEPIERCED, current_token)) #depierce 
+        QTimer.singleShot(POCII_timing.SSD10, lambda: self.WF_move_motor(3, FLASK_4, current_token)) #move to flask 4 
+        QTimer.singleShot(POCII_timing.SSD11, lambda: self.WF_move_motor(4, PIERCED, current_token)) #pierce 
+        QTimer.singleShot(POCII_timing.SSD12, lambda: self.WF_move_motor(4, DEPIERCED, current_token)) #depierce 
+        QTimer.singleShot(POCII_timing.SSD13, lambda: self.WF_move_motor(3, FLASK_5, current_token)) #move to flask 5 
+        QTimer.singleShot(POCII_timing.SSD14, lambda: self.WF_move_motor(4, PIERCED, current_token)) #pierce 
+        QTimer.singleShot(POCII_timing.SSD15, lambda: self.WF_move_motor(4, DEPIERCED, current_token)) #depierce 
+        QTimer.singleShot(POCII_timing.SSD13, lambda: self.WF_move_motor(3, FLASK_6, current_token)) #move to flask 6 
+        QTimer.singleShot(POCII_timing.SSD14, lambda: self.WF_move_motor(4, PIERCED, current_token)) #pierce 
+        QTimer.singleShot(POCII_timing.SSD15, lambda: self.WF_move_motor(4, DEPIERCED, current_token)) #depierce 
+
         #QTimer.singleShot(POCII_timing.SSD3, lambda: self.WF_start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text(), current_token)) #pump sucrose at fixed maximum system flowrate  for a total volume of 2*(pi*r^2)L [ml]
-        QTimer.singleShot(POCII_timing.SSD4, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_DOWN, current_token)) #retract 
-        QTimer.singleShot(POCII_timing.SSD5, lambda: self.WF_move_motor(3, FLASK_INCREMENT, DIR_M3_LEFT, current_token)) #move to sterility 
-        QTimer.singleShot(POCII_timing.SSD6, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_UP, current_token)) #pierce 
+        #QTimer.singleShot(POCII_timing.SSD4, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_DOWN, current_token)) #retract 
+        #QTimer.singleShot(POCII_timing.SSD5, lambda: self.WF_move_motor(3, FLASK_INCREMENT, DIR_M3_LEFT, current_token)) #move to sterility 
+        #QTimer.singleShot(POCII_timing.SSD6, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_UP, current_token)) #pierce 
         #QTimer.singleShot(POCII_timing.SSD7, lambda: self.WF_start_sucrose_pump(5, 5, current_token)) #pump 5 ml of sucrose at a fixed maximum system flowrate
-        QTimer.singleShot(POCII_timing.SSD8, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_DOWN, current_token)) #retract
-        QTimer.singleShot(POCII_timing.SSD9, lambda: self.WF_move_motor(3, FLASK_INCREMENT, DIR_M3_RIGHT, current_token)) #move to waste
-        QTimer.singleShot(POCII_timing.SSD10, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_UP, current_token)) #pierce 
+        #QTimer.singleShot(POCII_timing.SSD8, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_DOWN, current_token)) #retract
+        #QTimer.singleShot(POCII_timing.SSD9, lambda: self.WF_move_motor(3, FLASK_INCREMENT, DIR_M3_RIGHT, current_token)) #move to waste
+        #QTimer.singleShot(POCII_timing.SSD10, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_UP, current_token)) #pierce 
         #QTimer.singleShot(POCII_timing.SSD11, lambda: self.WF_start_ethanol_pump(self.ui.line_edit_ethanol.text(), self.ui.line_edit_ethanol_2.text(), current_token)) #pump 2*(pi*r&2)L [ml] of ethanol
-        QTimer.singleShot(POCII_timing.SSD12, lambda: self.stop_timed_WF_system_sterilaty(current_token)) #timed end 
+        #QTimer.singleShot(POCII_timing.SSD12, lambda: self.stop_timed_WF_system_sterilaty(current_token)) #timed end 
         #progress bar 
         frame_name = "frame_POCII_system_sterilaty"
         self.POCII_counters[frame_name][0] = 0
@@ -1724,7 +1757,7 @@ class Functionality(QtWidgets.QMainWindow):
         V = float(self.ui.line_edit_sucrose_2.text())
         total_HV_WF_time = (V/FR) * 60 * 1000
         total_HV_WF_time_int = int(round(total_HV_WF_time))
-        QTimer.singleShot(10000, lambda: self.WF_start_blood_pump(current_token))
+        QTimer.singleShot(20000, lambda: self.WF_start_blood_pump(current_token))
         QTimer.singleShot(5000, lambda: self.WF_start_psu_pg(current_token))
         QTimer.singleShot(total_HV_WF_time_int-5000, lambda: self.WF_stop_psu_pg(current_token))
         QTimer.singleShot(total_HV_WF_time_int, lambda: self.stop_timed_WF_HV(current_token))
@@ -1774,7 +1807,7 @@ class Functionality(QtWidgets.QMainWindow):
         V = float(self.ui.line_edit_sucrose_2.text())
         total_0V_WF_time = (V/FR) * 60 * 1000
         total_0V_WF_time_int = int(round(total_0V_WF_time))
-        QTimer.singleShot(10000, lambda: self.WF_start_blood_pump(current_token))
+        QTimer.singleShot(20000, lambda: self.WF_start_blood_pump(current_token))
         QTimer.singleShot(total_0V_WF_time_int, lambda: self.stop_timed_WF_0V(current_token))
         #progress bar
         frame_name = "zero_volt_frame"
@@ -1836,10 +1869,10 @@ class Functionality(QtWidgets.QMainWindow):
         else: 
             pass
 
-    def WF_move_motor(self, motor, distance, direction, token): 
+    def WF_move_motor(self, motor, position, token): 
         if self.POCII_is_running and token == self.current_session_token    : 
             #NOTE try to check motor position here for now timers will suffice
-            writeMotorDistance(self.device_serials[2], motor, distance, direction) # two is to the left one is to the right for motor 3 
+            writeMotorPosition(self.device_serials[2], motor, position) # two is to the left one is to the right for motor 3 
         else: 
             pass
 
