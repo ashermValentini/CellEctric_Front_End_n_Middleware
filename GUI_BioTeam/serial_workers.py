@@ -104,14 +104,14 @@ class ESP32SerialWorker(QObject):
                 self.update_fluidic_play_pause_buttons.emit(target_volume_reached_state)
                 #print("cb")
         except ValueError as e:
-            #print(f"Error parsing pressure or flow rate: {e}")
+            print(f"Error parsing pressure or flow rate: {e}")
             pass
 
     def write_serial_message(self, message):
         self._lock.lock()
         try:
             if self.esp32_RTOS_serial.serial_device and self.esp32_RTOS_serial.serial_device.is_open:
-                print(f"Sending message: {message}")
+                print(f"Sending message to 3PAC: {message}")
                 self.esp32_RTOS_serial.serial_device.write(message.encode())
         finally:
             self._lock.unlock()
@@ -171,3 +171,57 @@ class PulseGeneratorSerialWorker(QObject):
         self._is_running = False
         self._lock.unlock()
 
+class PeristalticDriverWorker(QObject):
+    stop_sucrose = pyqtSignal(bool)
+    stop_ethanol = pyqtSignal(bool)
+
+    interval = 250  
+    def __init__(self, esp32_RTOS_serial):
+        super(PeristalticDriverWorker, self).__init__()
+        self.esp32_RTOS_serial = esp32_RTOS_serial
+        self._is_running = False
+        self._lock = QMutex()
+
+    @pyqtSlot()
+    def run(self):
+        self._is_running = True
+        while self._is_running:
+            QThread.msleep(self.interval)
+            self._lock.lock()
+            line = self.read_serial_line()
+            self._lock.unlock()
+            if line:
+                self.parse_and_emit_data(line)
+
+    def read_serial_line(self):
+        if self.esp32_RTOS_serial.serial_device.in_waiting:
+            return self.esp32_RTOS_serial.serial_device.readline().decode('utf-8').strip()
+        return None
+
+    def parse_and_emit_data(self, line):
+        print(f"Raw line received: {line}")
+        if line == "Motor 1 has reached its target position.": 
+            print('sending ethanol stop')
+            self.stop_ethanol.emit(1)
+
+        elif line == "Motor 2 has reached its target position.": 
+            print('sending sucrose stop')
+            self.stop_sucrose.emit(1)
+
+    def write_serial_message(self, message):
+        self._lock.lock()
+        try:
+            if self.esp32_RTOS_serial.serial_device and self.esp32_RTOS_serial.serial_device.is_open:
+                try: 
+                    print(f"Message '{message}'sent to the peristaltic driver.")
+                    self.esp32_RTOS_serial.serial_device.write(message.encode())
+                except Exception as e: 
+                    print(f"Failed to send message Error: {e}")
+        finally:
+            self._lock.unlock()
+
+    @pyqtSlot()
+    def stop(self):
+        self._lock.lock()
+        self._is_running = False
+        self._lock.unlock()

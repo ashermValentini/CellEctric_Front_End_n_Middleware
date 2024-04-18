@@ -1,14 +1,17 @@
-from PyQt5.QtCore import QObject, pyqtSignal, QTimer
+from PyQt5.QtCore import QObject, pyqtSignal, QTimer, QMutex, QThread, pyqtSlot
+
+import time
 import pandas as pd
-from datetime import datetime
+from datetime import datetime  # This allows you to use datetime.now()
 import os
 import csv
+
 
 class DataSavingWorker(QObject):
     error = pyqtSignal(str)
     folderExistsSignal = pyqtSignal()
 
-    def __init__(self, aggregation_interval=1000):
+    def __init__(self, aggregation_interval=250):
         super(DataSavingWorker, self).__init__()
         self.data_aggregated = pd.DataFrame(columns=['timestamp', 'temperature', 'pressure', 'ethanol_flowrate', 'sucrose_flowrate'])
 
@@ -23,10 +26,20 @@ class DataSavingWorker(QObject):
         self.flag_ethanol_is_running = False 
         self.flag_sucrose_is_running = False
 
+        self.interval = aggregation_interval
+        self.is_running = False
+
         # Setting up the timer for periodic data aggregation
         self.aggregation_timer = QTimer(self)
         self.aggregation_timer.timeout.connect(self.aggregate_data)
         self.aggregation_timer.start(aggregation_interval)
+    #NOTE will need to use this method instead of the timer above but low priority rn 
+    #@pyqtSlot()
+    #def run(self):
+        #self._is_running = True
+        #while self._is_running:
+            #QThread.msleep(self.interval)
+            #self.aggregate_data()
 
     # region: Methods that update update data to current values
     def update_temp_data(self, temp_data):
@@ -52,7 +65,7 @@ class DataSavingWorker(QObject):
         """Aggregates the current data into the DataFrame."""
         if self.flag_start_saving_live_data:
             new_row = pd.DataFrame([{
-                'timestamp': datetime.now(),
+                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 'temperature': self.current_temp if self.flag_save_temp else None,
                 'pressure': self.current_pressure if self.flag_save_pressure else None,
                 'ethanol_flowrate': self.current_ethanol_flowrate if self.flag_save_ethanol_flowrate else None,
@@ -165,6 +178,47 @@ class DataSavingWorker(QObject):
             writer.writerow([timestamp, command])
 
         print(f"Logged command: {command}")
+
+    def save_pg_data_to_csv(self, pg_data, VP, VN, T, pulse_number, folder_name):
+        # Construct the file name based on the current date and time
+        current_time = datetime.now()
+        filename = current_time.strftime("%Y%m%d_%H%M%S") + "_experiment_data.csv"
+
+        # Define the directory where the file will be saved
+        #save_directory = r"C:\Users\BSG2_UI\OneDrive\Desktop\Experiments"  # Use raw string for Windows paths
+        save_directory = r"C:\Users\BSG2_UI\OneDrive\Desktop\{}".format(folder_name)
+
+        full_path = os.path.join(save_directory, filename)
+        
+        # Create a DataFrame for the header information
+        header_info = [
+                f"Date: {current_time.strftime("%Y-%m-%d %H:%M:%S")}",
+                f"#Pulse Number: {pulse_number}",
+                f"#Voltage Pos: {VP}",
+                f"#Voltage Neg: {VN}",
+                f"#Temperature: {T}",
+                "#Pulse Length: 75,00",
+                "#Transistor on time: 75",
+                "#Rate: 200"
+            ]
+        
+
+        # Calculate the pulse number (assuming the method is called every 10 seconds)
+        pulse_number = pulse_number + 1
+
+        header_df = pd.DataFrame({'Column1': header_info,'Column2': ['']*len(header_info)})
+
+        # Create a DataFrame for the data
+        voltage_data_df = pd.DataFrame({'Column1': pg_data[:, 0]})
+        current_data_df = pd.DataFrame({'Column2': pg_data[:, 1] })
+
+        combined_pg_data_df = pd.concat([voltage_data_df, current_data_df], axis=1)
+        combined_output_df = pd.concat([header_df, combined_pg_data_df], ignore_index=True)
+
+        # Save to CSV
+        combined_output_df.to_csv(full_path, index=False, header=False)
+        print(f"Saving experiment data to {filename}...")
+    
     # endregion
     # region: Methods to set flags based on GUI interactions or other logic
     def set_save_temp(self, value):
@@ -187,4 +241,5 @@ class DataSavingWorker(QObject):
 
     def start_saving_live_non_pg_data(self, value):
         self.flag_start_saving_live_data = value
+    #endregion
     #endregion

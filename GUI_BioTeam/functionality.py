@@ -3,7 +3,7 @@ import sys
 import os
 import serial
 import pandas as pd
-import datetime
+from datetime import datetime  # This allows you to use datetime.now()
 
 from scipy.signal import butter, filtfilt
 
@@ -15,6 +15,7 @@ from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTi
 from PyQt5.QtWidgets import QProgressBar, QMessageBox
 
 import application_style
+import POCII_timing
 
 from layout import Ui_MainWindow
 from layout import PopupWindow
@@ -25,37 +26,62 @@ from data_saving_workers import DataSavingWorker
 from serial_connections import SerialConnections
 from serial_connections import TemperatureSensorSerial
 from serial_connections import ESP32Serial
+from serial_connections import SerialDeviceBySerialNumber
 
 from serial_workers import TempWorker
 from serial_workers import ESP32SerialWorker
 from serial_workers import PulseGeneratorSerialWorker
+from serial_workers import PeristalticDriverWorker
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.ticker as ticker
 import numpy as np
 
-#========================
+#================================================
 # DIRECTIONS FOR MOTORS 
-#========================
+#================================================
 
 DIR_M1_UP = 1
 DIR_M1_DOWN = -1
 DIR_M2_UP = -1
 DIR_M2_DOWN = 1
 DIR_M3_RIGHT = 1
-DIR_M3_LEFT = -1
-DIR_M4_UP = -1
+DIR_M3_LEFT = 2
+DIR_M4_UP = 2
 DIR_M4_DOWN = 1
 
-#==========================
+#================================================
+# POSITION AND NAMES FOR MOTORS 
+#================================================
+
+FLASK_MOTOR = 3
+PIERCE_MOTOR = 4
+BLOOD_SYRINGE = 1 
+FLUIDICS_MOTOR = 2
+
+FLASK_1 = 216                          
+FLASK_2 = 176
+FLASK_3 = 136
+FLASK_4 = 96
+FLASK_5 = 56
+FLASK_6 = 16
+
+DEPIERCED = 40 
+PIERCED = 10
+
+
+#==================================================
 # IDS FOR THE BSG2 DEVICES
-#==========================
+#==================================================
 PG_PSU_VENDOR_ID = 0x6666     
 PSU_PRODUCT_ID = 0x0100      
 PG_PRODUCT_ID = 0x0200       
 TEMPERATURE_SENSOR_VENDOR_ID = 0x0403  
 TEMPERATURE_SENSOR_PRODUCT_ID = 0x6015
+#PERISTALTIC_DRIVER_1_SERIAL_NUMBER = "5E4E48DBEFE6ED11B506BB5E0B2AF5AB"
+#PERISTALTIC_DRIVER_2_SERIAL_NUMBER = "B04F1588CDE6ED118145B45E0B2AF5AB"
+PERISTALTIC_DRIVER_1_SERIAL_NUMBER= "AC16B1A0FBE6ED119069D1770B2AF5AB"
 
 #========================
 # MAIN GUI THREAD
@@ -75,7 +101,7 @@ class Functionality(QtWidgets.QMainWindow):
         # Initialize application flags 
         #==============================================================================================================================================================================================================================
         #region:
-        self.flag_connections = [False, False, False, False]# These flags should be changed to true if a serial device is succesfully created AND the port is opened 
+        self.flag_connections = [False, False, False, False, False]# These flags should be changed to true if a serial device is succesfully created AND the port is opened 
 
         self.temp_is_plotting = False
         self.voltage_is_plotting = False
@@ -128,6 +154,11 @@ class Functionality(QtWidgets.QMainWindow):
         self.workflow_live_tracking_current = False 
         self.workflow_live_tracking_voltage = False
 
+        #flags for POCII WF
+        self.POCII_is_running = False
+
+
+
         #endregion
         #==============================================================================================================================================================================================================================
         # Initialize display variables for line edits and plotting canvas 
@@ -153,17 +184,19 @@ class Functionality(QtWidgets.QMainWindow):
         # Start serial connections
         #==============================================================================================================================================================================================================================
         #region:
-        self.device_serials= [None, None,None, None]                                # device_serials = [PSU, PG, 3PAC, temperature_sensor]
+        self.device_serials= [None, None,None, None, None]                                # device_serials = [PSU, PG, 3PAC, temperature_sensor]
         
         esp32_RTOS_serial = ESP32Serial()
         temperature_sensor_serial = TemperatureSensorSerial(TEMPERATURE_SENSOR_VENDOR_ID, TEMPERATURE_SENSOR_PRODUCT_ID) # Create Instance of TemperatureSensorSerial Class   
         pulse_generator_serial = SerialConnections(PG_PSU_VENDOR_ID, PG_PRODUCT_ID)
         psu_serial = SerialConnections(PG_PSU_VENDOR_ID, PSU_PRODUCT_ID)
+        peristaltic_driver_serial = SerialDeviceBySerialNumber(serial_number = PERISTALTIC_DRIVER_1_SERIAL_NUMBER)
         
         self.device_serials[0] = psu_serial.establish_connection()
         self.device_serials[1] = pulse_generator_serial.establish_connection()
         self.device_serials[2] = esp32_RTOS_serial.establish_connection()        
-        self.device_serials[3] = temperature_sensor_serial.establish_connection() # Create a temperature sensor serial device 
+        self.device_serials[3] = temperature_sensor_serial.establish_connection() 
+        self.device_serials[4] = peristaltic_driver_serial.establish_connection(baud_rate = 115200)
 
         if self.device_serials[0] is not None and self.device_serials[0].isOpen():
             self.flag_connections[0] = True
@@ -173,6 +206,8 @@ class Functionality(QtWidgets.QMainWindow):
             self.flag_connections[2] = True
         if self.device_serials[3] is not None:
             self.flag_connections[3] = True
+        if self.device_serials[4] is not None and self.device_serials[4].isOpen():
+            self.flag_connections[4] = True
 
         #endregion
         #==============================================================================================================================================================================================================================
@@ -182,9 +217,6 @@ class Functionality(QtWidgets.QMainWindow):
         self.liveDataWorker = DataSavingWorker()
         self.liveDataThread = QThread()
         self.liveDataWorker.moveToThread(self.liveDataThread)
-        #self.liveDataWorker.folderExistsSignal.connect(self.toggle_LDA_apply)
-        #self.liveDataWorker.folderExistsSignal.connect(self.showFolderExistsDialog)
-
         self.liveDataThread.start()
 
         #data saving initation for current and voltage which is different to non pg data since the bio team is using octave for the time being
@@ -227,10 +259,24 @@ class Functionality(QtWidgets.QMainWindow):
             self.esp32Worker.update_flowrate.connect(self.liveDataWorker.update_sucrose_flowrate_data)
             self.esp32Worker.update_flowrate.connect(self.liveDataWorker.update_ethanol_flowrate_data)
             self.esp32Worker.update_pressure.connect(self.liveDataWorker.update_pressure_data)
-            self.esp32Worker.update_fluidic_play_pause_buttons.connect(self.update_play_pause_buttons) 
 
             self.esp32Thread.started.connect(self.esp32Worker.run)  
             self.esp32Thread.start() 
+        #endregion
+        #===========================================================================================================================================================================================================
+        # Setup Peristaltic Driver Worker and Thread
+        #===========================================================================================================================================================================================================
+        #region:
+        if self.flag_connections[4]: 
+            self.peristalticDriverWorker = PeristalticDriverWorker(peristaltic_driver_serial)
+            self.peristalticDriverThread = QThread()
+            self.peristalticDriverWorker.moveToThread(self.peristalticDriverThread) 
+
+            self.peristalticDriverWorker.stop_sucrose.connect(self.stop_sucrose_pump)
+            self.peristalticDriverWorker.stop_ethanol.connect(self.stop_ethanol_pump)
+
+            self.peristalticDriverThread.started.connect(self.peristalticDriverWorker.run)  
+            self.peristalticDriverThread.start() 
         #endregion
         #======================================================================================================================================================================================================================================================================================================
         # Setup Pulse Generator and Power Supply Unit Worker and Thread
@@ -266,15 +312,15 @@ class Functionality(QtWidgets.QMainWindow):
         # 1 Sucrose frame functionality 
         #==============================================================================================================================================================================================================================
         #region:
-        if self.flag_connections[2]: 
-            self.ui.button_sucrose.pressed.connect(self.start_stop_sucrose_pump)
+        if self.flag_connections[2] or self.flag_connections[4]: 
+            self.ui.button_sucrose.pressed.connect(self.toggle_sucrose_button)
         #endregion
         #==============================================================================================================================================================================================================================
         # 2 Ethanol frame functionality 
         #==============================================================================================================================================================================================================================
         #region:
-        if self.flag_connections[2]: 
-            self.ui.button_ethanol.pressed.connect(self.start_stop_ethanol_pump)  
+        if self.flag_connections[2] or self.flag_connections[4]: 
+            self.ui.button_ethanol.pressed.connect(self.toggle_ethanol_pump)  
         #endregion
         #==============================================================================================================================================================================================================================
         # 2 Pressure frame functionality 
@@ -352,9 +398,9 @@ class Functionality(QtWidgets.QMainWindow):
         #======================================================================================================================================================================================================================================================================================================
         #region:
         if self.flag_connections[0] and self.flag_connections[1]:
-            self.ui.psu_button.pressed.connect(self.start_psu_pg)
+            self.ui.psu_button.pressed.connect(self.toggle_PSU_PG_signal_button)
         
-        self.ui.line_edit_min_signal.setReadOnly(True)                                  #negative value should not be able to be edited
+        self.ui.line_edit_min_signal.setReadOnly(True)                                              #negative value should not be able to be edited
         self.ui.line_edit_max_signal.textChanged.connect(self.line_edit_min_signal_text_changed)    #updates to the positive signal value must be reflected in the negative line edit
 
         #endregion
@@ -425,52 +471,65 @@ class Functionality(QtWidgets.QMainWindow):
             "frame_DEMO_sample_retrieval": 14,
             "save_experiment_data_frame": 2
         }
-
-        self.ui.save_experiment_data_frame.reset_button.pressed.connect(self.reset_all_DEMO_progress_bars)
         #endregion
+        #================================================================================================================================================================================================================================================================================================
+        # Experiment page POCII Automation Functionality (im trying to use dictionaries for the first time with an easy application, so yes i could be using intergers here with no real advantage loss but i need to learn dictionaries)
+        #================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
+        #region:
+        POCII_frame_names = [
+            "frame_POCII_system_sterilaty",
+            "frame_POCII_decontaminate_cartridge",
+            "high_voltage_frame",
+            "flush_out_frame",
+            "zero_volt_frame",
+            "safe_disconnect_frame"
+        ]
 
+        self.POCII_timers = {}
 
-# region : PG LIVE DATA SAVING NOTE: move this method to the data saving class 
+        self.POCII_counters = {frame_name: [0] for frame_name in POCII_frame_names}
 
-    def save_pg_data_to_csv(self, pg_data, temp_data):
-        # Construct the file name based on the current date and time
-        current_time = datetime.datetime.now()
-        filename = current_time.strftime("%Y%m%d_%H%M%S") + "_experiment_data.csv"
+        for POCII_frame_name in POCII_frame_names:
+            POCII_timer = QtCore.QTimer(self)
+            self.POCII_timers[POCII_frame_name] = POCII_timer
+            POCII_timer.timeout.connect(
+                lambda frame_name=POCII_frame_name: 
+                    self.update_experiment_step_progress_bar(
+                        self.POCII_counters[frame_name], 
+                        self.POCII_timers[frame_name], 
+                        self.POCII_progress_bar_dict[frame_name],
+                        frame_name  
+                    )
+            )
 
-        # Define the directory where the file will be saved
-        save_directory = r"C:\Users\BSG2_UI\OneDrive\Desktop\Experiments"  # Use raw string for Windows paths
-        full_path = os.path.join(save_directory, filename)
+        self.POCII_progress_bar_dict = {
+            "frame_POCII_system_sterilaty": self.ui.frame_POCII_system_sterilaty.progress_bar,
+            "frame_POCII_decontaminate_cartridge": self.ui.frame_POCII_decontaminate_cartridge.progress_bar,
+            "high_voltage_frame": self.ui.high_voltage_frame.progress_bar,
+            "flush_out_frame": self.ui.flush_out_frame.progress_bar,
+            "zero_volt_frame": self.ui.zero_volt_frame.progress_bar,
+            "safe_disconnect_frame": self.ui.safe_disconnect_frame.progress_bar
+        }
+
+        self.current_session_token = None
+
+        #NOTE I know this is lazy unfortunately TJ and Klemens are rushing the finish line
+        self.ui.high_voltage_frame.start_stop_button.pressed.connect(self.toggle_WF_HV_start_stop_button)
+        self.ui.high_voltage_frame.reset_button.pressed.connect(self.reset_high_voltage_frame_progress_bar)
         
-        # Create a DataFrame for the header information
-        header_info = [
-                f"Date: {current_time.strftime("%Y-%m-%d %H:%M:%S")}",
-                f"#Pulse Number: {self.pulse_number}",
-                f"#Voltage Pos: {self.ui.line_edit_max_signal.text()}",
-                f"#Voltage Neg: {self.ui.line_edit_min_signal.text()}",
-                f"#Temperature: {temp_data}",
-                "#Pulse Length: 75,00",
-                "#Transistor on time: 75",
-                "#Rate: 200"
-            ]
+        self.ui.zero_volt_frame.start_stop_button.pressed.connect(self.toggle_WF_0V_start_stop_button)
+        self.ui.zero_volt_frame.reset_button.pressed.connect(self.reset_zero_volt_frame_progress_bar)   
         
+        self.ui.frame_POCII_system_sterilaty.start_stop_button.clicked.connect(self.warning_dialogue("Attention", "This workflow subevent is currently underdevelopment, please perform this step manually from the dashboard"))
+        #self.ui.frame_POCII_decontaminate_cartridge.start_stop_button.clicked.connect(self.warning_dialogue("Attention", "This workflow subevent is currently underdevelopment, please perform this step manually from the dashboard"))
+        #self.ui.flush_out_frame.start_stop_button.clicked.connect(self.warning_dialogue("Attention", "This workflow subevent is currently underdevelopment, please perform this step manually from the dashboard"))
+        #self.ui.safe_disconnect_frame.start_stop_button.clicked.connect(self.warning_dialogue("Attention", "This workflow subevent is currently underdevelopment, please perform this step manually from the dashboard"))
 
-        # Calculate the pulse number (assuming the method is called every 10 seconds)
-        self.pulse_number = self.pulse_number + 1
-
-        header_df = pd.DataFrame({'Column1': header_info,'Column2': ['']*len(header_info)})
-
-        # Create a DataFrame for the data
-        voltage_data_df = pd.DataFrame({'Column1': pg_data[:, 0]})
-        current_data_df = pd.DataFrame({'Column2': pg_data[:, 1] })
-
-        combined_pg_data_df = pd.concat([voltage_data_df, current_data_df], axis=1)
-        combined_output_df = pd.concat([header_df, combined_pg_data_df], ignore_index=True)
-
-        # Save to CSV
-        combined_output_df.to_csv(full_path, index=False, header=False)
-        print(f"Saving experiment data to {filename}...")
-    
-#endregion
+        #self.ui.frame_POCII_system_sterilaty.start_stop_button.pressed.connect(self.toggle_system_sterilaty_start_stop_button)
+        #self.ui.frame_POCII_system_sterilaty.reset_button.pressed.connect(self.reset_frame_POCII_system_sterilaty_progress_bar)   
+        #endregion
+        #just for now so that i dont have to home the motors every single fucking time 
+        self.enable_motor_buttons()
 
 # region : TEMPERATURE  
     def update_temp_data(self, temp_data): 
@@ -519,39 +578,56 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.current_temp_data.setText(f"{self.current_temp}°")
 #endregion
 
-# region : PUMPS
-    def start_stop_sucrose_pump(self):
-        if not self.ethanol_is_pumping:
-            if not self.sucrose_is_pumping:   
-                self.close_pressure_release_valve()
-                self.set_button_style(self.ui.button_sucrose)
-                self.sucrose_is_pumping = True                      # GUI flag 
-                self.liveDataWorker.set_sucrose_is_running(True)    # Data saving thread flag
-                try:
-                    FR = float(self.ui.line_edit_sucrose.text())
-                    V = float(self.ui.line_edit_sucrose_2.text())
-                except ValueError:
-                    print("Invalid input in line_edit_sucrose")
-                    return 
-                message = f'wFS-418-{FR:.2f}-{V:.1f}\n'
-                print(message)  
-                self.esp32Worker.write_serial_message(message)
+# region : SUCROSE PUMP
 
-                if self.live_data_is_logging: 
-                    folder_name = self.popup.line_edit_LDA_folder_name.text()
-                    self.liveDataWorker.save_activity_log(message, folder_name)
-
+    def toggle_sucrose_button(self): 
+        if not self.ethanol_is_pumping: 
+            if not self.sucrose_is_pumping: 
+                self.start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text() )
             else: 
-                self.reset_button_style(self.ui.button_sucrose)
-                self.sucrose_is_pumping = False 
-                self.liveDataWorker.set_sucrose_is_running(False) # Data saving thread flag
-                message = f'wFO\n'
-                self.esp32Worker.write_serial_message(message)
-                self.updateSucroseProgressBar(0)
+                self.stop_sucrose_pump()
 
-                if self.live_data_is_logging: 
-                    folder_name = self.popup.line_edit_LDA_folder_name.text()
-                    self.liveDataWorker.save_activity_log(message, folder_name)
+    def start_sucrose_pump(self, FR, V): 
+        self.close_pressure_release_valve()
+        self.set_button_style(self.ui.button_sucrose)
+        self.sucrose_is_pumping = True                      # GUI flag 
+        self.liveDataWorker.set_sucrose_is_running(True)    # Data saving thread flag
+        try:
+            FR = float(FR)
+            V = float(V)
+        except ValueError:
+            print("Invalid input in line_edit_sucrose")
+            return 
+        message3PAC = f'wFS-350-{FR:.2f}-{V:.1f}\n'
+        messagePeristalticDriver = f'sB-{FR}-{V}-0.171\n'
+        self.esp32Worker.write_serial_message(message3PAC)
+        self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
+
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+        
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+
+    def stop_sucrose_pump(self): 
+        self.reset_button_style(self.ui.button_sucrose)
+        self.sucrose_is_pumping = False 
+        self.liveDataWorker.set_sucrose_is_running(False) # Data saving thread flag
+        message3PAC = f'wFO\n'
+        messagePeristalticDriver = f'o\n'
+        self.esp32Worker.write_serial_message(message3PAC)
+        self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
+        self.updateSucroseProgressBar(0)
+
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+        
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
 
     def updateSucroseProgressBar(self, value):
         if self.sucrose_is_pumping:
@@ -569,39 +645,56 @@ class Functionality(QtWidgets.QMainWindow):
                 self.ui.progress_bar_sucrose.setValue(0)
         else: 
             self.ui.progress_bar_sucrose.setValue(0)
-         
-    def start_stop_ethanol_pump(self):
+#endregion
+
+# region : ETHANOL PUMP
+    def toggle_ethanol_pump(self): 
         if not self.sucrose_is_pumping:
             if not self.ethanol_is_pumping: 
-                self.close_pressure_release_valve()
-                self.ethanol_is_pumping = True  # GUI flag 
-                self.liveDataWorker.set_ethanol_is_running(True) # Live data saving flag
-                self.set_button_style(self.ui.button_ethanol)
-                try:
-                    FR = float(self.ui.line_edit_ethanol.text())
-                    V = float(self.ui.line_edit_ethanol_2.text())
-                except ValueError:
-                    print("Invalid input in line_edit_sucrose")
-                    return 
-                message = f'wFE-168-{FR:.2f}-{V:.1f}\n'  
-                print(message)
-                self.esp32Worker.write_serial_message(message)
-
-                if self.live_data_is_logging: 
-                    folder_name = self.popup.line_edit_LDA_folder_name.text()
-                    self.liveDataWorker.save_activity_log(message, folder_name)
-
+                self.start_ethanol_pump(self.ui.line_edit_ethanol.text(), self.ui.line_edit_ethanol_2.text())
             else: 
-                self.reset_button_style(self.ui.button_ethanol)
-                self.ethanol_is_pumping = False 
-                self.liveDataWorker.set_ethanol_is_running(False) # Live data saving flag
-                message = f'wFO\n'
-                self.esp32Worker.write_serial_message(message)
-                self.updateEthanolProgressBar(0)
-                if self.live_data_is_logging: 
-                    folder_name = self.popup.line_edit_LDA_folder_name.text()
-                    self.liveDataWorker.save_activity_log(message, folder_name)
-                
+                self.stop_ethanol_pump()
+    
+    def start_ethanol_pump(self, FR, V): 
+        self.close_pressure_release_valve()
+        self.ethanol_is_pumping = True  # GUI flag 
+        self.liveDataWorker.set_ethanol_is_running(True) # Live data saving flag
+        self.set_button_style(self.ui.button_ethanol)
+        try:
+            FR = float(FR)
+            V = float(V)
+        except ValueError:
+            print("Invalid input in line_edit_sucrose")
+            return 
+        message3PAC = f'wFE-160-{FR:.2f}-{V:.1f}\n'  
+        messagePeristalticDriver = f'sE-{FR}-{V}-0.169\n'  
+        self.esp32Worker.write_serial_message(message3PAC)
+        self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
+
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+  
+    def stop_ethanol_pump(self): 
+        self.reset_button_style(self.ui.button_ethanol)
+        self.ethanol_is_pumping = False 
+        self.liveDataWorker.set_ethanol_is_running(False) # Live data saving flag
+        message3PAC = f'wFO\n'
+        messagePeristalticDriver = f'o\n'
+        self.esp32Worker.write_serial_message(message3PAC)
+        self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
+        self.updateEthanolProgressBar(0)
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+   
     def updateEthanolProgressBar(self, value):
         if self.ethanol_is_pumping:
             if value:
@@ -617,7 +710,9 @@ class Functionality(QtWidgets.QMainWindow):
             else:
                 self.ui.progress_bar_ethanol.setValue(0)
         else: self.ui.progress_bar_ethanol.setValue(0)  
+#endregion
 
+# region : PRESSURE
     def toggle_pressure_release_button(self): 
         if self.pressure_release_valve_open: 
             self.close_pressure_release_valve()
@@ -686,12 +781,6 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.pressure_progress_bar.setValue(int((self.counter / 20) * 100))
         else:
             self.start_stop_increasing_system_pressure()
-
-    def update_play_pause_buttons(self): 
-        if self.ethanol_is_pumping: 
-            self.start_stop_ethanol_pump()
-        elif self.sucrose_is_pumping: 
-            self.start_stop_sucrose_pump()
 #endregion
 
 # region : PULSE GENENRATOR AND POWER SUP 
@@ -734,28 +823,23 @@ class Functionality(QtWidgets.QMainWindow):
         self.voltage_y[:, 0] -= self.zerodata[0]           # voltage data
         self.voltage_y[:, 1] -= self.zerodata[1]           # current data  
         self.voltage_y[:, 0] *= 0.15        # Nico original guess for voltage scaling 
-        self.voltage_y[:, 1] *= 0.15        # Nico original guess for current scaling
-        #self.voltage_y[:, 0] *= 0.456812   # Hans value for voltage scaling as calculated by Nico  
-        #self.voltage_y[:, 1] *= 0.034      # Hans value fo current scaling as calculated by Nico
+        self.voltage_y[:, 1] *= 0.034       # Hans value fo current scaling as calculated by Nico
 
         # before we chop up the data to display on the UI we will save the data to csv as the Octave script potentially requires the full data set to be analyzed
         current_time = time.time()
+        # saving data for live data sessions 
         if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
-            self.save_pg_data_to_csv(self.voltage_y, self.current_temp)
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.line_edit_max_signal.text(), self.ui.line_edit_min_signal.text(), self.current_temp, self.pulse_number, folder_name)
+            self.last_save_time = current_time
+        
+        if self.workflow_live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.line_edit_max_signal.text(), self.ui.line_edit_min_signal.text(), self.current_temp, self.pulse_number, folder_name)
             self.last_save_time = current_time
 
         length_of_data = self.voltage_y.shape[0] 
         self.voltage_xdata = np.linspace(1, 300, length_of_data)
-
-        # Sample rate and desired cutoff frequency of the filter
-        #fs = 1000.0  # Sample rate, adjust to your data
-        #cutoff = 40  # Desired cutoff frequency, adjust based on your data
-
-        #self.voltage_y[:, 1] = self.butter_lowpass_filter(self.voltage_y[:, 1], cutoff, fs, order=5)
-
-        # Apply the filter to the current data
-        #window_size = 10  # Adjust this based on your data
-        #self.voltage_y[:, 1] = self.moving_average(self.voltage_y[:, 1], window_size)
 
         if self.voltage_is_plotting: 
             self.update_voltage_plot()
@@ -783,97 +867,116 @@ class Functionality(QtWidgets.QMainWindow):
         self.set_plot_canvas('Voltage (V)', 'Voltage Signal')
 
         self.ui.canvas_voltage.draw()
-   
-    def start_psu_pg(self): 
-        if not self.signal_is_enabled:  
-            
-            pos_setpoint_text = self.ui.line_edit_max_signal.text().strip()
-            neg_setpoint_text = self.ui.line_edit_min_signal.text().strip()
 
-            #self.ui.line_edit_max_signal.setEnabled(False)
-            #self.ui.line_edit_min_signal.setEnabled(False)
-
-            # Validate positive setpoint
-            if not pos_setpoint_text:
-                QMessageBox.warning(self, "Input Error", "The positive setpoint cannot be blank. Please enter a value.")
-                self.ui.line_edit_max_signal.clear()
-                return
-
-            try:
-                pos_setpoint = int(pos_setpoint_text)
-                if not (20 <= pos_setpoint <= 90):
-                    raise ValueError("Positive setpoint out of range.")
-            except ValueError:
-                QMessageBox.warning(self, "Input Error", "Invalid positive setpoint. Please enter an integer between 20 and 90.")
-                self.ui.line_edit_max_signal.clear()
-                return
-
-            # Validate negative setpoint
-            if not neg_setpoint_text:
-                QMessageBox.warning(self, "Input Error", "The negative setpoint cannot be blank. Please enter a value.")
-                self.ui.line_edit_min_signal.clear()
-                return
-
-            try:
-                neg_setpoint = int(neg_setpoint_text)
-                if not (-90 <= neg_setpoint <= -20):
-                    raise ValueError("Negative setpoint out of range.")
-            except ValueError:
-                QMessageBox.warning(self, "Input Error", "Invalid negative setpoint. Please enter an integer between -90 and -20.")
-                self.ui.line_edit_min_signal.clear()
-                return
-
-            print("Setpoints are valid.")
-
-            self.set_button_style(self.ui.psu_button)
-            
-            self.signal_is_enabled = True
-
-            neg_setpoint = abs(neg_setpoint)
-            
-            print(pos_setpoint)
-            print(neg_setpoint)
-            send_PSU_enable(self.device_serials[0], 1)
-            message = "Enabled PSU"
-            if self.live_data_is_logging: 
-                folder_name = self.popup.line_edit_LDA_folder_name.text()
-                self.liveDataWorker.save_activity_log(message, folder_name)
-            time.sleep(.1)
-
-            send_PSU_setpoints(self.device_serials[0], 20, 20, 0)
-            time.sleep(.1)
-
-            send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
-            message = "Sent PSU setpoints"
-            if self.live_data_is_logging: 
-                folder_name = self.popup.line_edit_LDA_folder_name.text()
-                self.liveDataWorker.save_activity_log(message, folder_name)
-
-            self.pgWorker.start_pg()
-            message = "Started PG"
-            if self.live_data_is_logging: 
-                folder_name = self.popup.line_edit_LDA_folder_name.text()
-                self.liveDataWorker.save_activity_log(message, folder_name)
-
+    def toggle_PSU_PG_signal_button(self): 
+        if not self.signal_is_enabled: 
+            self.start_psu_pg()
         else: 
-            
-            self.reset_button_style(self.ui.psu_button)
-            self.signal_is_enabled = False         
-            
-            #self.ui.line_edit_max_signal.setEnabled(True)
-            #self.ui.line_edit_min_signal.setEnabled(True)
+            self.stop_psu_pg()
 
-            send_PSU_disable(self.device_serials[0], 1)
-            message = "Disabled PSU"
-            if self.live_data_is_logging: 
-                folder_name = self.popup.line_edit_LDA_folder_name.text()
-                self.liveDataWorker.save_activity_log(message, folder_name)
+    def start_psu_pg(self):   
+        pos_setpoint_text = self.ui.line_edit_max_signal.text().strip()
+        neg_setpoint_text = self.ui.line_edit_min_signal.text().strip()
 
-            self.pgWorker.stop_pg()
-            message = "Stopped PG"
-            if self.live_data_is_logging: 
-                folder_name = self.popup.line_edit_LDA_folder_name.text()
-                self.liveDataWorker.save_activity_log(message, folder_name)
+        #self.ui.line_edit_max_signal.setEnabled(False)
+        #self.ui.line_edit_min_signal.setEnabled(False)
+
+        # Validate positive setpoint
+        if not pos_setpoint_text:
+            QMessageBox.warning(self, "Input Error", "The positive setpoint cannot be blank. Please enter a value.")
+            self.ui.line_edit_max_signal.clear()
+            return
+
+        try:
+            pos_setpoint = int(pos_setpoint_text)
+            if not (20 <= pos_setpoint <= 90):
+                raise ValueError("Positive setpoint out of range.")
+        except ValueError:
+            QMessageBox.warning(self, "Input Error", "Invalid positive setpoint. Please enter an integer between 20 and 90.")
+            self.ui.line_edit_max_signal.clear()
+            return
+
+        # Validate negative setpoint
+        if not neg_setpoint_text:
+            QMessageBox.warning(self, "Input Error", "The negative setpoint cannot be blank. Please enter a value.")
+            self.ui.line_edit_min_signal.clear()
+            return
+
+        try:
+            neg_setpoint = int(neg_setpoint_text)
+            if not (-90 <= neg_setpoint <= -20):
+                raise ValueError("Negative setpoint out of range.")
+        except ValueError:
+            QMessageBox.warning(self, "Input Error", "Invalid negative setpoint. Please enter an integer between -90 and -20.")
+            self.ui.line_edit_min_signal.clear()
+            return
+
+        print("Setpoints are valid.")
+
+        self.set_button_style(self.ui.psu_button)
+        
+        self.signal_is_enabled = True
+
+        neg_setpoint = abs(neg_setpoint)
+        
+        print(pos_setpoint)
+        print(neg_setpoint)
+        send_PSU_enable(self.device_serials[0], 1)
+        message = "Enabled PSU"
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+  
+        time.sleep(.1)
+
+        send_PSU_setpoints(self.device_serials[0], 20, 20, 0)
+        time.sleep(.1)
+
+        send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
+        message = "Sent PSU setpoints"
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+
+        self.pgWorker.start_pg()
+        message = "Started PG"
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+
+    def stop_psu_pg(self):
+        self.reset_button_style(self.ui.psu_button)
+        self.signal_is_enabled = False         
+        
+        #self.ui.line_edit_max_signal.setEnabled(True)
+        #self.ui.line_edit_min_signal.setEnabled(True)
+
+        send_PSU_disable(self.device_serials[0], 1)
+        message = "Disabled PSU"
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+
+        self.pgWorker.stop_pg()
+        message = "Stopped PG"
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
 
 #endregion
 
@@ -900,10 +1003,13 @@ class Functionality(QtWidgets.QMainWindow):
 
         message = f'wMB-{volume_str}-{speed_str}\n'
         #print(message)   
-        #self.esp32Worker.write_serial_message(message)
+        self.esp32Worker.write_serial_message(message)
         writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
 
         blood_pump_time = int((blood_volume / blood_speed) * 60 * 1000)
@@ -914,7 +1020,8 @@ class Functionality(QtWidgets.QMainWindow):
             
     def stop_blood_pump(self):
         self.reset_button_style(self.ui.button_blood_play_pause)
-        self.blood_pump_timer.stop()  
+        if self.blood_pump_timer: 
+            self.blood_pump_timer.stop()  
         blood_volume = float(0) 
         blood_speed = float(0)
         volume_str = f"0{blood_volume:02.1f}"  
@@ -924,6 +1031,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.esp32Worker.write_serial_message(message)
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
         self.blood_is_pumping = False
 
@@ -955,7 +1065,27 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion 
 
-# region : MOTOR MOVEMENTS (NOT INCLUDING BLOOD MOTOR) NOTE: use the esp worker to send motor commands not the comminication file
+# region : MOTOR (MOVEMENT FUNCTIONS DO NOT INCLUDE BLOOD MOTOR) NOTE: use the esp worker to send motor commands not the comminication file
+    def enable_motor_buttons(self): 
+        self.ui.button_blood_down.setEnabled(True)
+        self.ui.button_blood_up.setEnabled(True)
+        self.ui.button_blood_play_pause.setEnabled(True)
+        self.ui.button_flask_up.setEnabled(True)
+        self.ui.button_flask_down.setEnabled(True)
+        self.ui.button_flask_right.setEnabled(True)
+        self.ui.button_flask_left.setEnabled(True)
+        self.ui.button_cartridge_up.setEnabled(True)
+        self.ui.button_cartridge_down.setEnabled(True)
+        self.reset_button_style(self.ui.button_blood_up)
+        self.reset_button_style(self.ui.button_blood_down)
+        self.reset_button_style(self.ui.button_blood_play_pause)
+        self.reset_button_style(self.ui.button_flask_down)
+        self.reset_button_style(self.ui.button_flask_up)
+        self.reset_button_style(self.ui.button_flask_left)
+        self.reset_button_style(self.ui.button_flask_right)
+        self.reset_button_style(self.ui.button_cartridge_down)
+        self.reset_button_style(self.ui.button_cartridge_up)
+    
     def movement_homing(self, motornumber=0):
         # motornumber = 0 --> ALL MOTORS
         if self.flag_connections[2]:
@@ -967,15 +1097,6 @@ class Functionality(QtWidgets.QMainWindow):
 
             if motornumber == 0:
                 print("HOMING STARTED FOR ALL MOTORS")
-                self.ui.button_blood_down.setEnabled(True)
-                self.ui.button_blood_up.setEnabled(True)
-                self.ui.button_blood_play_pause.setEnabled(True)
-                self.ui.button_flask_up.setEnabled(True)
-                self.ui.button_flask_down.setEnabled(True)
-                self.ui.button_flask_right.setEnabled(True)
-                self.ui.button_flask_left.setEnabled(True)
-                self.ui.button_cartridge_up.setEnabled(True)
-                self.ui.button_cartridge_down.setEnabled(True)
             else:
                 print("HOMING STARTED FOR MOTOR {}".format(motornumber))      
 
@@ -1127,6 +1248,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.live_tracking_current = False 
         self.live_tracking_voltage = False
         self.pulse_number = 1
+        self.flag_live_data_saving_applied = False
+
         print("Ending live data saving...")
     
     def toggle_LDA_apply(self): 
@@ -1233,11 +1356,11 @@ class Functionality(QtWidgets.QMainWindow):
     def toggle_LDA_workflow_temperature_button(self): 
         if not self.workflow_live_tracking_temperature:
             self.workflow_live_tracking_temperature = True   # GUI thread flag
-            #self.liveDataWorker.set_save_temp(True) # Data saving thread flag
+            self.liveDataWorker.set_save_temp(True) # Data saving thread flag
             self.set_button_style(self.workflow_LDA_popup.button_LDA_temperature)
         else: 
             self.workflow_live_tracking_temperature = False  # GUI thread flag 
-            #self.liveDataWorker.set_save_temp(False) # Data saving thread flag
+            self.liveDataWorker.set_save_temp(False) # Data saving thread flag
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_temperature)
 
     def toggle_LDA_workflow_current_button(self): 
@@ -1259,37 +1382,37 @@ class Functionality(QtWidgets.QMainWindow):
     def toggle_LDA_workflow_pressure_button(self): 
         if not self.workflow_live_tracking_pressure: 
             self.workflow_live_tracking_pressure = True 
-            #self.liveDataWorker.set_save_pressure(True)
+            self.liveDataWorker.set_save_pressure(True)
             self.set_button_style(self.workflow_LDA_popup.button_LDA_pressure)
         else: 
             self.workflow_live_tracking_pressure = False 
-            #self.liveDataWorker.set_save_pressure(False)
+            self.liveDataWorker.set_save_pressure(False)
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_pressure)
 
     def toggle_LDA_workflow_ethanol_button(self): 
         if not self.workflow_live_tracking_ethanol_flowrate: 
             self.workflow_live_tracking_ethanol_flowrate = True 
-            #self.liveDataWorker.set_save_ethanol_flowrate(True)
+            self.liveDataWorker.set_save_ethanol_flowrate(True)
             self.set_button_style(self.workflow_LDA_popup.button_LDA_Ethanol)
         else: 
             self.workflow_live_tracking_ethanol_flowrate = False
-            #self.liveDataWorker.set_save_ethanol_flowrate(False)
+            self.liveDataWorker.set_save_ethanol_flowrate(False)
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_Ethanol)
 
     def toggle_LDA_workflow_sucrose_button(self): 
         if not self.workflow_live_tracking_sucrose_flowrate: 
             self.workflow_live_tracking_sucrose_flowrate = True 
-            #self.liveDataWorker.set_save_sucrose_flowrate(True)
+            self.liveDataWorker.set_save_sucrose_flowrate(True)
             self.set_button_style(self.workflow_LDA_popup.button_LDA_Sucrose)
         else: 
             self.workflow_live_tracking_sucrose_flowrate = False
-            #self.liveDataWorker.set_save_sucrose_flowrate(False)
+            self.liveDataWorker.set_save_sucrose_flowrate(False)
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_Sucrose)
     
     def workflow_go_live(self):
         self.workflow_live_data_is_logging = True                            # GUI thread flag once go live has been pressed
         self.experiment_choice_is_locked_in = True                   # GUI thread flag for the side bar button being pressed
-        #self.liveDataWorker.start_saving_live_non_pg_data(True)     # Live data saving thread flag
+        self.liveDataWorker.start_saving_live_non_pg_data(True)     # Live data saving thread flag
         border_style = "#centralwidget { border: 7px solid blue; }"
         self.ui.centralwidget.setStyleSheet(border_style)
         self.lock_experiment_choice()
@@ -1309,12 +1432,12 @@ class Functionality(QtWidgets.QMainWindow):
             "Fresh Sucrose": self.workflow_LDA_popup.combobox_LDA_fresh_sucrose.currentText()
         }
 
-        #folder_name = self.workflow_.line_edit_LDA_folder_name.text()
-        #self.liveDataWorker.save_header_info_to_csv(header_values, folder_name)
-        #self.liveDataWorker.save_non_pg_data_to_csv(folder_name)
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.save_header_info_to_csv(header_values, folder_name)
+        self.liveDataWorker.save_non_pg_data_to_csv(folder_name)
 
         self.workflow_live_data_is_logging = False
-        #self.liveDataWorker.start_saving_live_non_pg_data(False)
+        self.liveDataWorker.start_saving_live_non_pg_data(False)
         self.live_data_saving_button_pressed = False
         self.workflow_live_tracking_temperature = False
         self.workflow_live_tracking_ethanol_flowrate = False 
@@ -1323,23 +1446,29 @@ class Functionality(QtWidgets.QMainWindow):
         self.workflow_live_tracking_current = False 
         self.workflow_live_tracking_voltage = False
         self.pulse_number = 1
+        self.flag_workflow_live_data_saving_applied = False
         print("Ending live data saving...")
     
     def toggle_LDA_workflow_apply(self): 
         if not self.flag_workflow_live_data_saving_applied:
-            self.flag_workflow_live_data_saving_applied = True
-            self.set_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
-            
-            self.reset_button_style(self.workflow_LDA_popup.button_LDA_go_live, 23)
-            self.workflow_LDA_popup.button_LDA_go_live.setEnabled(True)
-
-            #folder_name = self.popup.line_edit_LDA_folder_name.text()
-            #self.liveDataWorker.create_live_data_folder(folder_name)
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            folder_created = self.liveDataWorker.create_live_data_folder(folder_name)
+            if folder_created: 
+                    self.flag_workflow_live_data_saving_applied = True
+                    self.set_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
+                    self.reset_button_style(self.workflow_LDA_popup.button_LDA_go_live, 23)
+                    self.workflow_LDA_popup.button_LDA_go_live.setEnabled(True)
+            else: 
+                self.flag_workflow_live_data_saving_applied = False
+                self.reset_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
+                self.grey_out_button(self.workflow_LDA_popup.button_LDA_go_live, 23)
+                self.workflow_LDA_popup.button_LDA_go_live.setEnabled(False)
+                self.showFolderExistsDialog()
         else: 
             self.flag_workflow_live_data_saving_applied = False
             self.reset_button_style(self.workflow_LDA_popup.button_LDA_apply, 23)
-            self.grey_out_button(self.workflow_LDA_popup.button_LDA_go_live)
-            self.workflow_LDA_popup.button_LDA_go_live.setEnabled(True)
+            self.grey_out_button(self.workflow_LDA_popup.button_LDA_go_live, 23)
+            self.workflow_LDA_popup.button_LDA_go_live.setEnabled(False)
 
 # endregion
 
@@ -1421,66 +1550,10 @@ class Functionality(QtWidgets.QMainWindow):
             }}
         """)
 
-    def enable_motor_buttons(self): 
-        self.reset_button_style(self.ui.button_blood_up)
-        self.reset_button_style(self.ui.button_blood_down)
-        self.reset_button_style(self.ui.button_blood_play_pause)
-
-        self.reset_button_style(self.ui.button_flask_down)
-        self.reset_button_style(self.ui.button_flask_up)
-        self.reset_button_style(self.ui.button_flask_left)
-        self.reset_button_style(self.ui.button_flask_right)
-
-        self.reset_button_style(self.ui.button_cartridge_down)
-        self.reset_button_style(self.ui.button_cartridge_up)
-
-    def update_experiment_step_progress_bar(self, counter, timer, progress_bar, frame_name):
-        interval = self.DEMO_time_intervals[frame_name]
-        
-        counter[0] += 1
-        if counter[0] <= interval:
-            progress_bar.setValue(int((counter[0] / interval) * 100))
-        else:
-            timer.stop()
-            counter[0] = 0
-
     def reset_all_DEMO_progress_bars(self):
         for progress_bar in self.DEMO_progress_bar_dict.values():
             progress_bar.setValue(0)   
-
-    def create_POCII_experiment_page(self):
-        self.ui.frame_POCII_system_sterilaty.show()
-        self.ui.frame_POCII_decontaminate_cartridge.show()
-        self.ui.high_voltage_frame.show()
-        self.ui.flush_out_frame.show()
-        self.ui.zero_volt_frame.show()
-        self.ui.safe_disconnect_frame.show()
-        self.ui.save_experiment_data_frame.show()
-
-        self.ui.spacing_placeholder1.show()
-        self.ui.spacing_placeholder2.show()
-        self.ui.spacing_placeholder3.show()
-        self.ui.spacing_placeholder4.show()
-        self.ui.spacing_placeholder5.show()
-        self.ui.spacing_placeholder6.show()
-    
-    def destroy_POCII_experiment_page(self): 
-
-        self.ui.frame_POCII_system_sterilaty.hide()
-        self.ui.frame_POCII_decontaminate_cartridge.hide()
-        self.ui.high_voltage_frame.hide()
-        self.ui.flush_out_frame.hide()
-        self.ui.zero_volt_frame.hide()
-        self.ui.safe_disconnect_frame.hide()
-        self.ui.save_experiment_data_frame.hide()
-
-        self.ui.spacing_placeholder1.hide()
-        self.ui.spacing_placeholder2.hide()
-        self.ui.spacing_placeholder3.hide()
-        self.ui.spacing_placeholder4.hide()
-        self.ui.spacing_placeholder5.hide()
-        self.ui.spacing_placeholder6.hide()
-   
+ 
     def create_DEMO_experiment_page(self):
 
         self.ui.frame_DEMO_close_fluidic_circuit.show()
@@ -1536,3 +1609,273 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.stack.setCurrentIndex(1)
         
 #endregion 
+
+# region : POCII
+
+# region : UI METHODS
+    def create_POCII_experiment_page(self):
+        self.ui.frame_POCII_system_sterilaty.show()
+        self.ui.frame_POCII_decontaminate_cartridge.show()
+        self.ui.high_voltage_frame.show()
+        self.ui.flush_out_frame.show()
+        self.ui.zero_volt_frame.show()
+        self.ui.safe_disconnect_frame.show()
+
+
+        self.ui.spacing_placeholder1.show()
+        self.ui.spacing_placeholder2.show()
+        self.ui.spacing_placeholder3.show()
+        self.ui.spacing_placeholder4.show()
+        self.ui.spacing_placeholder5.show()
+ 
+    def destroy_POCII_experiment_page(self): 
+
+        self.ui.frame_POCII_system_sterilaty.hide()
+        self.ui.frame_POCII_decontaminate_cartridge.hide()
+        self.ui.high_voltage_frame.hide()
+        self.ui.flush_out_frame.hide()
+        self.ui.zero_volt_frame.hide()
+        self.ui.safe_disconnect_frame.hide()
+
+
+        self.ui.spacing_placeholder1.hide()
+        self.ui.spacing_placeholder2.hide()
+        self.ui.spacing_placeholder3.hide()
+        self.ui.spacing_placeholder4.hide()
+        self.ui.spacing_placeholder5.hide()
+    
+    def update_experiment_step_progress_bar(self, counter, timer, progress_bar, frame_name):
+        FR = float(self.ui.line_edit_sucrose.text())
+        V = float(self.ui.line_edit_sucrose_2.text())
+        interval = (V/FR) * 60 
+        
+        counter[0] += 1
+        if counter[0] <= interval:
+            progress_bar.setValue(int((counter[0] / interval) * 100))
+        else:
+            timer.stop()
+            counter[0] = 0
+
+    def reset_high_voltage_frame_progress_bar(self):
+        self.ui.high_voltage_frame.progress_bar.setValue(0)
+    
+    def reset_zero_volt_frame_progress_bar(self):
+        self.ui.zero_volt_frame.progress_bar.setValue(0)   
+    
+    def reset_frame_POCII_system_sterilaty_progress_bar(self):
+        self.ui.frame_POCII_system_sterilaty.progress_bar.setValue(0)   
+#endregion
+
+# region : SS 
+    def toggle_system_sterilaty_start_stop_button(self): 
+        if self.POCII_is_running: 
+            self.stop_interrupt_WF_system_sterilaty()
+            self.POCII_is_running = False
+        else: 
+            self.WF_start_system_sterility()
+            self.set_button_style(self.ui.frame_POCII_system_sterilaty.start_stop_button)
+            self.POCII_is_running = True
+
+    def WF_start_system_sterility(self): 
+        #session token 
+        self.generate_new_token()
+        current_token = self.current_session_token
+        #operations 
+        QTimer.singleShot(POCII_timing.SSD1, lambda: self.WF_move_motor(3, FLASK_1, current_token)) #move to waste 
+        QTimer.singleShot(POCII_timing.SSD2, lambda: self.WF_move_motor(4, PIERCED, current_token)) #pierce 
+        QTimer.singleShot(POCII_timing.SSD3, lambda: self.WF_move_motor(4, DEPIERCED, current_token)) #depierce 
+        QTimer.singleShot(POCII_timing.SSD4, lambda: self.WF_move_motor(3, FLASK_2, current_token)) #move to flask 2 
+        QTimer.singleShot(POCII_timing.SSD5, lambda: self.WF_move_motor(4, PIERCED, current_token)) #pierce 
+        QTimer.singleShot(POCII_timing.SSD6, lambda: self.WF_move_motor(4, DEPIERCED, current_token)) #depierce 
+        QTimer.singleShot(POCII_timing.SSD7, lambda: self.WF_move_motor(3, FLASK_3, current_token)) #move to flask 3 
+        QTimer.singleShot(POCII_timing.SSD8, lambda: self.WF_move_motor(4, PIERCED, current_token)) #pierce 
+        QTimer.singleShot(POCII_timing.SSD9, lambda: self.WF_move_motor(4, DEPIERCED, current_token)) #depierce 
+        QTimer.singleShot(POCII_timing.SSD10, lambda: self.WF_move_motor(3, FLASK_4, current_token)) #move to flask 4 
+        QTimer.singleShot(POCII_timing.SSD11, lambda: self.WF_move_motor(4, PIERCED, current_token)) #pierce 
+        QTimer.singleShot(POCII_timing.SSD12, lambda: self.WF_move_motor(4, DEPIERCED, current_token)) #depierce 
+        QTimer.singleShot(POCII_timing.SSD13, lambda: self.WF_move_motor(3, FLASK_5, current_token)) #move to flask 5 
+        QTimer.singleShot(POCII_timing.SSD14, lambda: self.WF_move_motor(4, PIERCED, current_token)) #pierce 
+        QTimer.singleShot(POCII_timing.SSD15, lambda: self.WF_move_motor(4, DEPIERCED, current_token)) #depierce 
+        QTimer.singleShot(POCII_timing.SSD13, lambda: self.WF_move_motor(3, FLASK_6, current_token)) #move to flask 6 
+        QTimer.singleShot(POCII_timing.SSD14, lambda: self.WF_move_motor(4, PIERCED, current_token)) #pierce 
+        QTimer.singleShot(POCII_timing.SSD15, lambda: self.WF_move_motor(4, DEPIERCED, current_token)) #depierce 
+
+        #QTimer.singleShot(POCII_timing.SSD3, lambda: self.WF_start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text(), current_token)) #pump sucrose at fixed maximum system flowrate  for a total volume of 2*(pi*r^2)L [ml]
+        #QTimer.singleShot(POCII_timing.SSD4, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_DOWN, current_token)) #retract 
+        #QTimer.singleShot(POCII_timing.SSD5, lambda: self.WF_move_motor(3, FLASK_INCREMENT, DIR_M3_LEFT, current_token)) #move to sterility 
+        #QTimer.singleShot(POCII_timing.SSD6, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_UP, current_token)) #pierce 
+        #QTimer.singleShot(POCII_timing.SSD7, lambda: self.WF_start_sucrose_pump(5, 5, current_token)) #pump 5 ml of sucrose at a fixed maximum system flowrate
+        #QTimer.singleShot(POCII_timing.SSD8, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_DOWN, current_token)) #retract
+        #QTimer.singleShot(POCII_timing.SSD9, lambda: self.WF_move_motor(3, FLASK_INCREMENT, DIR_M3_RIGHT, current_token)) #move to waste
+        #QTimer.singleShot(POCII_timing.SSD10, lambda: self.WF_move_motor(4, PIERCE, DIR_M4_UP, current_token)) #pierce 
+        #QTimer.singleShot(POCII_timing.SSD11, lambda: self.WF_start_ethanol_pump(self.ui.line_edit_ethanol.text(), self.ui.line_edit_ethanol_2.text(), current_token)) #pump 2*(pi*r&2)L [ml] of ethanol
+        #QTimer.singleShot(POCII_timing.SSD12, lambda: self.stop_timed_WF_system_sterilaty(current_token)) #timed end 
+        #progress bar 
+        frame_name = "frame_POCII_system_sterilaty"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].start(1000)  
+
+    def stop_interrupt_WF_system_sterilaty(self): 
+        #null the session
+        self.current_session_token = None  
+        #shut down operations 
+        self.reset_button_style(self.ui.frame_POCII_system_sterilaty.start_stop_button)
+        self.stop_sucrose_pump()
+        self.stop_ethanol_pump()
+        writeMotorDistance(self.device_serials[2], 3, 0, 1) # two is to the left one is to the right for motor 3 
+        writeMotorDistance(self.device_serials[2], 4, 0, 1) # two is to the left one is to the right for motor 3 
+        #pause progress bar 
+        frame_name = "frame_POCII_system_sterilaty"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].stop()
+
+    def stop_timed_WF_system_sterilaty(self, token): 
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.reset_button_style(self.ui.frame_POCII_system_sterilaty.start_stop_button)
+            self.POCII_is_running = False
+        else:
+            pass
+#endregion
+
+# region : HV
+    def toggle_WF_HV_start_stop_button(self): 
+        if self.POCII_is_running: 
+            self.stop_interrupt_WF_HV()
+            self.POCII_is_running = False
+        else: 
+            self.start_WF_HV()
+            self.POCII_is_running = True
+            self.set_button_style(self.ui.high_voltage_frame.start_stop_button)
+
+    def start_WF_HV(self): 
+        #session token
+        self.generate_new_token()
+        current_token = self.current_session_token
+        #operation
+        self.start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text())
+        FR = float(self.ui.line_edit_sucrose.text())
+        V = float(self.ui.line_edit_sucrose_2.text())
+        total_HV_WF_time = (V/FR) * 60 * 1000
+        total_HV_WF_time_int = int(round(total_HV_WF_time))
+        QTimer.singleShot(20000, lambda: self.WF_start_blood_pump(current_token))
+        QTimer.singleShot(5000, lambda: self.WF_start_psu_pg(current_token))
+        QTimer.singleShot(total_HV_WF_time_int-5000, lambda: self.WF_stop_psu_pg(current_token))
+        QTimer.singleShot(total_HV_WF_time_int, lambda: self.stop_timed_WF_HV(current_token))
+        frame_name = "high_voltage_frame"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].start(1000)  
+    
+    def stop_interrupt_WF_HV(self): 
+        #null the session
+        self.current_session_token = None  
+        #shut down operations 
+        self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
+        self.stop_sucrose_pump()
+        self.stop_psu_pg()
+        self.stop_blood_pump()
+        #pause the progress bar
+        frame_name = "high_voltage_frame"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].stop()
+    
+    def stop_timed_WF_HV(self, token): 
+        if self.POCII_is_running and token == self.current_session_token : 
+            self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
+            self.stop_psu_pg()
+            self.POCII_is_running = False
+        else:
+            pass
+#endregion
+
+# region : 0V
+    def toggle_WF_0V_start_stop_button(self): 
+        if self.POCII_is_running: 
+            self.stop_interrupt_WF_0V()
+            self.POCII_is_running = False
+        else: 
+            self.start_WF_0V()
+            self.set_button_style(self.ui.zero_volt_frame.start_stop_button)
+            self.POCII_is_running = True
+    
+    def start_WF_0V(self): 
+        #session token
+        self.generate_new_token()
+        current_token = self.current_session_token
+        #operations 
+        self.start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text())
+        FR = float(self.ui.line_edit_sucrose.text())
+        V = float(self.ui.line_edit_sucrose_2.text())
+        total_0V_WF_time = (V/FR) * 60 * 1000
+        total_0V_WF_time_int = int(round(total_0V_WF_time))
+        QTimer.singleShot(20000, lambda: self.WF_start_blood_pump(current_token))
+        QTimer.singleShot(total_0V_WF_time_int, lambda: self.stop_timed_WF_0V(current_token))
+        #progress bar
+        frame_name = "zero_volt_frame"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].start(1000)  
+    
+    def stop_interrupt_WF_0V(self): 
+        #null the session
+        self.current_session_token = None  
+        #shut down operations 
+        self.reset_button_style(self.ui.zero_volt_frame.start_stop_button)
+        self.stop_sucrose_pump()
+        self.stop_blood_pump()
+        #pause the progress bar token
+        frame_name = "zero_volt_frame"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].stop()
+   
+    def stop_timed_WF_0V(self, token): 
+        if self.POCII_is_running and token == self.current_session_token : 
+            self.reset_button_style(self.ui.zero_volt_frame.start_stop_button)
+            self.POCII_is_running = False
+        else:
+            pass
+#endregion
+
+# region : OPERATIONAL METHODS 
+    def generate_new_token(self):
+        import time
+        self.current_session_token = time.time() 
+
+    def WF_start_blood_pump(self, token):
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.start_blood_pump()
+        else: 
+            pass
+
+    def WF_start_psu_pg(self, token): 
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.start_psu_pg()
+        else: 
+            pass 
+
+    def WF_stop_psu_pg(self, token): 
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.stop_psu_pg()
+        else: 
+            pass 
+
+    def WF_start_sucrose_pump(self, FR, V, token): 
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.start_sucrose_pump(FR, V )
+        else: 
+            pass
+
+    def WF_start_ethanol_pump(self, FR, V, token): 
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.start_ethanol_pump(FR, V)
+        else: 
+            pass
+
+    def WF_move_motor(self, motor, position, token): 
+        if self.POCII_is_running and token == self.current_session_token    : 
+            #NOTE try to check motor position here for now timers will suffice
+            writeMotorPosition(self.device_serials[2], motor, position) # two is to the left one is to the right for motor 3 
+        else: 
+            pass
+
+#endregion
+
+#endregion
