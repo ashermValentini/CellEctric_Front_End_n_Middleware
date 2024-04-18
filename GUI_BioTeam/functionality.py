@@ -1728,7 +1728,6 @@ class Functionality(QtWidgets.QMainWindow):
         if self.POCII_is_running and token == self.current_session_token : 
             self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.stop_psu_pg()
             self.log_event("Sucrose pump stopped")
             self.log_event("High volt sub event completed")
             self.liveDataWorker.save_activity_log("High volt sub event completed", folder_name)

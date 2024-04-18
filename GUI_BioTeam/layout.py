@@ -1972,7 +1972,7 @@ class Ui_MainWindow(object):
     #endregion  
         # region : experiment activity logger 
         self.frame_activity_logger = QtWidgets.QFrame()
-        self.frame_activity_logger.setMinimumHeight(500)  # Sets the minimum height of the frame
+        self.frame_activity_logger.setMinimumHeight(600)  # Sets the minimum height of the frame
         self.frame_activity_logger.setStyleSheet("background-color: #222222; border-radius: 15px;")
         layout_activity_logger = QtWidgets.QHBoxLayout(self.frame_activity_logger)
         self.frame_activity_logger.setLayout(layout_activity_logger)
@@ -1982,7 +1982,7 @@ class Ui_MainWindow(object):
 
         # Create Title for activiy logger 
         self.label_activity_logger = QLabel("Workflow Logger")
-        self.label_activity_logger.setStyleSheet(application_style.input_style)
+        self.label_activity_logger.setStyleSheet(application_style.main_window_title_style)
         # Create a QTextEdit for logging
         self.WF_activity_log = QTextEdit()
         self.WF_activity_log.setReadOnly(True) 
