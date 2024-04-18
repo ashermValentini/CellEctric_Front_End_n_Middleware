@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Communication_Functions.communication_functions import *
 
 from PyQt5 import QtWidgets, QtCore, QtGui 
-from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTimer
+from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTimer, QDateTime
 from PyQt5.QtWidgets import QProgressBar, QMessageBox
 
 import application_style
@@ -520,11 +520,6 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.zero_volt_frame.start_stop_button.pressed.connect(self.toggle_WF_0V_start_stop_button)
         self.ui.zero_volt_frame.reset_button.pressed.connect(self.reset_zero_volt_frame_progress_bar)   
         
-        self.ui.frame_POCII_system_sterilaty.start_stop_button.clicked.connect(self.warning_dialogue("Attention", "This workflow subevent is currently underdevelopment, please perform this step manually from the dashboard"))
-        #self.ui.frame_POCII_decontaminate_cartridge.start_stop_button.clicked.connect(self.warning_dialogue("Attention", "This workflow subevent is currently underdevelopment, please perform this step manually from the dashboard"))
-        #self.ui.flush_out_frame.start_stop_button.clicked.connect(self.warning_dialogue("Attention", "This workflow subevent is currently underdevelopment, please perform this step manually from the dashboard"))
-        #self.ui.safe_disconnect_frame.start_stop_button.clicked.connect(self.warning_dialogue("Attention", "This workflow subevent is currently underdevelopment, please perform this step manually from the dashboard"))
-
         #self.ui.frame_POCII_system_sterilaty.start_stop_button.pressed.connect(self.toggle_system_sterilaty_start_stop_button)
         #self.ui.frame_POCII_system_sterilaty.reset_button.pressed.connect(self.reset_frame_POCII_system_sterilaty_progress_bar)   
         #endregion
@@ -605,11 +600,11 @@ class Functionality(QtWidgets.QMainWindow):
 
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+            self.liveDataWorker.save_activity_log("Sucrose pump started", folder_name)
         
         if self.workflow_live_data_is_logging: 
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+            self.liveDataWorker.save_activity_log("Sucrose pump started", folder_name)
 
     def stop_sucrose_pump(self): 
         self.reset_button_style(self.ui.button_sucrose)
@@ -623,31 +618,17 @@ class Functionality(QtWidgets.QMainWindow):
 
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
-        
+            self.liveDataWorker.save_activity_log("Sucrose pump stopped", folder_name)
         if self.workflow_live_data_is_logging: 
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+            self.liveDataWorker.save_activity_log("Sucrose pump stopped", folder_name)
+        if self.POCII_is_running: 
+            self.log_event("Sucrose pump stopped")
 
-    def updateSucroseProgressBar(self, value):
-        if self.sucrose_is_pumping:
-            if value:
-                value = float(value)
-                # Check if the value is below zero
-                if value < 0:
-                    self.ui.progress_bar_sucrose.setValue(0)
-                # Check if the value is greater than the maximum allowed value
-                elif value > self.ui.progress_bar_sucrose.max:
-                    self.ui.progress_bar_sucrose.setValue(self.ui.progress_bar_sucrose.max)
-                else:
-                    self.ui.progress_bar_sucrose.setValue(value)
-            else:
-                self.ui.progress_bar_sucrose.setValue(0)
-        else: 
-            self.ui.progress_bar_sucrose.setValue(0)
 #endregion
 
 # region : ETHANOL PUMP
+    
     def toggle_ethanol_pump(self): 
         if not self.sucrose_is_pumping:
             if not self.ethanol_is_pumping: 
@@ -673,11 +654,10 @@ class Functionality(QtWidgets.QMainWindow):
 
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
-
+            self.liveDataWorker.save_activity_log("Ethanol pump started", folder_name)
         if self.workflow_live_data_is_logging: 
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+            self.liveDataWorker.save_activity_log("Ethanol pump started", folder_name)
   
     def stop_ethanol_pump(self): 
         self.reset_button_style(self.ui.button_ethanol)
@@ -690,97 +670,74 @@ class Functionality(QtWidgets.QMainWindow):
         self.updateEthanolProgressBar(0)
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
+            self.liveDataWorker.save_activity_log("Ethanol pump stopped", folder_name)
         if self.workflow_live_data_is_logging: 
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message3PAC, folder_name)
-   
-    def updateEthanolProgressBar(self, value):
-        if self.ethanol_is_pumping:
-            if value:
-                value = float(value)
-                # Check if the value is below zero
-                if value < 0:
-                    self.ui.progress_bar_ethanol.setValue(0)
-                # Check if the value is greater than the maximum allowed value
-                elif value > self.ui.progress_bar_ethanol.max:
-                    self.ui.progress_bar_ethanol.setValue(self.ui.progress_bar_ethanol.max)
-                else:
-                    self.ui.progress_bar_ethanol.setValue(value)
-            else:
-                self.ui.progress_bar_ethanol.setValue(0)
-        else: self.ui.progress_bar_ethanol.setValue(0)  
+            self.liveDataWorker.save_activity_log("Ethanol pump stopped", folder_name)
+        if self.POCII_is_running: 
+            self.log_event("Ethanol pump stopped")
+
 #endregion
 
-# region : PRESSURE
-    def toggle_pressure_release_button(self): 
-        if self.pressure_release_valve_open: 
-            self.close_pressure_release_valve()
-        else: 
-            self.open_pressure_release_valve()
+# region : BLOOD PUMP (MOTOR)
 
-    def open_pressure_release_valve(self):
-        self.pressure_release_valve_open = True  
-        self.reset_button_style(self.ui.pressure_check_button, 25)
-        self.ui.pressure_check_button.setText("OPEN")
-        message = f'wRL\n' 
-        self.esp32Worker.write_serial_message(message)
-        if self.live_data_is_logging: 
-            folder_name = self.popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message, folder_name)
-
-    def close_pressure_release_valve(self):
-        self.pressure_release_valve_open = False  
-        self.set_button_style(self.ui.pressure_check_button, 25)
-        self.ui.pressure_check_button.setText("CLOSED")
-        message = f'wRH\n'
-        self.esp32Worker.write_serial_message(message)
-        if self.live_data_is_logging: 
-            folder_name = self.popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message, folder_name)
-
-    def update_pressure_line_edit(self, value):
-        if value is not None:
-            self.ui.pressure_data.setText(f"{value} Bar")
-    
-    def start_stop_increasing_system_pressure(self):
-        if not self.resetting_pressure:
-            self.close_pressure_release_valve()
-            self.resetting_pressure = True 
-            self.set_button_style(self.ui.pressure_reset_button)
-            self.ui.pressure_progress_bar.setValue(0)
-            
-            # Setup timer to update progress bar every second
-            self.timer = QTimer(self)
-            self.timer.timeout.connect(self.update_pressure_progress_bar)
-            self.timer.start(1000)  # 1000 milliseconds == 1 second
-            self.counter = 0
-            message = f'wRS\n'
-            print(message)
-            self.esp32Worker.write_serial_message(message)
-            if self.live_data_is_logging: 
-                folder_name = self.popup.line_edit_LDA_folder_name.text()
-                self.liveDataWorker.save_activity_log(message, folder_name)
-
-        else: 
-            self.reset_button_style(self.ui.pressure_reset_button)
-            self.resetting_pressure = False
-            self.timer.stop()
-            self.counter = 0
-            self.ui.pressure_progress_bar.setValue(0) 
-            message = f'wRO\n'
-            print(message)
-            self.esp32Worker.write_serial_message(message)
-            if self.live_data_is_logging: 
-                folder_name = self.popup.line_edit_LDA_folder_name.text()
-                self.liveDataWorker.save_activity_log(message, folder_name)
-        
-    def update_pressure_progress_bar(self):
-        self.counter += 1
-        if self.counter <= 20 and self.resetting_pressure:
-            self.ui.pressure_progress_bar.setValue(int((self.counter / 20) * 100))
+    def toggle_blood_pump(self):
+        if not self.blood_is_pumping:
+            self.start_blood_pump()
         else:
-            self.start_stop_increasing_system_pressure()
+            self.stop_blood_pump()
+
+    def start_blood_pump(self):  
+        self.blood_is_pumping = True  
+        self.set_button_style(self.ui.button_blood_play_pause)
+        
+        blood_volume = float(self.ui.line_edit_blood_2.text())
+        blood_speed = float(self.ui.line_edit_blood.text())
+
+        volume_str = f"0{blood_volume:.1f}" if blood_volume < 10 else f"{blood_volume:.1f}"
+        speed_str = f"{blood_speed:.3f}"
+
+        if speed_str[0] == "0":
+            speed_str = speed_str[1:]
+
+        message = f'wMB-{volume_str}-{speed_str}\n'
+        #print(message)   
+        self.esp32Worker.write_serial_message(message)
+        writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log("Blood pump started", folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log("Blood pump started", folder_name)
+
+        blood_pump_time = int((blood_volume / blood_speed) * 60 * 1000)
+
+        self.blood_pump_timer = QTimer()
+        self.blood_pump_timer.timeout.connect(self.stop_blood_pump)
+        self.blood_pump_timer.start(blood_pump_time)  
+            
+    def stop_blood_pump(self):
+        self.reset_button_style(self.ui.button_blood_play_pause)
+        if self.blood_pump_timer: 
+            self.blood_pump_timer.stop()  
+        blood_volume = float(0) 
+        blood_speed = float(0)
+        volume_str = f"0{blood_volume:02.1f}"  
+        speed_str = f"{blood_speed:.2f}"
+        message = f'wMB-{volume_str}-{speed_str}\n'
+        print(message)
+        self.esp32Worker.write_serial_message(message)
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log("Blood pump stopped", folder_name)
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log("Blood pump stopped", folder_name)
+        self.blood_is_pumping = False
+        if self.POCII_is_running: 
+            self.log_event("Blood syringe pump stopped")
+
 #endregion
 
 # region : PULSE GENENRATOR AND POWER SUP 
@@ -878,9 +835,6 @@ class Functionality(QtWidgets.QMainWindow):
         pos_setpoint_text = self.ui.line_edit_max_signal.text().strip()
         neg_setpoint_text = self.ui.line_edit_min_signal.text().strip()
 
-        #self.ui.line_edit_max_signal.setEnabled(False)
-        #self.ui.line_edit_min_signal.setEnabled(False)
-
         # Validate positive setpoint
         if not pos_setpoint_text:
             QMessageBox.warning(self, "Input Error", "The positive setpoint cannot be blank. Please enter a value.")
@@ -957,9 +911,6 @@ class Functionality(QtWidgets.QMainWindow):
         self.reset_button_style(self.ui.psu_button)
         self.signal_is_enabled = False         
         
-        #self.ui.line_edit_max_signal.setEnabled(True)
-        #self.ui.line_edit_min_signal.setEnabled(True)
-
         send_PSU_disable(self.device_serials[0], 1)
         message = "Disabled PSU"
         if self.live_data_is_logging: 
@@ -977,65 +928,6 @@ class Functionality(QtWidgets.QMainWindow):
         if self.workflow_live_data_is_logging: 
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
-
-#endregion
-
-# region : BLOOD PUMP (MOTOR)
-
-    def toggle_blood_pump(self):
-        if not self.blood_is_pumping:
-            self.start_blood_pump()
-        else:
-            self.stop_blood_pump()
-
-    def start_blood_pump(self):  
-        self.blood_is_pumping = True  
-        self.set_button_style(self.ui.button_blood_play_pause)
-        
-        blood_volume = float(self.ui.line_edit_blood_2.text())
-        blood_speed = float(self.ui.line_edit_blood.text())
-
-        volume_str = f"0{blood_volume:.1f}" if blood_volume < 10 else f"{blood_volume:.1f}"
-        speed_str = f"{blood_speed:.3f}"
-
-        if speed_str[0] == "0":
-            speed_str = speed_str[1:]
-
-        message = f'wMB-{volume_str}-{speed_str}\n'
-        #print(message)   
-        self.esp32Worker.write_serial_message(message)
-        writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
-        if self.live_data_is_logging: 
-            folder_name = self.popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message, folder_name)
-        if self.workflow_live_data_is_logging: 
-            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message, folder_name)
-
-        blood_pump_time = int((blood_volume / blood_speed) * 60 * 1000)
-
-        self.blood_pump_timer = QTimer()
-        self.blood_pump_timer.timeout.connect(self.stop_blood_pump)
-        self.blood_pump_timer.start(blood_pump_time)  
-            
-    def stop_blood_pump(self):
-        self.reset_button_style(self.ui.button_blood_play_pause)
-        if self.blood_pump_timer: 
-            self.blood_pump_timer.stop()  
-        blood_volume = float(0) 
-        blood_speed = float(0)
-        volume_str = f"0{blood_volume:02.1f}"  
-        speed_str = f"{blood_speed:.2f}"
-        message = f'wMB-{volume_str}-{speed_str}\n'
-        print(message)
-        self.esp32Worker.write_serial_message(message)
-        if self.live_data_is_logging: 
-            folder_name = self.popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message, folder_name)
-        if self.workflow_live_data_is_logging: 
-            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message, folder_name)
-        self.blood_is_pumping = False
 
 #endregion
 
@@ -1220,7 +1112,9 @@ class Functionality(QtWidgets.QMainWindow):
         border_style = "#centralwidget { border: 7px solid green; }"
         self.ui.centralwidget.setStyleSheet(border_style)
         print("Going live and starting data saving...")
-    
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.save_activity_log("Live data saving session started", folder_name)
+
     def end_go_live(self):
         border_style = "#centralwidget { border: 0px solid green; }"
         self.ui.centralwidget.setStyleSheet(border_style)
@@ -1251,6 +1145,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.flag_live_data_saving_applied = False
 
         print("Ending live data saving...")
+        self.liveDataWorker.save_activity_log("Live data saving session stopped", folder_name)
     
     def toggle_LDA_apply(self): 
         if not self.flag_live_data_saving_applied:
@@ -1299,6 +1194,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         if self.ui.application_combobox.currentText() == "POCII":
             self.create_POCII_experiment_page()
+            self.show_activity_logger()
             pass
         elif self.ui.application_combobox.currentText() == "Ethanol to Sucrose Flush":
             # Do something for Ethanol to Sucrose Flush
@@ -1319,6 +1215,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         if self.ui.application_combobox.currentText() == "POCII":
             self.destroy_POCII_experiment_page()
+            self.hide_activity_logger()
             pass
         elif self.ui.application_combobox.currentText() == "Ethanol to Sucrose Flush":
             # Do something for Ethanol to Sucrose Flush
@@ -1417,7 +1314,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.centralwidget.setStyleSheet(border_style)
         self.lock_experiment_choice()
         print("Going live and starting data saving...")
-    
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.save_activity_log("POCII workflows started", folder_name)
+
     def workflow_end_go_live(self):
         border_style = "#centralwidget { border: 0px solid green; }"
         self.ui.centralwidget.setStyleSheet(border_style)
@@ -1448,7 +1347,10 @@ class Functionality(QtWidgets.QMainWindow):
         self.pulse_number = 1
         self.flag_workflow_live_data_saving_applied = False
         print("Ending live data saving...")
-    
+
+        self.liveDataWorker.save_activity_log("POCII workflows stopped", folder_name)
+        self.clear_log()
+
     def toggle_LDA_workflow_apply(self): 
         if not self.flag_workflow_live_data_saving_applied:
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
@@ -1472,8 +1374,40 @@ class Functionality(QtWidgets.QMainWindow):
 
 # endregion
 
-# region : GENERIC UI ELEMENT UPDATES 
+# region : UI ELEMENT UPDATES 
+    def updateSucroseProgressBar(self, value):
+        if self.sucrose_is_pumping:
+            if value:
+                value = float(value)
+                # Check if the value is below zero
+                if value < 0:
+                    self.ui.progress_bar_sucrose.setValue(0)
+                # Check if the value is greater than the maximum allowed value
+                elif value > self.ui.progress_bar_sucrose.max:
+                    self.ui.progress_bar_sucrose.setValue(self.ui.progress_bar_sucrose.max)
+                else:
+                    self.ui.progress_bar_sucrose.setValue(value)
+            else:
+                self.ui.progress_bar_sucrose.setValue(0)
+        else: 
+            self.ui.progress_bar_sucrose.setValue(0)
     
+    def updateEthanolProgressBar(self, value):
+        if self.ethanol_is_pumping:
+            if value:
+                value = float(value)
+                # Check if the value is below zero
+                if value < 0:
+                    self.ui.progress_bar_ethanol.setValue(0)
+                # Check if the value is greater than the maximum allowed value
+                elif value > self.ui.progress_bar_ethanol.max:
+                    self.ui.progress_bar_ethanol.setValue(self.ui.progress_bar_ethanol.max)
+                else:
+                    self.ui.progress_bar_ethanol.setValue(value)
+            else:
+                self.ui.progress_bar_ethanol.setValue(0)
+        else: self.ui.progress_bar_ethanol.setValue(0)  
+
     def set_plot_canvas(self, x_title: str, y_title: str):
         # Get the Axes object from the Figure for voltage plot
         self.ui.axes_voltage.grid(True, color='#808080', linestyle='--')
@@ -1658,12 +1592,15 @@ class Functionality(QtWidgets.QMainWindow):
 
     def reset_high_voltage_frame_progress_bar(self):
         self.ui.high_voltage_frame.progress_bar.setValue(0)
-    
+        self.clear_log() 
+
     def reset_zero_volt_frame_progress_bar(self):
         self.ui.zero_volt_frame.progress_bar.setValue(0)   
-    
+        self.clear_log() 
+
     def reset_frame_POCII_system_sterilaty_progress_bar(self):
-        self.ui.frame_POCII_system_sterilaty.progress_bar.setValue(0)   
+        self.ui.frame_POCII_system_sterilaty.progress_bar.setValue(0)  
+        self.clear_log() 
 #endregion
 
 # region : SS 
@@ -1751,12 +1688,17 @@ class Functionality(QtWidgets.QMainWindow):
         #session token
         self.generate_new_token()
         current_token = self.current_session_token
-        #operation
-        self.start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text())
+        #save and display activity
+        self.log_event("High volt sub event started")
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.save_activity_log("High volt sub event started", folder_name)
+        #session time
         FR = float(self.ui.line_edit_sucrose.text())
         V = float(self.ui.line_edit_sucrose_2.text())
         total_HV_WF_time = (V/FR) * 60 * 1000
         total_HV_WF_time_int = int(round(total_HV_WF_time))
+        #operation
+        QTimer.singleShot(1, lambda: self.WF_start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text(), current_token))
         QTimer.singleShot(20000, lambda: self.WF_start_blood_pump(current_token))
         QTimer.singleShot(5000, lambda: self.WF_start_psu_pg(current_token))
         QTimer.singleShot(total_HV_WF_time_int-5000, lambda: self.WF_stop_psu_pg(current_token))
@@ -1768,6 +1710,10 @@ class Functionality(QtWidgets.QMainWindow):
     def stop_interrupt_WF_HV(self): 
         #null the session
         self.current_session_token = None  
+        #save and display acitivity 
+        self.log_event("High volt sub event manually stopped")
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.save_activity_log("High volt sub event manually stopped", folder_name)
         #shut down operations 
         self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
         self.stop_sucrose_pump()
@@ -1781,7 +1727,11 @@ class Functionality(QtWidgets.QMainWindow):
     def stop_timed_WF_HV(self, token): 
         if self.POCII_is_running and token == self.current_session_token : 
             self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.stop_psu_pg()
+            self.log_event("Sucrose pump stopped")
+            self.log_event("High volt sub event completed")
+            self.liveDataWorker.save_activity_log("High volt sub event completed", folder_name)
             self.POCII_is_running = False
         else:
             pass
@@ -1801,12 +1751,17 @@ class Functionality(QtWidgets.QMainWindow):
         #session token
         self.generate_new_token()
         current_token = self.current_session_token
-        #operations 
-        self.start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text())
+        #save and display acitivity
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.log_event("Zero volt sub event manually stopped")
+        self.liveDataWorker.save_activity_log("Zero volt sub event manually stopped", folder_name)
+        #session time
         FR = float(self.ui.line_edit_sucrose.text())
         V = float(self.ui.line_edit_sucrose_2.text())
         total_0V_WF_time = (V/FR) * 60 * 1000
         total_0V_WF_time_int = int(round(total_0V_WF_time))
+        #operations 
+        QTimer.singleShot(1, lambda: self.WF_start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text(), current_token))
         QTimer.singleShot(20000, lambda: self.WF_start_blood_pump(current_token))
         QTimer.singleShot(total_0V_WF_time_int, lambda: self.stop_timed_WF_0V(current_token))
         #progress bar
@@ -1817,6 +1772,10 @@ class Functionality(QtWidgets.QMainWindow):
     def stop_interrupt_WF_0V(self): 
         #null the session
         self.current_session_token = None  
+        #save and display activity
+        self.log_event("Zero volt sub event started")
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.save_activity_log("Zero volt sub event started", folder_name)
         #shut down operations 
         self.reset_button_style(self.ui.zero_volt_frame.start_stop_button)
         self.stop_sucrose_pump()
@@ -1830,11 +1789,15 @@ class Functionality(QtWidgets.QMainWindow):
         if self.POCII_is_running and token == self.current_session_token : 
             self.reset_button_style(self.ui.zero_volt_frame.start_stop_button)
             self.POCII_is_running = False
+            self.log_event("Sucrose pump stopped")
+            self.log_event("Zero volt sub event completed")
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log("Zero volt sub event completed", folder_name)
         else:
             pass
 #endregion
 
-# region : OPERATIONAL METHODS 
+# region : WORKFLOW OPERATIONAL METHODS 
     def generate_new_token(self):
         import time
         self.current_session_token = time.time() 
@@ -1842,30 +1805,35 @@ class Functionality(QtWidgets.QMainWindow):
     def WF_start_blood_pump(self, token):
         if self.POCII_is_running and token == self.current_session_token: 
             self.start_blood_pump()
+            self.log_event("Blood syringe pump started")
         else: 
             pass
 
     def WF_start_psu_pg(self, token): 
         if self.POCII_is_running and token == self.current_session_token: 
             self.start_psu_pg()
+            self.log_event("High voltage signal started")
         else: 
             pass 
 
     def WF_stop_psu_pg(self, token): 
         if self.POCII_is_running and token == self.current_session_token: 
             self.stop_psu_pg()
+            self.log_event("High voltage signal stopped")
         else: 
             pass 
 
     def WF_start_sucrose_pump(self, FR, V, token): 
         if self.POCII_is_running and token == self.current_session_token: 
-            self.start_sucrose_pump(FR, V )
+            self.start_sucrose_pump(FR, V)
+            self.log_event("Sucrose pump started")
         else: 
             pass
 
     def WF_start_ethanol_pump(self, FR, V, token): 
         if self.POCII_is_running and token == self.current_session_token: 
             self.start_ethanol_pump(FR, V)
+            self.log_event("Ethanol pump started")
         else: 
             pass
 
@@ -1873,9 +1841,102 @@ class Functionality(QtWidgets.QMainWindow):
         if self.POCII_is_running and token == self.current_session_token    : 
             #NOTE try to check motor position here for now timers will suffice
             writeMotorPosition(self.device_serials[2], motor, position) # two is to the left one is to the right for motor 3 
+            self.log_event("Motor moving to position")
         else: 
             pass
-
 #endregion
 
+# region: WORKFLOW LOG 
+
+    def log_event(self, message):
+        # Get the current date and time
+        current_time = QDateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss")
+        # Define the style (this should match your desired CSS from the style sheet)
+        style = "color: #FFFFFF; font-family: Archivo; font-size: 25px;"
+        # Create HTML string with styling
+        html_message = f"<span style='{style}'>{message} #{current_time}</span><br>"
+        # Append formatted message to the log
+        self.ui.WF_activity_log.append(html_message)
+
+    def clear_log(self):
+        self.ui.WF_activity_log.clear()
+    
+    def show_activity_logger(self):
+        self.ui.frame_activity_logger.show()
+    
+    def hide_activity_logger(self):
+        self.ui.frame_activity_logger.hide()
+#endregion
+#endregion
+
+#CODE THAT MAY GO OUT OF PRODUCTION BUT STILL MIGHT BE NEEDS TO BE PHASED OUT 
+# region : PRESSURE
+    def toggle_pressure_release_button(self): 
+        if self.pressure_release_valve_open: 
+            self.close_pressure_release_valve()
+        else: 
+            self.open_pressure_release_valve()
+
+    def open_pressure_release_valve(self):
+        self.pressure_release_valve_open = True  
+        self.reset_button_style(self.ui.pressure_check_button, 25)
+        self.ui.pressure_check_button.setText("OPEN")
+        message = f'wRL\n' 
+        self.esp32Worker.write_serial_message(message)
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+
+    def close_pressure_release_valve(self):
+        self.pressure_release_valve_open = False  
+        self.set_button_style(self.ui.pressure_check_button, 25)
+        self.ui.pressure_check_button.setText("CLOSED")
+        message = f'wRH\n'
+        self.esp32Worker.write_serial_message(message)
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log(message, folder_name)
+
+    def update_pressure_line_edit(self, value):
+        if value is not None:
+            self.ui.pressure_data.setText(f"{value} Bar")
+    
+    def start_stop_increasing_system_pressure(self):
+        if not self.resetting_pressure:
+            self.close_pressure_release_valve()
+            self.resetting_pressure = True 
+            self.set_button_style(self.ui.pressure_reset_button)
+            self.ui.pressure_progress_bar.setValue(0)
+            
+            # Setup timer to update progress bar every second
+            self.timer = QTimer(self)
+            self.timer.timeout.connect(self.update_pressure_progress_bar)
+            self.timer.start(1000)  # 1000 milliseconds == 1 second
+            self.counter = 0
+            message = f'wRS\n'
+            print(message)
+            self.esp32Worker.write_serial_message(message)
+            if self.live_data_is_logging: 
+                folder_name = self.popup.line_edit_LDA_folder_name.text()
+                self.liveDataWorker.save_activity_log(message, folder_name)
+
+        else: 
+            self.reset_button_style(self.ui.pressure_reset_button)
+            self.resetting_pressure = False
+            self.timer.stop()
+            self.counter = 0
+            self.ui.pressure_progress_bar.setValue(0) 
+            message = f'wRO\n'
+            print(message)
+            self.esp32Worker.write_serial_message(message)
+            if self.live_data_is_logging: 
+                folder_name = self.popup.line_edit_LDA_folder_name.text()
+                self.liveDataWorker.save_activity_log(message, folder_name)
+        
+    def update_pressure_progress_bar(self):
+        self.counter += 1
+        if self.counter <= 20 and self.resetting_pressure:
+            self.ui.pressure_progress_bar.setValue(int((self.counter / 20) * 100))
+        else:
+            self.start_stop_increasing_system_pressure()
 #endregion
