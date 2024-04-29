@@ -88,6 +88,12 @@ PERISTALTIC_DRIVER_1_SERIAL_NUMBER= "AC16B1A0FBE6ED119069D1770B2AF5AB"
 #========================
 
 class Functionality(QtWidgets.QMainWindow):
+    #========================================================
+    # Signals 
+    #========================================================
+    #region: 
+    stopTimer = pyqtSignal()  # Signal to request the timer to stop
+    #endregion
     def __init__(self):
         super(Functionality, self).__init__()
         #==============================================================================================================================================================================================================================
@@ -218,6 +224,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.liveDataThread = QThread()
         self.liveDataWorker.moveToThread(self.liveDataThread)
         self.liveDataThread.start()
+
+        self.stopTimer.connect(self.liveDataWorker._stop_timer)
 
         #data saving initation for current and voltage which is different to non pg data since the bio team is using octave for the time being
         self.last_save_time = None
@@ -593,7 +601,7 @@ class Functionality(QtWidgets.QMainWindow):
         except ValueError:
             print("Invalid input in line_edit_sucrose")
             return 
-        message3PAC = f'wFS-350-{FR:.2f}-{V:.1f}\n'
+        message3PAC = f'wFS-360-{FR:.2f}-{V:.1f}\n'
         messagePeristalticDriver = f'sB-{FR}-{V}-0.171\n'
         self.esp32Worker.write_serial_message(message3PAC)
         self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
@@ -647,7 +655,7 @@ class Functionality(QtWidgets.QMainWindow):
         except ValueError:
             print("Invalid input in line_edit_sucrose")
             return 
-        message3PAC = f'wFE-160-{FR:.2f}-{V:.1f}\n'  
+        message3PAC = f'wFE-175-{FR:.2f}-{V:.1f}\n'  
         messagePeristalticDriver = f'sE-{FR}-{V}-0.169\n'  
         self.esp32Worker.write_serial_message(message3PAC)
         self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
@@ -1112,7 +1120,7 @@ class Functionality(QtWidgets.QMainWindow):
         border_style = "#centralwidget { border: 7px solid green; }"
         self.ui.centralwidget.setStyleSheet(border_style)
         print("Going live and starting data saving...")
-        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        folder_name = self.popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("Live data saving session started", folder_name)
 
     def end_go_live(self):
@@ -1866,6 +1874,49 @@ class Functionality(QtWidgets.QMainWindow):
     def hide_activity_logger(self):
         self.ui.frame_activity_logger.hide()
 #endregion
+#endregion
+
+# region : CLOSE EVENT 
+    
+    def closeEvent(self, event):
+
+        # Properly handle worker threads and close them if necessary
+        if hasattr(self, 'liveDataThread') and self.liveDataThread.isRunning():
+            self.stopTimer.emit()  # Emit signal to stop the timer in the correct thread
+            QThread.msleep(50)  # delay in milliseconds
+            self.liveDataThread.quit()
+            self.liveDataThread.wait()
+
+        if hasattr(self, 'tempThread') and self.tempThread.isRunning():
+            self.tempWorker.stop()  # Assuming you have a stop method to cleanly stop the worker
+            self.tempThread.quit()
+            self.tempThread.wait()
+
+        if hasattr(self, 'esp32Thread') and self.esp32Thread.isRunning():
+            self.esp32Worker.stop()  # Assuming you have a stop method to cleanly stop the worker
+            self.esp32Thread.quit()
+            self.esp32Thread.wait()
+
+        if hasattr(self, 'peristalticDriverThread') and self.peristalticDriverThread.isRunning():
+            self.peristalticDriverWorker.stop()  # Assuming you have a stop method to cleanly stop the worker
+            self.peristalticDriverThread.quit()
+            self.peristalticDriverThread.wait()
+
+        if hasattr(self, 'pgThread') and self.pgThread.isRunning():
+            self.pgWorker.stop()  # Assuming you have a stop method to cleanly stop the worker
+            self.pgThread.quit()
+            self.pgThread.wait()
+            
+        # Iterate over each serial device stored in device_serials
+        for serial_device in self.device_serials:
+            # Check if the serial_device is an instance of serial.Serial and it's open
+            if isinstance(serial_device, serial.Serial) and serial_device.is_open:
+                serial_device.close()  # Use the close method directly from pyserial
+        
+        # Handling other threads similarly...
+        print('application stopped successfully')
+        event.accept()  # Accept the close event to close the application
+
 #endregion
 
 #CODE THAT MAY GO OUT OF PRODUCTION BUT STILL MIGHT BE NEEDS TO BE PHASED OUT 
