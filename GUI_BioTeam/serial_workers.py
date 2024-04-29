@@ -80,7 +80,7 @@ class ESP32SerialWorker(QObject):
 
     def parse_and_emit_data(self, line):
         # Print the raw line for debugging
-        print(f"Raw line received: {line}")
+        #print(f"Raw line received: {line}")
 
         try:
             # Find the second occurrence of 'P' and the first occurrence of 'F'
@@ -91,18 +91,14 @@ class ESP32SerialWorker(QObject):
             # Extract the pressure and flow rate values
             pressure_value = line[second_p_index + 1:second_p_index + 6]
             flow_rate_value = line[f_index + 1:f_index + 6]
-            target_volume_reached_char = line[f_index+6]
 
             pressure = float(pressure_value)
             flow_rate = float(flow_rate_value)
-            target_volume_reached_state = float(target_volume_reached_char)
-            
+
             # Emit the signals with the parsed data
             self.update_pressure.emit(pressure)
             self.update_flowrate.emit(flow_rate)
-            if target_volume_reached_state: 
-                self.update_fluidic_play_pause_buttons.emit(target_volume_reached_state)
-                #print("cb")
+
         except ValueError as e:
             print(f"Error parsing pressure or flow rate: {e}")
             pass

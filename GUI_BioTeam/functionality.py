@@ -163,6 +163,12 @@ class Functionality(QtWidgets.QMainWindow):
         #flags for POCII WF
         self.POCII_is_running = False
 
+        # turn this flag true if pressure tracking needed in the future
+        self.pressure_data_needed = False
+
+        # temperature controller
+        self.temperature_control_is_running = False
+
 
 
         #endregion
@@ -263,10 +269,12 @@ class Functionality(QtWidgets.QMainWindow):
 
             self.esp32Worker.update_flowrate.connect(self.updateEthanolProgressBar) 
             self.esp32Worker.update_flowrate.connect(self.updateSucroseProgressBar) 
-            self.esp32Worker.update_pressure.connect(self.update_pressure_line_edit)
             self.esp32Worker.update_flowrate.connect(self.liveDataWorker.update_sucrose_flowrate_data)
             self.esp32Worker.update_flowrate.connect(self.liveDataWorker.update_ethanol_flowrate_data)
-            self.esp32Worker.update_pressure.connect(self.liveDataWorker.update_pressure_data)
+            
+            if self.pressure_data_needed: 
+                self.esp32Worker.update_pressure.connect(self.update_pressure_line_edit)
+                self.esp32Worker.update_pressure.connect(self.liveDataWorker.update_pressure_data)
 
             self.esp32Thread.started.connect(self.esp32Worker.run)  
             self.esp32Thread.start() 
@@ -331,12 +339,21 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.button_ethanol.pressed.connect(self.toggle_ethanol_pump)  
         #endregion
         #==============================================================================================================================================================================================================================
+        # 1 Temperature frame 
+        #==============================================================================================================================================================================================================================
+        #region:
+        self.coolingTimer = None
+        self.threshold_temperature = 20 
+        if self.flag_connections[3]:
+            self.ui.temp_control_button.pressed.connect(self.toggle_cooling)
+        #endregion
+        #==============================================================================================================================================================================================================================
         # 2 Pressure frame functionality 
         #==============================================================================================================================================================================================================================
         #region:
-        if self.flag_connections[2]: 
-            self.ui.pressure_check_button.pressed.connect(self.toggle_pressure_release_button)
-            self.ui.pressure_reset_button.pressed.connect(self.start_stop_increasing_system_pressure)
+        #if self.flag_connections[2]: 
+            #self.ui.pressure_check_button.pressed.connect(self.toggle_pressure_release_button)
+            #self.ui.pressure_reset_button.pressed.connect(self.start_stop_increasing_system_pressure)
         #endregion
         #===============================================================================================================================================================================================
         # 3 Blood frame functionality
@@ -579,6 +596,53 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.max_temp_data.setText(f"{self.max_temp}°")
     
         self.ui.current_temp_data.setText(f"{self.current_temp}°")
+
+    def toggle_cooling(self): 
+        if self.temperature_control_is_running: 
+            self.stop_temperature_control()
+            self.temperature_control_is_running = False
+            self.reset_button_style(self.ui.temp_control_button)
+        else: 
+            self.start_temperature_control() 
+            self.temperature_control_is_running = True
+            self.set_button_style(self.ui.temp_control_button)
+    
+    def start_temperature_control(self): 
+        self.coolingTimer = QTimer(self)
+        self.coolingTimer.timeout.connect(self.check_and_control_temperature)
+        self.coolingTimer.start(250)  # Check every 1000 milliseconds (1 second)
+
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log("cooling started", folder_name)
+        
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log("cooling started", folder_name)
+
+    def stop_temperature_control(self): 
+        if self.coolingTimer:
+            self.coolingTimer.stop()
+            self.coolingTimer.deleteLater()
+            self.coolingTimer = None
+
+        if self.live_data_is_logging: 
+            folder_name = self.popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log("cooling stopped", folder_name)
+        
+        if self.workflow_live_data_is_logging: 
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log("cooling stopped", folder_name)
+
+    def check_and_control_temperature(self):
+        if self.current_temp > self.threshold_temperature:
+            message = "wCS-1\n"
+        else:
+            message = "wCS-0\n"
+
+        self.esp32Worker.write_serial_message(message)
+
+        
 #endregion
 
 # region : SUCROSE PUMP
