@@ -27,19 +27,11 @@ class DataSavingWorker(QObject):
         self.flag_sucrose_is_running = False
 
         self.interval = aggregation_interval
-        self.is_running = False
 
         # Setting up the timer for periodic data aggregation
         self.aggregation_timer = QTimer(self)
         self.aggregation_timer.timeout.connect(self.aggregate_data)
         self.aggregation_timer.start(aggregation_interval)
-    #NOTE will need to use this method instead of the timer above but low priority rn 
-    #@pyqtSlot()
-    #def run(self):
-        #self._is_running = True
-        #while self._is_running:
-            #QThread.msleep(self.interval)
-            #self.aggregate_data()
 
     # region: Methods that update update data to current values
     def update_temp_data(self, temp_data):
@@ -242,4 +234,9 @@ class DataSavingWorker(QObject):
     def start_saving_live_non_pg_data(self, value):
         self.flag_start_saving_live_data = value
     #endregion
+    # region: Close event 
+    def _stop_timer(self):
+        if self.aggregation_timer.isActive():
+            self.aggregation_timer.stop()
+            print('timer stopped in instance method')
     #endregion

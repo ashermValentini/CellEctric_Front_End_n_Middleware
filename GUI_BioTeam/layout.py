@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QProgressBar, QDialog, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QProgressBar, QDialog, QVBoxLayout, QLabel, QTextEdit
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.patches import FancyBboxPatch
@@ -1797,7 +1797,7 @@ class Ui_MainWindow(object):
 
         self.experiment_page_v_layout.addLayout(self.experiment_page_main_content)
 
-    # region : data saving 
+        # region : data saving 
         self.frame_user_info= QtWidgets.QFrame()
         self.frame_user_info.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_user_info.setObjectName("frame_e_user_info")
@@ -1873,13 +1873,13 @@ class Ui_MainWindow(object):
         layout_user_info.addStretch(1)
 
     # endregion
-    # region : line separator 
+        # region : line separator 
         self.line = QtWidgets.QFrame()
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line.setStyleSheet("background-color: white;")
     #endregion
-    # region : experiment steps (not shown only created)
+        # region : experiment steps (not shown only created)
         
         # region : create the POCII frames
         self.frame_POCII_system_sterilaty = CustomExperimentFrame("System Sterilaty Control", {
@@ -1969,15 +1969,39 @@ class Ui_MainWindow(object):
 
         #endregion 
 
-    #endregion
+    #endregion  
+        # region : experiment activity logger 
+        self.frame_activity_logger = QtWidgets.QFrame()
+        self.frame_activity_logger.setMinimumHeight(600)  # Sets the minimum height of the frame
+        self.frame_activity_logger.setStyleSheet("background-color: #222222; border-radius: 15px;")
+        layout_activity_logger = QtWidgets.QHBoxLayout(self.frame_activity_logger)
+        self.frame_activity_logger.setLayout(layout_activity_logger)
 
-        #Add the user info frame to the maincontent layout
-        self.experiment_page_main_content.addWidget(self.frame_user_info, alignment=QtCore.Qt.AlignTop)
+        v_layout_activity_logger = QtWidgets.QVBoxLayout()
+        layout_activity_logger.addLayout(v_layout_activity_logger)
+
+        # Create Title for activiy logger 
+        self.label_activity_logger = QLabel("Workflow Logger")
+        self.label_activity_logger.setStyleSheet(application_style.main_window_title_style)
+        # Create a QTextEdit for logging
+        self.WF_activity_log = QTextEdit()
+        self.WF_activity_log.setReadOnly(True) 
+
+        v_layout_activity_logger.addWidget(self.label_activity_logger)
+        v_layout_activity_logger.addWidget(self.WF_activity_log)
+        #endregion
+
+        # region : Add the user info frame to the maincontent layout
+        self.experiment_page_main_content.addWidget(self.frame_user_info)
         self.experiment_page_main_content.addSpacing(20)
+        #endregion 
+
+        # region : Add white line seperator 
         self.experiment_page_main_content.addWidget(self.line)
         self.experiment_page_main_content.addSpacing(20)
+        #endregion
 
-        #Add the POCII frames to the main content layout
+        # region : Add the POCII frames to the main content layout
         self.experiment_page_main_content.addWidget(self.frame_POCII_system_sterilaty)
         self.spacing_placeholder1 = QtWidgets.QWidget()
         self.spacing_placeholder1.setFixedHeight(5)
@@ -2019,8 +2043,9 @@ class Ui_MainWindow(object):
         self.spacing_placeholder4.hide()
         self.spacing_placeholder5.hide()
         self.spacing_placeholder6.hide()
+        #endregion
 
-        #Add the demo frames to the experiment pages main content layout 
+        # region : Add the demo frames to the experiment pages main content layout 
         self.experiment_page_main_content.addWidget(self.frame_DEMO_close_fluidic_circuit)
         self.spacing_placeholder7 = QtWidgets.QWidget()
         self.spacing_placeholder7.setFixedHeight(5)
@@ -2062,7 +2087,13 @@ class Ui_MainWindow(object):
         self.spacing_placeholder10.hide()
         self.spacing_placeholder11.hide()
         self.spacing_placeholder12.hide()
+        #endregion
 
+        # region : Add WF acitivity logger to experiment page main content layout
+        self.experiment_page_main_content.addSpacing(20)
+        self.experiment_page_main_content.addWidget(self.frame_activity_logger, alignment=QtCore.Qt.AlignTop)
+        self.frame_activity_logger.hide()
+        #endregion 
     #endregion
     
 #endregion    
