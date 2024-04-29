@@ -249,7 +249,7 @@ class PopupWindow(QDialog):
         self.label_LDA_pressure= QLabel("Pressure: ")
         self.label_LDA_pressure.setStyleSheet(application_style.input_style)
         layout_variable_options_c1.addWidget(self.label_LDA_temperature)
-        layout_variable_options_c1.addWidget(self.label_LDA_pressure)
+        #layout_variable_options_c1.addWidget(self.label_LDA_pressure)
 
         layout_variable_options_c2 = QtWidgets.QVBoxLayout()
 
@@ -267,7 +267,7 @@ class PopupWindow(QDialog):
         self.button_LDA_pressure.setIconSize(QtCore.QSize(20, 20)) 
         self.reset_button_style(self.button_LDA_pressure)
         layout_variable_options_c2.addWidget(self.button_LDA_temperature)
-        layout_variable_options_c2.addWidget(self.button_LDA_pressure)
+        #layout_variable_options_c2.addWidget(self.button_LDA_pressure)
 
         #endregion 
 
@@ -1237,8 +1237,7 @@ class Ui_MainWindow(object):
         title_label.setStyleSheet(application_style.main_window_title_style)
         title_label.setAlignment(QtCore.Qt.AlignCenter)
         temp_layout.addWidget(title_label)
-        temp_layout.addSpacing(25)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
-
+        temp_layout.addSpacing(65)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
 
         # Layout for image and stats
         temp_details_layout = QtWidgets.QHBoxLayout()
@@ -1256,12 +1255,10 @@ class Ui_MainWindow(object):
         self.min_temp_label.setStyleSheet(application_style.main_window_temperature_number_style)
         temp_stats_labels_layout.addWidget(self.min_temp_label, alignment=QtCore.Qt.AlignBottom)
 
-
         # Add temperature statistics next to labels
         temp_stats_layout = QtWidgets.QVBoxLayout()
         temp_details_layout.addLayout(temp_stats_layout)
 
-        
         self.max_temp_data = QtWidgets.QLabel("-")
         self.max_temp_data.setStyleSheet(application_style.main_window_temperature_number_style)
         temp_stats_layout.addWidget(self.max_temp_data, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
@@ -1269,14 +1266,50 @@ class Ui_MainWindow(object):
         self.current_temp_data = QtWidgets.QLabel("-")
         self.current_temp_data.setStyleSheet(application_style.main_window_temperature_number_style)
         temp_stats_layout.addWidget(self.current_temp_data, alignment=QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
+        
+        #temp_layout.addSpacing(25)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+
+        # temperature control label
+        temp_control_layout = QtWidgets.QHBoxLayout()
+        self.temp_control_label = QtWidgets.QLabel("Control")
+        self.temp_control_label.setStyleSheet(application_style.main_window_temperature_number_style)
+        temp_control_layout.addWidget(self.temp_control_label)
+        
+        # temperature control button
+        self.temp_control_button = QtWidgets.QPushButton()  # Set the text to empty since we are using an image
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/snowflake.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.temp_control_button.setIcon(icon)
+        self.temp_control_button.setIconSize(QtCore.QSize(38, 120))  # Adjust size as needed
+        self.temp_control_button.setStyleSheet("""
+            QPushButton {
+                border: 2px solid white;
+                border-radius: 6px;
+                background-color: #222222;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }
+
+            QPushButton:pressed {
+                background-color: #0796FF;
+            }
+        """)
+        temp_control_layout.addStretch(1)
+        temp_control_layout.addWidget(self.temp_control_button)
+        temp_control_layout.addSpacing(35)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        # add the temperature control label and button to the temperature frame layout
+        temp_layout.addLayout(temp_control_layout)
 
         #endregion
         
-        # region: Frame for resevoir pressure reading/reseting 
+        # region: (not in use atm) Frame for resevoir pressure reading/reseting 
         pressure_frame = QtWidgets.QFrame()
         pressure_frame.setStyleSheet("background-color: #222222; border-radius: 15px; height: 20%;")
         pressure_frame.setObjectName("frame_d_pressure")
-        self.application_region_3_layout.addWidget(pressure_frame)
+        #for now this frame is not needed but we might need it in the future so just dont display it
+        #self.application_region_3_layout.addWidget(pressure_frame)
 
         # Layout for pressure frame components
         pressure_layout = QtWidgets.QVBoxLayout(pressure_frame)
