@@ -60,15 +60,12 @@ PIERCE_MOTOR = 4
 BLOOD_SYRINGE = 1 
 FLUIDICS_MOTOR = 2
 
-FLASK_1 = 216                          
-FLASK_2 = 176
-FLASK_3 = 136
-FLASK_4 = 96
-FLASK_5 = 56
-FLASK_6 = 16
+WASTE_FLASK = 216  
+DECONTAMINATION_CONTROL = 176
 
-DEPIERCED = 40 
-PIERCED = 10
+
+DEPIERCE = 40 
+PIERCE = 10
 
 
 #==================================================
@@ -343,7 +340,7 @@ class Functionality(QtWidgets.QMainWindow):
         #==============================================================================================================================================================================================================================
         #region:
         self.coolingTimer = None
-        self.threshold_temperature = 20 
+        self.threshold_temperature = 35 
         if self.flag_connections[3]:
             self.ui.temp_control_button.pressed.connect(self.toggle_cooling)
         #endregion
@@ -610,7 +607,7 @@ class Functionality(QtWidgets.QMainWindow):
     def start_temperature_control(self): 
         self.coolingTimer = QTimer(self)
         self.coolingTimer.timeout.connect(self.check_and_control_temperature)
-        self.coolingTimer.start(250)  # Check every 1000 milliseconds (1 second)
+        self.coolingTimer.start(500)  # Check every 1000 milliseconds (1 second)
 
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
@@ -1676,6 +1673,10 @@ class Functionality(QtWidgets.QMainWindow):
         self.reset_button_style(self.ui.frame_POCII_system_sterilaty.start_stop_button)
         self.stop_sucrose_pump()
         self.stop_ethanol_pump()
+        #log events 
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.log_event("System sterilaty sub manuallz stopped")
+        self.liveDataWorker.save_activity_log("System sterilaty sub event completed", folder_name)
         #pause progress bar 
         frame_name = "frame_POCII_system_sterilaty"
         self.POCII_counters[frame_name][0] = 0
@@ -1704,11 +1705,54 @@ class Functionality(QtWidgets.QMainWindow):
             self.set_button_style(self.ui.frame_POCII_decontaminate_cartridge.start_stop_button)
 
     def stop_interrupt_WF_decontamination(self): 
+        #null the session
+        self.current_session_token = None  
+        #shut down operations 
         self.reset_button_style(self.ui.frame_POCII_decontaminate_cartridge.start_stop_button)
-    
+        self.stop_sucrose_pump()
+        self.stop_ethanol_pump()
+        #log events 
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.log_event("Decontamination sub manually stopped")
+        self.liveDataWorker.save_activity_log("Decontamination sub event completed", folder_name)
+        #pause progress bar 
+        frame_name = "frame_POCII_decontaminate_cartridge"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].stop()
+
     def WF_start_decontamination(self): 
-        pass
-    
+        #session token 
+        self.generate_new_token()
+        current_token = self.current_session_token
+        #save and display activity
+        self.log_event("Decontamination sub event started")
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.save_activity_log("Decontamination sub event started", folder_name)
+        #session times
+        FR = [2.25, 2.5, 5]
+        V = [5, 10]
+        fluid_delay_1 = (V[1]/FR[1]) * 60 * 1000
+        fluid_delay_1_int = int(round(fluid_delay_1)) + 2000
+        fluid_delay_2 = (V[0]/FR[1]) * 60 * 1000
+        fluid_delay_2_int = int(round(fluid_delay_2)) + 2000
+        fluid_delay_3 = (V[0]/FR[1]) * 60 * 1000
+        fluid_delay_3_int = int(round(fluid_delay_3)) + 2000
+        fluid_delay_4 = (V[1]/FR[1]) * 60 * 1000
+        fluid_delay_4_int = int(round(fluid_delay_4)) + 2000
+        fluid_delay_5 = (V[0]/FR[1]) * 60 * 1000
+        fluid_delay_5_int = int(round(fluid_delay_5)) + 2000
+        drip_delay = 30 * 1000
+        soak_delay = 60 * 1000 * 5
+        pierce_delay = 10000
+        #operations
+        QTimer.singleShot(1, lambda: self.WF_move_motor(3, WASTE_FLASK, current_token))
+        QTimer.singleShot(24000, lambda: self.WF_move_motor(4, PIERCE, current_token))
+        QTimer.singleShot(24000 + pierce_delay, lambda: self.WF_start_ethanol_pump(FR[1], V[1], current_token)) # fluid 1
+        QTimer.singleShot(24000 + pierce_delay + fluid_delay_1_int, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 2
+        QTimer.singleShot(24000 + pierce_delay + fluid_delay_1_int + soak_delay + fluid_delay_2_int, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 3
+        QTimer.singleShot(24000 + pierce_delay + fluid_delay_1_int + soak_delay + fluid_delay_2_int + fluid_delay_3_int, lambda: self.WF_start_sucrose_pump(FR[1], V[1], current_token)) # fluid 4
+        QTimer.singleShot(24000 + pierce_delay + fluid_delay_1_int + soak_delay + fluid_delay_2_int + fluid_delay_3_int + drip_delay + pierce_delay, lambda: self.WF_move_motor(4, DEPIERCE, current_token))
+
     def stop_timed_WF_decontamination(self): 
         pass
 
@@ -1975,10 +2019,10 @@ class Functionality(QtWidgets.QMainWindow):
         else: 
             pass
 
-    def WF_move_motor(self, motor, position, token): 
+    def WF_move_motor(self, motor_nr, position, token): 
         if self.POCII_is_running and token == self.current_session_token    : 
-            #NOTE try to check motor position here for now timers will suffice
-            writeMotorPosition(self.device_serials[2], motor, position) # two is to the left one is to the right for motor 3 
+            msg = f'wMP-{motor_nr}-{position:06.2f}\n' 
+            self.esp32Worker.write_serial_message(msg)           
             self.log_event("Motor moving to position")
         else: 
             pass
