@@ -62,9 +62,10 @@ FLUIDICS_MOTOR = 2
 
 WASTE_FLASK = 216  
 DECONTAMINATION_CONTROL = 176
-FLUSH_OUT_FLASK_1 = 136
-FLUSH_OUT_FLASK_2 = 96
-HV_FLASK = 56
+HV_FLASK = 136
+FLUSH_OUT_FLASK_1 = 96
+FLUSH_OUT_FLASK_2 = 56
+ZERO_V_FLASK = 16
 
 
 #================================================
@@ -556,8 +557,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.zero_volt_frame.start_stop_button.pressed.connect(self.toggle_WF_0V_start_stop_button)
         self.ui.safe_disconnect_frame.start_stop_button.pressed.connect(self.toggle_safe_disconnect_start_stop_button)
         
-        self.ui.high_voltage_frame.reset_button.pressed.connect(self.reset_high_voltage_frame_progress_bar)
+        self.ui.high_voltage_frame.reset_button.pressed.connect(lambda: self.reset_high_voltage_frame_progress_bar(self.ui.high_voltage_frame.progress_bar))
         self.ui.zero_volt_frame.reset_button.pressed.connect(self.reset_zero_volt_frame_progress_bar)   
+       
         #endregion
         #just for now so that i dont have to home the motors every single fucking time 
         self.enable_motor_buttons()
@@ -1659,7 +1661,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.generate_new_token()
         current_token = self.current_session_token
         #save and display activity
-        self.log_event("System sterilaty sub event started")
+        self.log_event("SYSTEM STERILATY SUB EVENT STARTED")
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("System sterilaty sub event started", folder_name)
         #session time
@@ -1688,7 +1690,7 @@ class Functionality(QtWidgets.QMainWindow):
         QTimer.singleShot(delay_1_int+delay_2_int+instruction_delay_1, lambda: self.WF_start_sucrose_pump(FR_sucrose_2, V_sucrose_2, current_token))
         QTimer.singleShot(delay_1_int+delay_2_int+instruction_delay_1+delay_3_int, lambda: self.WF_announcement("INSTRUCTION: MANUAL SWITCH TO WASTE FALCON", current_token))
         QTimer.singleShot(delay_1_int+delay_2_int+instruction_delay_1+delay_3_int+instruction_delay_2, lambda: self.WF_start_ethanol_pump(FR_ethanol_2, V_ethanol_2, current_token))
-        QTimer.singleShot(delay_1_int+delay_2_int+instruction_delay_1+delay_3_int+instruction_delay_2 + delay_4_int, lambda: self.stop_timed_WF_system_sterilaty(current_token))
+        QTimer.singleShot(delay_1_int+delay_2_int+instruction_delay_1+delay_3_int+instruction_delay_2 + delay_4_int + 2000, lambda: self.stop_timed_WF_system_sterilaty(current_token))
         #progress bar 
         frame_name = "frame_POCII_system_sterilaty"
         self.POCII_counters[frame_name][0] = 0
@@ -1703,7 +1705,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.stop_ethanol_pump()
         #log events 
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-        self.log_event("System sterilaty sub manually stopped")
+        self.log_event("SYSTEM STERILATY SUB EVENT STOPPED MANUALLY")
         self.liveDataWorker.save_activity_log("System sterilaty sub event completed", folder_name)
         #pause progress bar 
         frame_name = "frame_POCII_system_sterilaty"
@@ -1715,8 +1717,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.reset_button_style(self.ui.frame_POCII_system_sterilaty.start_stop_button)
             self.POCII_is_running = False
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.log_event("Ethanol pump stopped")
-            self.log_event("System sterilaty sub event completed")
+            self.log_event("SYSTEM STERILATY SUB EVENT COMPLETED")
             self.liveDataWorker.save_activity_log("System sterilaty sub event completed", folder_name)
         else:
             pass
@@ -1741,7 +1742,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.stop_ethanol_pump()
         #log events 
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-        self.log_event("Decontamination sub manually stopped")
+        self.log_event("DECONTAMINATION SUB EVENT STOPPED MANUALLY")
         self.liveDataWorker.save_activity_log("Decontamination sub event completed", folder_name)
         #pause progress bar 
         frame_name = "frame_POCII_decontaminate_cartridge"
@@ -1753,7 +1754,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.generate_new_token()
         current_token = self.current_session_token
         #save and display activity
-        self.log_event("Decontamination sub event started")
+        self.log_event("DECONTAMINATION SUB EVENT STARTED")
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("Decontamination sub event started", folder_name)
         #session times
@@ -1780,7 +1781,7 @@ class Functionality(QtWidgets.QMainWindow):
         QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce 
         QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[1], V[0], current_token)) # fluid 5           
         QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T + fluid_delay_5_int + DRIP_T, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # depierce 
-        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T + fluid_delay_5_int + DRIP_T + PIERCE_T, lambda: self.stop_timed_WF_decontamination(current_token)) # depierce 
+        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T + fluid_delay_5_int + DRIP_T + PIERCE_T + 2000, lambda: self.stop_timed_WF_decontamination(current_token)) # depierce 
         #progress bar 
         frame_name = "frame_POCII_decontaminate_cartridge"
         self.POCII_counters[frame_name][0] = 0
@@ -1790,7 +1791,7 @@ class Functionality(QtWidgets.QMainWindow):
         if self.POCII_is_running and token == self.current_session_token : 
             self.reset_button_style(self.ui.frame_POCII_decontaminate_cartridge)
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.log_event("Decontaminaton sub event completed")
+            self.log_event("DECONTAMINATION SUB EVENT COMPLETED")
             self.liveDataWorker.save_activity_log("Decontamination sub event completed", folder_name)
             self.POCII_is_running = False
         else: 
@@ -1812,7 +1813,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.generate_new_token()
         current_token = self.current_session_token
         #save and display activity
-        self.log_event("High volt sub event started")
+        self.log_event("HIGH VOLTAGE SUB EVENT STARTED")
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("High volt sub event started", folder_name)
         #session time
@@ -1826,7 +1827,7 @@ class Functionality(QtWidgets.QMainWindow):
         QTimer.singleShot(1 + 10000 + PIERCE_T + 20000, lambda: self.WF_start_blood_pump(current_token))
         QTimer.singleShot(1 + 10000 + PIERCE_T + total_HV_WF_time_int-5000, lambda: self.WF_stop_psu_pg(current_token))
         QTimer.singleShot(1 + 10000 + PIERCE_T + total_HV_WF_time_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token))
-        QTimer.singleShot(1 + 10000 + PIERCE_T + total_HV_WF_time_int+ 30000 + PIERCE_T, lambda: self.stop_timed_WF_HV(current_token))
+        QTimer.singleShot(1 + 10000 + PIERCE_T + total_HV_WF_time_int+ 30000 + PIERCE_T + 2000, lambda: self.stop_timed_WF_HV(current_token))
         #progress bar
         frame_name = "high_voltage_frame"
         self.POCII_counters[frame_name][0] = 0
@@ -1836,7 +1837,7 @@ class Functionality(QtWidgets.QMainWindow):
         #null the session
         self.current_session_token = None  
         #save and display acitivity 
-        self.log_event("High volt sub event manually stopped")
+        self.log_event("HIGH VOLTAGE SUB EVENT STOPPED MANUALLY")
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("High volt sub event manually stopped", folder_name)
         #shut down operations 
@@ -1853,7 +1854,7 @@ class Functionality(QtWidgets.QMainWindow):
         if self.POCII_is_running and token == self.current_session_token : 
             self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.log_event("High volt sub event completed")
+            self.log_event("HIGH VOLTAGE SUB EVENT COMPLETED")
             self.liveDataWorker.save_activity_log("High volt sub event completed", folder_name)
             self.POCII_is_running = False
         else:
@@ -1874,7 +1875,7 @@ class Functionality(QtWidgets.QMainWindow):
         #null the session
         self.current_session_token = None  
         #save and display acitivity 
-        self.log_event("Flush out sub event manually stopped")
+        self.log_event("FLUSH OUT SUB EVENT STOPPED MANUALLY")
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("flush out sub event manually stopped", folder_name)
         #shut down operations 
@@ -1891,7 +1892,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.generate_new_token()
         current_token = self.current_session_token
         #save and display activity
-        self.log_event("FLush out sub event started")
+        self.log_event("FLUSH OUT SUB EVENT STARTED")
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("Flush out sub event started", folder_name)
         #session time
@@ -1908,8 +1909,6 @@ class Functionality(QtWidgets.QMainWindow):
         QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000 + PIERCE_T + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[0], V[2], current_token)) # fluid 2 
         QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000 + PIERCE_T + 10000 + PIERCE_T + fluid_out_delay_2_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # fluid 2 
         QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000 + PIERCE_T + 10000 + PIERCE_T + fluid_out_delay_2_int + 30000 + 2000, lambda: self.stop_timed_WF_flush_out(current_token)) # stop sub event
-
-
         #progress bar
         frame_name = "flush_out_frame"
         self.POCII_counters[frame_name][0] = 0
@@ -1919,7 +1918,7 @@ class Functionality(QtWidgets.QMainWindow):
         if self.POCII_is_running and token == self.current_session_token : 
             self.reset_button_style(self.ui.flush_out_frame.start_stop_button)
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.log_event("Flush out sub event completed")
+            self.log_event("FLUSH OUT SUB EVENT COMPLETED")
             self.liveDataWorker.save_activity_log("Flush out sub event completed", folder_name)
             self.POCII_is_running = False
         else:
@@ -1943,18 +1942,18 @@ class Functionality(QtWidgets.QMainWindow):
         current_token = self.current_session_token
         #save and display acitivity
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-        self.log_event("Zero volt sub event manually stopped")
+        self.log_event("ZERO VOLT SUB EVENT STARTED")
         self.liveDataWorker.save_activity_log("Zero volt sub event manually stopped", folder_name)
         #session time
         total_0V_WF_time = (V[2]/FR[0]) * 60 * 1000
         total_0V_WF_time_int = int(round(total_0V_WF_time)) + 2000
         #operations 
-        QTimer.singleShot(1, lambda: self.WF_move_motor(3, HV_FLASK, current_token))
+        QTimer.singleShot(1, lambda: self.WF_move_motor(3, ZERO_V_FLASK, current_token))
         QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token))
         QTimer.singleShot(1 + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[0], V[2], current_token))
         QTimer.singleShot(1 + 10000 + PIERCE_T + 20000, lambda: self.WF_start_blood_pump(current_token))
         QTimer.singleShot(1 + 10000 + PIERCE_T + total_0V_WF_time_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token))
-        QTimer.singleShot(1 + 10000 + PIERCE_T + total_0V_WF_time_int+ 30000 + PIERCE_T, lambda: self.stop_timed_WF_HV(current_token))
+        QTimer.singleShot(1 + 10000 + PIERCE_T + total_0V_WF_time_int+ 30000 + PIERCE_T + 2000, lambda: self.stop_timed_WF_HV(current_token))
         #progress bar
         frame_name = "zero_volt_frame"
         self.POCII_counters[frame_name][0] = 0
@@ -1964,7 +1963,7 @@ class Functionality(QtWidgets.QMainWindow):
         #null the session
         self.current_session_token = None  
         #save and display activity
-        self.log_event("Zero volt sub event started")
+        self.log_event("ZERO VOLT SUB EVENT STOPPED MANUALLY")
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("Zero volt sub event started", folder_name)
         #shut down operations 
@@ -1980,8 +1979,7 @@ class Functionality(QtWidgets.QMainWindow):
         if self.POCII_is_running and token == self.current_session_token : 
             self.reset_button_style(self.ui.zero_volt_frame.start_stop_button)
             self.POCII_is_running = False
-            self.log_event("Sucrose pump stopped")
-            self.log_event("Zero volt sub event completed")
+            self.log_event("ZERO VOLT SUB EVENT COMPLETE")
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log("Zero volt sub event completed", folder_name)
         else:
@@ -1999,13 +1997,53 @@ class Functionality(QtWidgets.QMainWindow):
             self.set_button_style(self.ui.safe_disconnect_frame.start_stop_button)
 
     def stop_interrupt_WF_safe_disconnect(self): 
+        #null the session
+        self.current_session_token = None  
+        #save and display activity
+        self.log_event("SAFE DISCONNECT STOPPED MANUALLY")
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.save_activity_log("Safe disconnect sub event manually stopped", folder_name)
+        #shut down operations 
         self.reset_button_style(self.ui.safe_disconnect_frame.start_stop_button)
-
-    def WF_start_safe_disconnect(self): 
-        pass
+        self.stop_sucrose_pump()
+        self.stop_blood_pump()
+        #pause the progress bar token
+        frame_name = "safe_disconnect_frame"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].stop()
     
-    def stop_timed_WF_safe_disconnect(self): 
-        pass
+    def WF_start_safe_disconnect(self): 
+        #session token
+        self.generate_new_token()
+        current_token = self.current_session_token
+        #save and display activity
+        self.log_event("SAFE DISCONNECT SUB EVENT STARTED")
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.save_activity_log("Safe disconnect sub event started", folder_name)
+        #session time
+        fluid_safe_disconnect_delay_1 = (V[1]/FR[1]) * 60 * 1000
+        fluid_out_delay_1_int = int(round(fluid_safe_disconnect_delay_1)) 
+
+        #operation
+        QTimer.singleShot(1, lambda: self.WF_move_motor(3, WASTE_FLASK, current_token)) # move to flush out flask 1
+        QTimer.singleShot(1 + 30000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce flush out flask 1
+        QTimer.singleShot(1 + 30000 + PIERCE_T , lambda: self.WF_start_ethanol_pump(FR[1], V[1], current_token)) # fluid 1
+        QTimer.singleShot(1 + 30000 + PIERCE_T + fluid_out_delay_1_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # Depierce flush out flask 1
+        QTimer.singleShot(1 + 30000 + PIERCE_T + fluid_out_delay_1_int + 30000 + 2000, lambda: self.stop_timed_WF_safe_disconnect(current_token)) # stop sub event
+        #progress bar
+        frame_name = "safe_disconnect_frame"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].start(1000)  
+    
+    def stop_timed_WF_safe_disconnect(self, token): 
+        if self.POCII_is_running and token == self.current_session_token : 
+            self.reset_button_style(self.ui.safe_disconnect_frame.start_stop_button)
+            self.POCII_is_running = False
+            self.log_event("Safe disconnect sub event completed")
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.liveDataWorker.save_activity_log("Safe disconnect sub event completed", folder_name)
+        else:
+            pass
 
 #endregion
 
@@ -2053,8 +2091,8 @@ class Functionality(QtWidgets.QMainWindow):
             timer.stop()
             counter[0] = 0
 
-    def reset_high_voltage_frame_progress_bar(self):
-        self.ui.high_voltage_frame.progress_bar.setValue(0)
+    def reset_high_voltage_frame_progress_bar(self, progress_bar):
+        progress_bar.setValue(0)
         self.clear_log() 
 
     def reset_zero_volt_frame_progress_bar(self):
