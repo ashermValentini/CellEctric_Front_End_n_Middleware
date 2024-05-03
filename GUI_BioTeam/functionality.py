@@ -62,11 +62,24 @@ FLUIDICS_MOTOR = 2
 
 WASTE_FLASK = 216  
 DECONTAMINATION_CONTROL = 176
+FLUSH_OUT_FLASK_1 = 136
+FLUSH_OUT_FLASK_2 = 96
+HV_FLASK = 56
 
 
+#================================================
+# GLOBAL TIMES  
+#================================================
 DEPIERCE = 40 
 PIERCE = 10
 
+DRIP_T = 30 * 1000
+SOAK_T = 60 * 1000 
+PIERCE_T = 10000
+
+FR = [2.25, 2.5, 5]
+#FR = [5, 5, 5]
+V = [5, 10, 10.5]
 
 #==================================================
 # IDS FOR THE BSG2 DEVICES
@@ -316,7 +329,8 @@ class Functionality(QtWidgets.QMainWindow):
         if self.flag_connections[2]:
             self.ui.button_motors_home.clicked.connect(lambda: self.movement_homing(0))     
             self.ui.button_motors_home.clicked.connect(self.enable_motor_buttons)
-       
+            #self.ui.button_lights.clicked.connect(self.skakel_ligte) #lights are telve volts not five so we must order new lights  
+
         self.ui.button_experiment_route.clicked.connect(self.go_to_route2)             
         self.ui.button_dashboard_route.clicked.connect(self.go_to_route1)             
         self.ui.button_dashboard_data_recording.clicked.connect(self.toggle_LDA_popup)
@@ -754,16 +768,16 @@ class Functionality(QtWidgets.QMainWindow):
 
     def toggle_blood_pump(self):
         if not self.blood_is_pumping:
-            self.start_blood_pump()
+            self.start_blood_pump(self.ui.line_edit_blood.text(), self.ui.line_edit_blood_2.text())
         else:
             self.stop_blood_pump()
 
-    def start_blood_pump(self):  
+    def start_blood_pump(self, FR, V):  
         self.blood_is_pumping = True  
         self.set_button_style(self.ui.button_blood_play_pause)
         
-        blood_volume = float(self.ui.line_edit_blood_2.text())
-        blood_speed = float(self.ui.line_edit_blood.text())
+        blood_volume = float(V)
+        blood_speed = float(FR)
 
         volume_str = f"0{blood_volume:.1f}" if blood_volume < 10 else f"{blood_volume:.1f}"
         speed_str = f"{blood_speed:.3f}"
@@ -1088,6 +1102,20 @@ class Functionality(QtWidgets.QMainWindow):
                 folder_name = self.popup.line_edit_LDA_folder_name.text()
                 self.liveDataWorker.save_activity_log(message, folder_name)
             print("TRYING TO STOP JOGGING: motor: {}".format(motornumber))  
+#endregion
+
+# region : LIGHTS 
+    def skakel_ligte(self): 
+        if not self.lights_are_on: 
+            self.lights_are_on = True  
+            self.set_button_style(self.ui.button_lights)
+
+            writeLedStatus(self.device_serials[2], 1, 1, 1)
+
+        else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
+            self.lights_are_on = False 
+            self.reset_button_style(self.ui.button_lights)
+            writeLedStatus(self.device_serials[2], 0, 0, 0)
 #endregion
 
 # region : LIVE DATA AQUISITION OUTSIDE OF AUTOMATED WORKFLOW 
@@ -1616,7 +1644,6 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion 
 
 # region : POCII
-
     # region : SYSTEM STERILATY 
     def toggle_system_sterilaty_start_stop_button(self): 
         if self.POCII_is_running: 
@@ -1652,7 +1679,8 @@ class Functionality(QtWidgets.QMainWindow):
         instruction_delay_2 = 10000
         FR_ethanol_2 = 10   # [ml/min]  
         V_ethanol_2 = 8     # [ml]
-
+        delay_4 = (V_ethanol_2/FR_ethanol_2) * 60 * 1000
+        delay_4_int = int(round(delay_4)) + 2000
         #operations 
         QTimer.singleShot(1, lambda: self.WF_start_ethanol_pump(FR_ethanol_1, V_ethanol_1, current_token))
         QTimer.singleShot(delay_1_int, lambda: self.WF_start_sucrose_pump(FR_sucrose_1, V_sucrose_1, current_token))
@@ -1660,7 +1688,7 @@ class Functionality(QtWidgets.QMainWindow):
         QTimer.singleShot(delay_1_int+delay_2_int+instruction_delay_1, lambda: self.WF_start_sucrose_pump(FR_sucrose_2, V_sucrose_2, current_token))
         QTimer.singleShot(delay_1_int+delay_2_int+instruction_delay_1+delay_3_int, lambda: self.WF_announcement("INSTRUCTION: MANUAL SWITCH TO WASTE FALCON", current_token))
         QTimer.singleShot(delay_1_int+delay_2_int+instruction_delay_1+delay_3_int+instruction_delay_2, lambda: self.WF_start_ethanol_pump(FR_ethanol_2, V_ethanol_2, current_token))
-
+        QTimer.singleShot(delay_1_int+delay_2_int+instruction_delay_1+delay_3_int+instruction_delay_2 + delay_4_int, lambda: self.stop_timed_WF_system_sterilaty(current_token))
         #progress bar 
         frame_name = "frame_POCII_system_sterilaty"
         self.POCII_counters[frame_name][0] = 0
@@ -1675,7 +1703,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.stop_ethanol_pump()
         #log events 
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-        self.log_event("System sterilaty sub manuallz stopped")
+        self.log_event("System sterilaty sub manually stopped")
         self.liveDataWorker.save_activity_log("System sterilaty sub event completed", folder_name)
         #pause progress bar 
         frame_name = "frame_POCII_system_sterilaty"
@@ -1729,8 +1757,6 @@ class Functionality(QtWidgets.QMainWindow):
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("Decontamination sub event started", folder_name)
         #session times
-        FR = [2.25, 2.5, 5]
-        V = [5, 10]
         fluid_delay_1 = (V[1]/FR[1]) * 60 * 1000
         fluid_delay_1_int = int(round(fluid_delay_1)) + 2000
         fluid_delay_2 = (V[0]/FR[1]) * 60 * 1000
@@ -1741,21 +1767,34 @@ class Functionality(QtWidgets.QMainWindow):
         fluid_delay_4_int = int(round(fluid_delay_4)) + 2000
         fluid_delay_5 = (V[0]/FR[1]) * 60 * 1000
         fluid_delay_5_int = int(round(fluid_delay_5)) + 2000
-        drip_delay = 30 * 1000
-        soak_delay = 60 * 1000 * 5
-        pierce_delay = 10000
         #operations
-        QTimer.singleShot(1, lambda: self.WF_move_motor(3, WASTE_FLASK, current_token))
-        QTimer.singleShot(24000, lambda: self.WF_move_motor(4, PIERCE, current_token))
-        QTimer.singleShot(24000 + pierce_delay, lambda: self.WF_start_ethanol_pump(FR[1], V[1], current_token)) # fluid 1
-        QTimer.singleShot(24000 + pierce_delay + fluid_delay_1_int, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 2
-        QTimer.singleShot(24000 + pierce_delay + fluid_delay_1_int + soak_delay + fluid_delay_2_int, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 3
-        QTimer.singleShot(24000 + pierce_delay + fluid_delay_1_int + soak_delay + fluid_delay_2_int + fluid_delay_3_int, lambda: self.WF_start_sucrose_pump(FR[1], V[1], current_token)) # fluid 4
-        QTimer.singleShot(24000 + pierce_delay + fluid_delay_1_int + soak_delay + fluid_delay_2_int + fluid_delay_3_int + drip_delay + pierce_delay, lambda: self.WF_move_motor(4, DEPIERCE, current_token))
-
-    def stop_timed_WF_decontamination(self): 
-        pass
-
+        QTimer.singleShot(1, lambda: self.WF_move_motor(3, WASTE_FLASK, current_token)) # move to waste flask 
+        QTimer.singleShot(24000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce waste flask
+        QTimer.singleShot(24000 + PIERCE_T, lambda: self.WF_start_ethanol_pump(FR[1], V[1], current_token)) # fluid 1
+        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 2
+        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + fluid_delay_2_int, lambda: self.WF_announcement("Five minute ethanol soak", current_token)) # fluid 2
+        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 3
+        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int, lambda: self.WF_start_sucrose_pump(FR[1], V[1], current_token)) # fluid 4
+        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # depierce 
+        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T, lambda: self.WF_move_motor(3, DECONTAMINATION_CONTROL, current_token)) # move to decontamination control  
+        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce 
+        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[1], V[0], current_token)) # fluid 5           
+        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T + fluid_delay_5_int + DRIP_T, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # depierce 
+        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T + fluid_delay_5_int + DRIP_T + PIERCE_T, lambda: self.stop_timed_WF_decontamination(current_token)) # depierce 
+        #progress bar 
+        frame_name = "frame_POCII_decontaminate_cartridge"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].start(1000)  
+    
+    def stop_timed_WF_decontamination(self, token): 
+        if self.POCII_is_running and token == self.current_session_token : 
+            self.reset_button_style(self.ui.frame_POCII_decontaminate_cartridge)
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.log_event("Decontaminaton sub event completed")
+            self.liveDataWorker.save_activity_log("Decontamination sub event completed", folder_name)
+            self.POCII_is_running = False
+        else: 
+            pass
 #endregion
 
     # region : HIGH V
@@ -1777,16 +1816,18 @@ class Functionality(QtWidgets.QMainWindow):
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("High volt sub event started", folder_name)
         #session time
-        FR = float(self.ui.line_edit_sucrose.text())
-        V = float(self.ui.line_edit_sucrose_2.text())
-        total_HV_WF_time = (V/FR) * 60 * 1000
-        total_HV_WF_time_int = int(round(total_HV_WF_time))
+        total_HV_WF_time = (V[2]/FR[0]) * 60 * 1000
+        total_HV_WF_time_int = int(round(total_HV_WF_time)) 
         #operation
-        QTimer.singleShot(1, lambda: self.WF_start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text(), current_token))
-        QTimer.singleShot(20000, lambda: self.WF_start_blood_pump(current_token))
-        QTimer.singleShot(5000, lambda: self.WF_start_psu_pg(current_token))
-        QTimer.singleShot(total_HV_WF_time_int-5000, lambda: self.WF_stop_psu_pg(current_token))
-        QTimer.singleShot(total_HV_WF_time_int, lambda: self.stop_timed_WF_HV(current_token))
+        QTimer.singleShot(1, lambda: self.WF_move_motor(3, HV_FLASK, current_token))
+        QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token))
+        QTimer.singleShot(1 + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[0], V[2], current_token))
+        QTimer.singleShot(1 + 10000 + PIERCE_T + 5000, lambda: self.WF_start_psu_pg(current_token))
+        QTimer.singleShot(1 + 10000 + PIERCE_T + 20000, lambda: self.WF_start_blood_pump(current_token))
+        QTimer.singleShot(1 + 10000 + PIERCE_T + total_HV_WF_time_int-5000, lambda: self.WF_stop_psu_pg(current_token))
+        QTimer.singleShot(1 + 10000 + PIERCE_T + total_HV_WF_time_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token))
+        QTimer.singleShot(1 + 10000 + PIERCE_T + total_HV_WF_time_int+ 30000 + PIERCE_T, lambda: self.stop_timed_WF_HV(current_token))
+        #progress bar
         frame_name = "high_voltage_frame"
         self.POCII_counters[frame_name][0] = 0
         self.POCII_timers[frame_name].start(1000)  
@@ -1812,7 +1853,6 @@ class Functionality(QtWidgets.QMainWindow):
         if self.POCII_is_running and token == self.current_session_token : 
             self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.log_event("Sucrose pump stopped")
             self.log_event("High volt sub event completed")
             self.liveDataWorker.save_activity_log("High volt sub event completed", folder_name)
             self.POCII_is_running = False
@@ -1831,13 +1871,59 @@ class Functionality(QtWidgets.QMainWindow):
             self.set_button_style(self.ui.flush_out_frame.start_stop_button)
 
     def stop_interrupt_WF_flush_out(self): 
+        #null the session
+        self.current_session_token = None  
+        #save and display acitivity 
+        self.log_event("Flush out sub event manually stopped")
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.save_activity_log("flush out sub event manually stopped", folder_name)
+        #shut down operations 
         self.reset_button_style(self.ui.flush_out_frame.start_stop_button)
+        self.stop_sucrose_pump()
+        self.stop_ethanol_pump()
+        #pause the progress bar
+        frame_name = "flush_out_frame"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].stop()
     
     def WF_start_flush_out(self): 
-        pass
+        #session token
+        self.generate_new_token()
+        current_token = self.current_session_token
+        #save and display activity
+        self.log_event("FLush out sub event started")
+        folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+        self.liveDataWorker.save_activity_log("Flush out sub event started", folder_name)
+        #session time
+        fluid_out_delay_1 = (V[2]/FR[0]) * 60 * 1000
+        fluid_out_delay_1_int = int(round(fluid_out_delay_1)) 
+        fluid_out_delay_2_int = fluid_out_delay_1_int
+        #operation
+        QTimer.singleShot(1, lambda: self.WF_move_motor(3, FLUSH_OUT_FLASK_1, current_token)) # move to flush out flask 1
+        QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce flush out flask 1
+        QTimer.singleShot(1 + 10000 + PIERCE_T , lambda: self.WF_start_sucrose_pump(FR[0], V[2], current_token)) # fluid 1
+        QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # Depierce flush out flask 1
+        QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000 + PIERCE_T, lambda: self.WF_move_motor(3, FLUSH_OUT_FLASK_2, current_token)) # move to flush out flask 2
+        QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000 + PIERCE_T + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce flush out flask 2
+        QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000 + PIERCE_T + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[0], V[2], current_token)) # fluid 2 
+        QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000 + PIERCE_T + 10000 + PIERCE_T + fluid_out_delay_2_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # fluid 2 
+        QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000 + PIERCE_T + 10000 + PIERCE_T + fluid_out_delay_2_int + 30000 + 2000, lambda: self.stop_timed_WF_flush_out(current_token)) # stop sub event
+
+
+        #progress bar
+        frame_name = "flush_out_frame"
+        self.POCII_counters[frame_name][0] = 0
+        self.POCII_timers[frame_name].start(1000)  
     
-    def stop_timed_WF_flush_out(self): 
-        pass
+    def stop_timed_WF_flush_out(self, token): 
+        if self.POCII_is_running and token == self.current_session_token : 
+            self.reset_button_style(self.ui.flush_out_frame.start_stop_button)
+            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
+            self.log_event("Flush out sub event completed")
+            self.liveDataWorker.save_activity_log("Flush out sub event completed", folder_name)
+            self.POCII_is_running = False
+        else:
+            pass
 
 #endregion
 
@@ -1860,14 +1946,15 @@ class Functionality(QtWidgets.QMainWindow):
         self.log_event("Zero volt sub event manually stopped")
         self.liveDataWorker.save_activity_log("Zero volt sub event manually stopped", folder_name)
         #session time
-        FR = float(self.ui.line_edit_sucrose.text())
-        V = float(self.ui.line_edit_sucrose_2.text())
-        total_0V_WF_time = (V/FR) * 60 * 1000
-        total_0V_WF_time_int = int(round(total_0V_WF_time))
+        total_0V_WF_time = (V[2]/FR[0]) * 60 * 1000
+        total_0V_WF_time_int = int(round(total_0V_WF_time)) + 2000
         #operations 
-        QTimer.singleShot(1, lambda: self.WF_start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text(), current_token))
-        QTimer.singleShot(20000, lambda: self.WF_start_blood_pump(current_token))
-        QTimer.singleShot(total_0V_WF_time_int, lambda: self.stop_timed_WF_0V(current_token))
+        QTimer.singleShot(1, lambda: self.WF_move_motor(3, HV_FLASK, current_token))
+        QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token))
+        QTimer.singleShot(1 + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[0], V[2], current_token))
+        QTimer.singleShot(1 + 10000 + PIERCE_T + 20000, lambda: self.WF_start_blood_pump(current_token))
+        QTimer.singleShot(1 + 10000 + PIERCE_T + total_0V_WF_time_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token))
+        QTimer.singleShot(1 + 10000 + PIERCE_T + total_0V_WF_time_int+ 30000 + PIERCE_T, lambda: self.stop_timed_WF_HV(current_token))
         #progress bar
         frame_name = "zero_volt_frame"
         self.POCII_counters[frame_name][0] = 0
@@ -1986,7 +2073,7 @@ class Functionality(QtWidgets.QMainWindow):
 
     def WF_start_blood_pump(self, token):
         if self.POCII_is_running and token == self.current_session_token: 
-            self.start_blood_pump()
+            self.start_blood_pump(0.25, 1)
             self.log_event("Blood syringe pump started")
         else: 
             pass

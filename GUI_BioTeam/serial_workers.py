@@ -53,7 +53,6 @@ class ESP32SerialWorker(QObject):
     update_flowrate = pyqtSignal(float)
     update_pressure = pyqtSignal(float)
     update_fluidic_play_pause_buttons = pyqtSignal(float)
-
     interval = 250  
 
     def __init__(self, esp32_RTOS_serial):
