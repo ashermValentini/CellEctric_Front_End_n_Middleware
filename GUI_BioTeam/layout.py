@@ -1238,7 +1238,7 @@ class Ui_MainWindow(object):
         title_label.setAlignment(QtCore.Qt.AlignTop)
         title_label.setAlignment(QtCore.Qt.AlignCenter)
         temp_layout.addWidget(title_label)
-        temp_layout.addSpacing(65)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        temp_layout.addSpacing(45)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
 
         # Layout for image and stats
         temp_details_layout = QtWidgets.QHBoxLayout()
@@ -1299,9 +1299,10 @@ class Ui_MainWindow(object):
         """)
         temp_control_layout.addStretch(1)
         temp_control_layout.addWidget(self.temp_control_button)
-        temp_control_layout.addSpacing(35)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        temp_control_layout.addSpacing(36)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
         # add the temperature control label and button to the temperature frame layout
         temp_layout.addLayout(temp_control_layout)
+        temp_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
 
         #endregion
         

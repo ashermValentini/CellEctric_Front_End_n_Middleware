@@ -112,7 +112,7 @@ class Functionality(QtWidgets.QMainWindow):
     # Signals 
     #========================================================
     #region: 
-    stopTimer = pyqtSignal()  # Signal to request the timer to stop
+    stopTimer = pyqtSignal()  # Signal to request the timer to stop (needed when stopping timers running in a different thread)
     #endregion
     def __init__(self):
         super(Functionality, self).__init__()
@@ -767,7 +767,8 @@ class Functionality(QtWidgets.QMainWindow):
         except ValueError:
             print("Invalid input in line_edit_sucrose")
             return 
-        message3PAC = f'wFE-175-{FR:.2f}-{V:.1f}\n'  
+        #message3PAC = f'wFE-175-{FR:.2f}-{V:.1f}\n'  
+        message3PAC = f'wFE-400-{FR:.2f}-{V:.1f}\n'  
         messagePeristalticDriver = f'sE-{FR}-{V}-0.169\n'  
         self.esp32Worker.write_serial_message(message3PAC)
         self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
@@ -1048,7 +1049,6 @@ class Functionality(QtWidgets.QMainWindow):
         if self.workflow_live_data_is_logging: 
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
-
 #endregion
 
 # region : CONNECTION CIRCLE FUNCTION     
@@ -1076,6 +1076,11 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.circles["PSU"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
         else: 
             self.ui.circles["PSU"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
+        
+        if self.flag_connections[4]:
+            self.ui.circles["Pumps"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
+        else: 
+            self.ui.circles["Pumps"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
 
 #endregion 
 
