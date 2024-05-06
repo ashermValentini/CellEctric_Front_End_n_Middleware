@@ -1035,10 +1035,10 @@ class Ui_MainWindow(object):
         layout.addWidget(label)  # Add the label to the layout
 
         # Add a spacer for some vertical space
-        layout.addSpacing(75)
+        layout.addSpacing(10)
     
         # List of module names
-        module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "3PAC"]
+        module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "Pumps", "Motors", "Flow Rate Sensor"]
 
         # Dictionary to hold the circles
         self.circles = {}
@@ -1049,7 +1049,7 @@ class Ui_MainWindow(object):
             
             # Create the module label and add it to the layout
             module_label = QtWidgets.QLabel()
-            module_label.setStyleSheet(application_style.main_window_text_style) 
+            module_label.setStyleSheet(application_style.main_window_15p_style) 
             module_label.setText(module)
             module_label.setAlignment(QtCore.Qt.AlignLeft)
             module_layout.addWidget(module_label)
@@ -1235,9 +1235,10 @@ class Ui_MainWindow(object):
         # Title for temperature frame
         title_label = QtWidgets.QLabel("TEMPERATURE")
         title_label.setStyleSheet(application_style.main_window_title_style)
+        title_label.setAlignment(QtCore.Qt.AlignTop)
         title_label.setAlignment(QtCore.Qt.AlignCenter)
         temp_layout.addWidget(title_label)
-        temp_layout.addSpacing(65)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        temp_layout.addSpacing(45)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
 
         # Layout for image and stats
         temp_details_layout = QtWidgets.QHBoxLayout()
@@ -1298,9 +1299,10 @@ class Ui_MainWindow(object):
         """)
         temp_control_layout.addStretch(1)
         temp_control_layout.addWidget(self.temp_control_button)
-        temp_control_layout.addSpacing(35)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        temp_control_layout.addSpacing(36)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
         # add the temperature control label and button to the temperature frame layout
         temp_layout.addLayout(temp_control_layout)
+        temp_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
 
         #endregion
         
@@ -1426,88 +1428,100 @@ class Ui_MainWindow(object):
         frame_d_signal.setStyleSheet("background-color: #222222; border-radius: 15px;")
         frame_d_signal.setObjectName("frame_d_psuButton")
         self.application_region_3_layout.addWidget(frame_d_signal)
-
-        # Create a layout for this frame
-        frame_d_signal_layout = QtWidgets.QVBoxLayout(frame_d_signal)# Create a vertical layout for this frame
-
-        # Create a label for this frame
+        frame_d_signal_layout = QtWidgets.QVBoxLayout(frame_d_signal) # Create a vertical layout for this frame
+        
+        # region : Frame Label
         label = QtWidgets.QLabel("SIGNAL", frame_d_signal)
         label.setAlignment(QtCore.Qt.AlignCenter)
         label.setStyleSheet(application_style.main_window_title_style)  # Set the color of the text as needed
         
         frame_d_signal_layout.addWidget(label)   #Place SIGNAL at the top of the frame
-        frame_d_signal_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
-            
-        # Create a horizontal layout for group boxes and button
-        inner_layout = QtWidgets.QHBoxLayout()     
+        #endregion
         
-        # Create a vertical layout for JUST the group boxes 
-        group_boxes_layout = QtWidgets.QVBoxLayout()
+        frame_d_signal_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        
+        # region: rep rate 
+        group_box_pulse_length = QtWidgets.QGroupBox()
+        group_box_pulse_length .setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
+        group_box_pulse_length .setAlignment(QtCore.Qt.AlignCenter)
+        group_box_pulse_length_layout = QtWidgets.QHBoxLayout(group_box_pulse_length)
+        unit_label = QtWidgets.QLabel("uS")
+        unit_label.setStyleSheet(application_style.main_window_voltage_style)
+        pulse_length_label = QtWidgets.QLabel("Pulse Length:")
+        pulse_length_label.setStyleSheet(application_style.main_window_voltage_style)
+        self.line_edit_pulse_length = QtWidgets.QLineEdit()
+        self.line_edit_pulse_length.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
+        self.line_edit_pulse_length.setText("75")
+        group_box_pulse_length_layout.addWidget(pulse_length_label)
+        group_box_pulse_length_layout.addStretch(1)
+        group_box_pulse_length_layout.addWidget(self.line_edit_pulse_length)
+        group_box_pulse_length_layout.addWidget(unit_label)
+        group_box_pulse_length.setLayout(group_box_pulse_length_layout)
+        frame_d_signal_layout.addWidget(group_box_pulse_length)
+        #endregion
 
-        # region : Create a QGroupBox for the line edit and label for max voltage
+        # region: rep rate 
+        group_box_rep_rate = QtWidgets.QGroupBox()
+        group_box_rep_rate.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
+        group_box_rep_rate.setAlignment(QtCore.Qt.AlignCenter)
+        group_box_rep_rate_layout = QtWidgets.QHBoxLayout(group_box_rep_rate)
+        unit_label = QtWidgets.QLabel("Hz")
+        unit_label.setStyleSheet(application_style.main_window_voltage_style)
+        rep_rate_label = QtWidgets.QLabel("Repitition Rate:")
+        rep_rate_label.setStyleSheet(application_style.main_window_voltage_style)
+        self.line_edit_rep_rate = QtWidgets.QLineEdit()
+        self.line_edit_rep_rate.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
+        self.line_edit_rep_rate.setText("250")
+        group_box_rep_rate_layout.addWidget(rep_rate_label)
+        group_box_rep_rate_layout.addStretch(1)
+        group_box_rep_rate_layout.addWidget(self.line_edit_rep_rate)
+        group_box_rep_rate_layout.addWidget(unit_label)
+        group_box_rep_rate.setLayout(group_box_rep_rate_layout)
+        frame_d_signal_layout.addWidget(group_box_rep_rate)
+        #endregion
+        
+        inner_layout = QtWidgets.QHBoxLayout()   # Create a horizontal layout for group boxes and button   
+        group_boxes_layout = QtWidgets.QVBoxLayout() # Create a vertical layout for JUST the group boxes
+        
+        # region : line edit and label for max voltage
         group_box_max_voltage = QtWidgets.QGroupBox(frame_d_signal)
         group_box_max_voltage.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
         group_box_max_voltage.setAlignment(QtCore.Qt.AlignCenter)
-
-        # Create a QHBoxLayout for the first group box
         group_box_max_voltage_layout = QtWidgets.QHBoxLayout(group_box_max_voltage)
-
-        # Create the QLabel for the unit
         unit_label = QtWidgets.QLabel("V")
         unit_label.setStyleSheet(application_style.main_window_voltage_style)
-
-        # Create the QLabel for the higher pk-pk voltage
         MAX_label = QtWidgets.QLabel("Vp+ :")
         MAX_label.setStyleSheet(application_style.main_window_voltage_style)
-
-        # Create the QLineEdit for the value
         self.line_edit_max_signal = QtWidgets.QLineEdit()
         self.line_edit_max_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
         self.line_edit_max_signal.setText(" 75")
-
-        # Add the line edit and label to the group box layout
         group_box_max_voltage_layout.addWidget(MAX_label)
         group_box_max_voltage_layout.addWidget(self.line_edit_max_signal)
         group_box_max_voltage_layout.addWidget(unit_label)
-
         group_box_max_voltage.setLayout(group_box_max_voltage_layout)
+        group_boxes_layout.addWidget(group_box_max_voltage)
+
         #endregion
-        
-        # region : Create a QGroupBox for the line edit and label for min voltage
+        # region : line edit and label for min voltage
         group_box_min_voltage = QtWidgets.QGroupBox(frame_d_signal)
         group_box_min_voltage.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
         group_box_min_voltage.setAlignment(QtCore.Qt.AlignCenter)
-
-        # Create a QHBoxLayout for the first group box
         group_box_min_voltage_layout = QtWidgets.QHBoxLayout(group_box_min_voltage)
-
-        # Create the QLabel for the unit
         min_unit_label = QtWidgets.QLabel("V")
         min_unit_label.setStyleSheet(application_style.main_window_voltage_style)
-
-        # Create the QLabel for the higher pk-pk voltage
         MIN_label = QtWidgets.QLabel("Vp- : ")
         MIN_label.setStyleSheet(application_style.main_window_voltage_style)
-
-        # Create the QLineEdit for the value
         self.line_edit_min_signal = QtWidgets.QLineEdit()
         self.line_edit_min_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
         self.line_edit_min_signal.setText("-75")
-
-        # Add the line edit and label to the group box layout
         group_box_min_voltage_layout.addWidget(MIN_label)
         group_box_min_voltage_layout.addWidget(self.line_edit_min_signal)
         group_box_min_voltage_layout.addWidget(min_unit_label)
-
         group_box_min_voltage.setLayout(group_box_min_voltage_layout)
-        #endregion
-
-        group_boxes_layout.addWidget(group_box_max_voltage)# Add the group boxes to the vertical layout
         group_boxes_layout.addWidget(group_box_min_voltage)
-        
+        #endregion
         inner_layout.addLayout(group_boxes_layout)  # Add the vertical layout to the inner layout
-
-        # PSU button creation
+        # region PSU button 
         self.psu_button = QtWidgets.QPushButton("", frame_d_signal)  # Set the text to empty since we are using an image
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/images/lightning_symbol.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -1529,7 +1543,7 @@ class Ui_MainWindow(object):
             }
         """)
         inner_layout.addWidget(self.psu_button)# Add the button to the inner layout
-        
+        #endregion
         frame_d_signal_layout.addLayout(inner_layout)# Add the inner layout to the frame's layout
         # endregion
 
@@ -1601,7 +1615,12 @@ class Ui_MainWindow(object):
 
         self.button_flask_rightmost = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/rightmost_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        # Load the pixmap from the resource file
+        pixmap = QtGui.QPixmap(":/images/rightmost_w.png")
+        # Create a transformation and rotate it 180 degrees
+        transform = QtGui.QTransform().rotate(180)
+        rotated_pixmap = pixmap.transformed(transform)
+        icon.addPixmap(rotated_pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_flask_rightmost.setIcon(icon)
         self.button_flask_rightmost.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
         self.button_flask_rightmost.setStyleSheet("""
@@ -1913,7 +1932,6 @@ class Ui_MainWindow(object):
         self.line.setStyleSheet("background-color: white;")
     #endregion
         # region : experiment steps (not shown only created)
-        
         # region : create the POCII frames
         self.frame_POCII_system_sterilaty = CustomExperimentFrame("System Sterilaty Control", {
             "start_stop": ":/images/play_pause.png",
@@ -1940,7 +1958,7 @@ class Ui_MainWindow(object):
             "reset": ":/images/undo.png"
         })
 
-        self.safe_disconnect_frame = CustomExperimentFrame("Flush Out", {
+        self.safe_disconnect_frame = CustomExperimentFrame("Safe Disconnect", {
             "start_stop": ":/images/play_pause.png",
             "reset": ":/images/undo.png"
         })
@@ -1949,8 +1967,7 @@ class Ui_MainWindow(object):
             "start_stop": ":/images/send.png",
             "reset": ":/images/trash.png"
         })
-        #endregion 
-        
+        #endregion   
         # region : create the Demo frames
 
         self.frame_DEMO_close_fluidic_circuit = CustomExperimentFrame("Close Fluidic Circuit", {

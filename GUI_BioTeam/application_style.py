@@ -52,3 +52,4 @@ main_window_header_style = "QLabel { color : #FFFFFF; font-family: Archivo; font
 main_window_input_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 25px;  }"
 main_window_temperature_number_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 30px;  }"
 main_window_voltage_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 20px;  }"
+main_window_15p_style = "QLabel { color : #FFFFFF; font-family: Archivo; font-size: 25px;  }"
