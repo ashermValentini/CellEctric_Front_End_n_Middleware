@@ -1035,10 +1035,10 @@ class Ui_MainWindow(object):
         layout.addWidget(label)  # Add the label to the layout
 
         # Add a spacer for some vertical space
-        layout.addSpacing(75)
+        layout.addSpacing(10)
     
         # List of module names
-        module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "3PAC"]
+        module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "Pumps", "Motors", "Flow Rate Sensor"]
 
         # Dictionary to hold the circles
         self.circles = {}
@@ -1049,7 +1049,7 @@ class Ui_MainWindow(object):
             
             # Create the module label and add it to the layout
             module_label = QtWidgets.QLabel()
-            module_label.setStyleSheet(application_style.main_window_text_style) 
+            module_label.setStyleSheet(application_style.main_window_15p_style) 
             module_label.setText(module)
             module_label.setAlignment(QtCore.Qt.AlignLeft)
             module_layout.addWidget(module_label)
@@ -1614,7 +1614,12 @@ class Ui_MainWindow(object):
 
         self.button_flask_rightmost = QtWidgets.QPushButton()  # create button
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/rightmost_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        # Load the pixmap from the resource file
+        pixmap = QtGui.QPixmap(":/images/rightmost_w.png")
+        # Create a transformation and rotate it 180 degrees
+        transform = QtGui.QTransform().rotate(180)
+        rotated_pixmap = pixmap.transformed(transform)
+        icon.addPixmap(rotated_pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.button_flask_rightmost.setIcon(icon)
         self.button_flask_rightmost.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
         self.button_flask_rightmost.setStyleSheet("""
@@ -1926,7 +1931,6 @@ class Ui_MainWindow(object):
         self.line.setStyleSheet("background-color: white;")
     #endregion
         # region : experiment steps (not shown only created)
-        
         # region : create the POCII frames
         self.frame_POCII_system_sterilaty = CustomExperimentFrame("System Sterilaty Control", {
             "start_stop": ":/images/play_pause.png",
@@ -1953,7 +1957,7 @@ class Ui_MainWindow(object):
             "reset": ":/images/undo.png"
         })
 
-        self.safe_disconnect_frame = CustomExperimentFrame("Flush Out", {
+        self.safe_disconnect_frame = CustomExperimentFrame("Safe Disconnect", {
             "start_stop": ":/images/play_pause.png",
             "reset": ":/images/undo.png"
         })
@@ -1962,8 +1966,7 @@ class Ui_MainWindow(object):
             "start_stop": ":/images/send.png",
             "reset": ":/images/trash.png"
         })
-        #endregion 
-        
+        #endregion   
         # region : create the Demo frames
 
         self.frame_DEMO_close_fluidic_circuit = CustomExperimentFrame("Close Fluidic Circuit", {

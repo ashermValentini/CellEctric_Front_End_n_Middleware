@@ -56,8 +56,9 @@ class DataSavingWorker(QObject):
     def aggregate_data(self):
         """Aggregates the current data into the DataFrame."""
         if self.flag_start_saving_live_data:
+            current_time = datetime.now()
             new_row = pd.DataFrame([{
-                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                'timestamp': f"TS: {current_time.strftime("%Y-%m-%d %H:%M:%S")}",
                 'temperature': self.current_temp if self.flag_save_temp else None,
                 'pressure': self.current_pressure if self.flag_save_pressure else None,
                 'ethanol_flowrate': self.current_ethanol_flowrate if self.flag_save_ethanol_flowrate else None,

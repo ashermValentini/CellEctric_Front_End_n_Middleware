@@ -52,7 +52,7 @@ DIR_M4_UP = 2
 DIR_M4_DOWN = 1
 
 #================================================
-# POSITION AND NAMES FOR MOTORS 
+# MOTOR NUMBERS 
 #================================================
 
 FLASK_MOTOR = 3
@@ -60,30 +60,39 @@ PIERCE_MOTOR = 4
 BLOOD_SYRINGE = 1 
 FLUIDICS_MOTOR = 2
 
-WASTE_FLASK = 216  
-DECONTAMINATION_CONTROL = 176
-HV_FLASK = 136
-FLUSH_OUT_FLASK_1 = 96
-FLUSH_OUT_FLASK_2 = 56
+#================================================
+# FLASK POSITIONS 
+#================================================
+
+WASTE_FLASK = 220  
+DECONTAMINATION_CONTROL = 180
+HV_FLASK = 138
+FLUSH_OUT_FLASK_1 = 98
+FLUSH_OUT_FLASK_2 = 57
 ZERO_V_FLASK = 16
 
-
 #================================================
-# GLOBAL TIMES  
+# MOTOR MOVEMENT TIMES
 #================================================
 DEPIERCE = 40 
-PIERCE = 10
+PIERCE = 8
 
 DRIP_T = 30 * 1000
 SOAK_T = 60 * 1000 
 PIERCE_T = 10000
 
+#================================================
+# DEFAULT FLOW RATE VALUES
+#================================================
 FR = [2.25, 2.5, 5]
-#FR = [5, 5, 5]
+
+#================================================
+# DEFAULT VOLUME VALUES
+#================================================
 V = [5, 10, 10.5]
 
 #==================================================
-# IDS FOR THE BSG2 DEVICES
+# IDS FOR THE SERIAL DEVICES
 #==================================================
 PG_PSU_VENDOR_ID = 0x6666     
 PSU_PRODUCT_ID = 0x0100      
@@ -357,7 +366,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.coolingTimer = None
         self.threshold_temperature = 35 
         if self.flag_connections[3]:
-            self.ui.temp_control_button.pressed.connect(self.toggle_cooling)
+            #self.ui.temp_control_button.pressed.connect(self.toggle_cooling)
+            self.ui.temp_control_button.pressed.connect(lambda: self.warning_dialogue("Attention", "Cooling unavailable on your base station"))
         #endregion
         #==============================================================================================================================================================================================================================
         # 2 Pressure frame functionality 
@@ -523,7 +533,15 @@ class Functionality(QtWidgets.QMainWindow):
         ]
 
         self.POCII_timers = {}
+        self.POCII_time_intervals = { 
 
+            "frame_POCII_system_sterilaty": 192,
+            "frame_POCII_decontaminate_cartridge": 1046,
+            "high_voltage_frame": 342,
+            "flush_out_frame": 672,
+            "zero_volt_frame": 344,
+            "safe_disconnect_frame": 312,
+        }
         self.POCII_counters = {frame_name: [0] for frame_name in POCII_frame_names}
 
         for POCII_frame_name in POCII_frame_names:
@@ -548,6 +566,8 @@ class Functionality(QtWidgets.QMainWindow):
             "safe_disconnect_frame": self.ui.safe_disconnect_frame.progress_bar
         }
 
+
+
         self.current_session_token = None
 
         self.ui.frame_POCII_system_sterilaty.start_stop_button.pressed.connect(self.toggle_system_sterilaty_start_stop_button)
@@ -557,9 +577,22 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.zero_volt_frame.start_stop_button.pressed.connect(self.toggle_WF_0V_start_stop_button)
         self.ui.safe_disconnect_frame.start_stop_button.pressed.connect(self.toggle_safe_disconnect_start_stop_button)
         
-        self.ui.high_voltage_frame.reset_button.pressed.connect(lambda: self.reset_high_voltage_frame_progress_bar(self.ui.high_voltage_frame.progress_bar))
-        self.ui.zero_volt_frame.reset_button.pressed.connect(self.reset_zero_volt_frame_progress_bar)   
-       
+
+        #self.ui.frame_POCII_system_sterilaty.start_stop_button.pressed.connect(lambda: self.move_motor_to(3, WASTE_FLASK))
+        #self.ui.frame_POCII_decontaminate_cartridge.start_stop_button.pressed.connect(lambda: self.move_motor_to(3, DECONTAMINATION_CONTROL))
+        #self.ui.high_voltage_frame.start_stop_button.pressed.connect(lambda: self.move_motor_to(3, HV_FLASK))
+        #self.ui.flush_out_frame.start_stop_button.pressed.connect(lambda: self.move_motor_to(3, FLUSH_OUT_FLASK_1))
+        #self.ui.zero_volt_frame.start_stop_button.pressed.connect(lambda: self.move_motor_to(3, FLUSH_OUT_FLASK_2))
+        #self.ui.safe_disconnect_frame.start_stop_button.pressed.connect(lambda: self.move_motor_to(3, ZERO_V_FLASK))
+        
+
+        self.ui.frame_POCII_system_sterilaty.reset_button.pressed.connect(lambda: self.reset_frame_progress_bar(self.ui.frame_POCII_system_sterilaty.progress_bar))
+        self.ui.frame_POCII_decontaminate_cartridge.reset_button.pressed.connect(lambda: self.reset_frame_progress_bar(self.ui.frame_POCII_decontaminate_cartridge.progress_bar))
+        self.ui.high_voltage_frame.reset_button.pressed.connect(lambda: self.reset_frame_progress_bar(self.ui.high_voltage_frame.progress_bar))
+        self.ui.flush_out_frame.reset_button.pressed.connect(lambda: self.reset_frame_progress_bar(self.ui.flush_out_frame.progress_bar))
+        self.ui.zero_volt_frame.reset_button.pressed.connect(lambda: self.reset_frame_progress_bar(self.ui.zero_volt_frame.progress_bar))
+        self.ui.safe_disconnect_frame.reset_button.pressed.connect(lambda: self.reset_frame_progress_bar(self.ui.safe_disconnect_frame.progress_bar))
+
         #endregion
         #just for now so that i dont have to home the motors every single fucking time 
         self.enable_motor_buttons()
@@ -1028,9 +1061,11 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.circles["Temperature Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
             
         if self.flag_connections[2]:
-            self.ui.circles["3PAC"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
+            self.ui.circles["Flow Rate Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
+            self.ui.circles["Motors"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
         else: 
-            self.ui.circles["3PAC"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
+            self.ui.circles["Flow Rate Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
+            self.ui.circles["Motors"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
         
         if self.flag_connections[0]:
             self.ui.circles["Pulse Generator"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
@@ -1354,7 +1389,7 @@ class Functionality(QtWidgets.QMainWindow):
     def toggle_LDA_workflow_temperature_button(self): 
         if not self.workflow_live_tracking_temperature:
             self.workflow_live_tracking_temperature = True   # GUI thread flag
-            self.liveDataWorker.set_save_temp(True) # Data saving thread flag
+            self.liveDataWorker.set_save_temp(True) # Data saving thread flag commneting this out here and only activating it when the HV is applied
             self.set_button_style(self.workflow_LDA_popup.button_LDA_temperature)
         else: 
             self.workflow_live_tracking_temperature = False  # GUI thread flag 
@@ -1410,7 +1445,6 @@ class Functionality(QtWidgets.QMainWindow):
     def workflow_go_live(self):
         self.workflow_live_data_is_logging = True                            # GUI thread flag once go live has been pressed
         self.experiment_choice_is_locked_in = True                   # GUI thread flag for the side bar button being pressed
-        self.liveDataWorker.start_saving_live_non_pg_data(True)     # Live data saving thread flag
         border_style = "#centralwidget { border: 7px solid blue; }"
         self.ui.centralwidget.setStyleSheet(border_style)
         self.lock_experiment_choice()
@@ -1703,6 +1737,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.reset_button_style(self.ui.frame_POCII_system_sterilaty.start_stop_button)
         self.stop_sucrose_pump()
         self.stop_ethanol_pump()
+        self.stop_motors(0, 0)
         #log events 
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.log_event("SYSTEM STERILATY SUB EVENT STOPPED MANUALLY")
@@ -1740,6 +1775,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.reset_button_style(self.ui.frame_POCII_decontaminate_cartridge.start_stop_button)
         self.stop_sucrose_pump()
         self.stop_ethanol_pump()
+        self.stop_motors(0, 0)
         #log events 
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.log_event("DECONTAMINATION SUB EVENT STOPPED MANUALLY")
@@ -1813,6 +1849,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.generate_new_token()
         current_token = self.current_session_token
         #save and display activity
+        self.liveDataWorker.start_saving_live_non_pg_data(True)     # Live data saving thread flag
         self.log_event("HIGH VOLTAGE SUB EVENT STARTED")
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("High volt sub event started", folder_name)
@@ -1837,6 +1874,7 @@ class Functionality(QtWidgets.QMainWindow):
         #null the session
         self.current_session_token = None  
         #save and display acitivity 
+        self.liveDataWorker.start_saving_live_non_pg_data(False)     # Live data saving thread flag
         self.log_event("HIGH VOLTAGE SUB EVENT STOPPED MANUALLY")
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("High volt sub event manually stopped", folder_name)
@@ -1845,6 +1883,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.stop_sucrose_pump()
         self.stop_psu_pg()
         self.stop_blood_pump()
+        self.stop_motors(0, 0)
         #pause the progress bar
         frame_name = "high_voltage_frame"
         self.POCII_counters[frame_name][0] = 0
@@ -1852,6 +1891,7 @@ class Functionality(QtWidgets.QMainWindow):
     
     def stop_timed_WF_HV(self, token): 
         if self.POCII_is_running and token == self.current_session_token : 
+            self.liveDataWorker.start_saving_live_non_pg_data(False)     # Live data saving thread flag
             self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.log_event("HIGH VOLTAGE SUB EVENT COMPLETED")
@@ -1882,6 +1922,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.reset_button_style(self.ui.flush_out_frame.start_stop_button)
         self.stop_sucrose_pump()
         self.stop_ethanol_pump()
+        self.stop_motors(0, 0)
         #pause the progress bar
         frame_name = "flush_out_frame"
         self.POCII_counters[frame_name][0] = 0
@@ -1970,6 +2011,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.reset_button_style(self.ui.zero_volt_frame.start_stop_button)
         self.stop_sucrose_pump()
         self.stop_blood_pump()
+        self.stop_motors(0, 0)
         #pause the progress bar token
         frame_name = "zero_volt_frame"
         self.POCII_counters[frame_name][0] = 0
@@ -2007,6 +2049,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.reset_button_style(self.ui.safe_disconnect_frame.start_stop_button)
         self.stop_sucrose_pump()
         self.stop_blood_pump()
+        self.stop_motors(0, 0)
         #pause the progress bar token
         frame_name = "safe_disconnect_frame"
         self.POCII_counters[frame_name][0] = 0
@@ -2023,7 +2066,6 @@ class Functionality(QtWidgets.QMainWindow):
         #session time
         fluid_safe_disconnect_delay_1 = (V[1]/FR[1]) * 60 * 1000
         fluid_out_delay_1_int = int(round(fluid_safe_disconnect_delay_1)) 
-
         #operation
         QTimer.singleShot(1, lambda: self.WF_move_motor(3, WASTE_FLASK, current_token)) # move to flush out flask 1
         QTimer.singleShot(1 + 30000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce flush out flask 1
@@ -2080,10 +2122,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.spacing_placeholder5.hide()
     
     def update_experiment_step_progress_bar(self, counter, timer, progress_bar, frame_name):
-        FR = float(self.ui.line_edit_sucrose.text())
-        V = float(self.ui.line_edit_sucrose_2.text())
-        interval = (V/FR) * 60 
         
+        interval = self.POCII_time_intervals[frame_name]
         counter[0] += 1
         if counter[0] <= interval:
             progress_bar.setValue(int((counter[0] / interval) * 100))
@@ -2091,17 +2131,10 @@ class Functionality(QtWidgets.QMainWindow):
             timer.stop()
             counter[0] = 0
 
-    def reset_high_voltage_frame_progress_bar(self, progress_bar):
+    def reset_frame_progress_bar(self, progress_bar):
         progress_bar.setValue(0)
         self.clear_log() 
 
-    def reset_zero_volt_frame_progress_bar(self):
-        self.ui.zero_volt_frame.progress_bar.setValue(0)   
-        self.clear_log() 
-
-    def reset_frame_POCII_system_sterilaty_progress_bar(self):
-        self.ui.frame_POCII_system_sterilaty.progress_bar.setValue(0)  
-        self.clear_log() 
 #endregion
 
     # region : WORKFLOW OPERATIONAL METHODS 
@@ -2112,14 +2145,14 @@ class Functionality(QtWidgets.QMainWindow):
     def WF_start_blood_pump(self, token):
         if self.POCII_is_running and token == self.current_session_token: 
             self.start_blood_pump(0.25, 1)
-            self.log_event("Blood syringe pump started")
+            self.log_event("Blood syringe pump started with FR = 2.25 ml/min and V = 1 ml")
         else: 
             pass
 
     def WF_start_psu_pg(self, token): 
         if self.POCII_is_running and token == self.current_session_token: 
             self.start_psu_pg()
-            self.log_event("High voltage signal started")
+            self.log_event("High voltage signal started with Vp = 75 V and Vn = -15 V")
         else: 
             pass 
 
@@ -2133,14 +2166,18 @@ class Functionality(QtWidgets.QMainWindow):
     def WF_start_sucrose_pump(self, FR, V, token): 
         if self.POCII_is_running and token == self.current_session_token: 
             self.start_sucrose_pump(FR, V)
-            self.log_event("Sucrose pump started")
+            self.ui.line_edit_sucrose.setText(f"{FR}")
+            self.ui.line_edit_sucrose_2.setText(f"{V}")
+            self.log_event(f"Sucrose pump started with FR = {FR} ml/min and V = {V} ml")
         else: 
             pass
 
     def WF_start_ethanol_pump(self, FR, V, token): 
         if self.POCII_is_running and token == self.current_session_token: 
+            self.ui.line_edit_ethanol.setText(f"{FR}")
+            self.ui.line_edit_ethanol_2.setText(f"{V}")
             self.start_ethanol_pump(FR, V)
-            self.log_event("Ethanol pump started")
+            self.log_event(f"Ethanol pump started with FR = {FR} ml/min and V = {V} ml")
         else: 
             pass
 
@@ -2157,6 +2194,20 @@ class Functionality(QtWidgets.QMainWindow):
             self.log_event(message)
         else: 
             pass
+
+    def stop_motors(self, distance_in_mm, direction): 
+        msg1 = f'wMD-2-{distance_in_mm:06.2f}-{direction}\n'
+        msg2 = f'wMD-2-{distance_in_mm:06.2f}-{direction}\n'
+        msg3 = f'wMD-2-{distance_in_mm:06.2f}-{direction}\n'
+        self.esp32Worker.write_serial_message(msg1)
+        self.esp32Worker.write_serial_message(msg2)
+        self.esp32Worker.write_serial_message(msg3)         
+        self.log_event("Motors stopping manually")
+
+    def move_motor_to(self, motor_nr, position):
+        msg = f'wMP-{motor_nr}-{position:06.2f}\n' 
+        self.esp32Worker.write_serial_message(msg)           
+        
 #endregion
 
     # region : WORKFLOW LOG 
