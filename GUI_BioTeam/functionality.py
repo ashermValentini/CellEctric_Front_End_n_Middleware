@@ -15,13 +15,13 @@ from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTi
 from PyQt5.QtWidgets import QProgressBar, QMessageBox
 
 import application_style
-import POCII_timing
-
 from layout import Ui_MainWindow
 from layout import PopupWindow
 from layout import EndPopupWindow
 
 from data_saving_workers import DataSavingWorker
+
+import device_IDs
 
 from serial_connections import SerialConnections
 from serial_connections import TemperatureSensorSerial
@@ -72,13 +72,16 @@ FLUSH_OUT_FLASK_2 = 57
 ZERO_V_FLASK = 16
 
 #================================================
-# MOTOR MOVEMENT TIMES
+# PIERCING MOTOR MOVEMENT POSITIONS
 #================================================
 DEPIERCE = 40 
 PIERCE = 8
 
+#================================================
+# PIERCING MOTOR MOVEMENT TIMES
+#================================================
 DRIP_T = 30 * 1000
-SOAK_T = 60 * 1000 
+SOAK_T = 60 * 1000 * 5
 PIERCE_T = 10000
 
 #================================================
@@ -89,19 +92,8 @@ FR = [2.25, 2.5, 5]
 #================================================
 # DEFAULT VOLUME VALUES
 #================================================
-V = [5, 10, 10.5]
+V = [5, 10, 11.25] #V[2] = 9mls + 30s of sucrose before and after blood starts. therefore 9 + 2.25/60s *30s *2 = 11.25
 
-#==================================================
-# IDS FOR THE SERIAL DEVICES
-#==================================================
-PG_PSU_VENDOR_ID = 0x6666     
-PSU_PRODUCT_ID = 0x0100      
-PG_PRODUCT_ID = 0x0200       
-TEMPERATURE_SENSOR_VENDOR_ID = 0x0403  
-TEMPERATURE_SENSOR_PRODUCT_ID = 0x6015
-#PERISTALTIC_DRIVER_1_SERIAL_NUMBER = "5E4E48DBEFE6ED11B506BB5E0B2AF5AB"
-#PERISTALTIC_DRIVER_2_SERIAL_NUMBER = "B04F1588CDE6ED118145B45E0B2AF5AB"
-PERISTALTIC_DRIVER_1_SERIAL_NUMBER= "AC16B1A0FBE6ED119069D1770B2AF5AB"
 
 #========================
 # MAIN GUI THREAD
@@ -219,10 +211,10 @@ class Functionality(QtWidgets.QMainWindow):
         self.device_serials= [None, None,None, None, None]                                # device_serials = [PSU, PG, 3PAC, temperature_sensor]
         
         esp32_RTOS_serial = ESP32Serial()
-        temperature_sensor_serial = TemperatureSensorSerial(TEMPERATURE_SENSOR_VENDOR_ID, TEMPERATURE_SENSOR_PRODUCT_ID) # Create Instance of TemperatureSensorSerial Class   
-        pulse_generator_serial = SerialConnections(PG_PSU_VENDOR_ID, PG_PRODUCT_ID)
-        psu_serial = SerialConnections(PG_PSU_VENDOR_ID, PSU_PRODUCT_ID)
-        peristaltic_driver_serial = SerialDeviceBySerialNumber(serial_number = PERISTALTIC_DRIVER_1_SERIAL_NUMBER)
+        temperature_sensor_serial = TemperatureSensorSerial(device_IDs.TEMPERATURE_SENSOR_VENDOR_ID, device_IDs.TEMPERATURE_SENSOR_PRODUCT_ID) # Create Instance of TemperatureSensorSerial Class   
+        pulse_generator_serial = SerialConnections(device_IDs.PG_PSU_VENDOR_ID, device_IDs.PG_PRODUCT_ID)
+        psu_serial = SerialConnections(device_IDs.PG_PSU_VENDOR_ID, device_IDs.PSU_PRODUCT_ID)
+        peristaltic_driver_serial = SerialDeviceBySerialNumber(device_IDs.PERISTALTIC_DRIVER_SERIAL_NUMBERS)
         
         self.device_serials[0] = psu_serial.establish_connection()
         self.device_serials[1] = pulse_generator_serial.establish_connection()
@@ -577,15 +569,6 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.zero_volt_frame.start_stop_button.pressed.connect(self.toggle_WF_0V_start_stop_button)
         self.ui.safe_disconnect_frame.start_stop_button.pressed.connect(self.toggle_safe_disconnect_start_stop_button)
         
-
-        #self.ui.frame_POCII_system_sterilaty.start_stop_button.pressed.connect(lambda: self.move_motor_to(3, WASTE_FLASK))
-        #self.ui.frame_POCII_decontaminate_cartridge.start_stop_button.pressed.connect(lambda: self.move_motor_to(3, DECONTAMINATION_CONTROL))
-        #self.ui.high_voltage_frame.start_stop_button.pressed.connect(lambda: self.move_motor_to(3, HV_FLASK))
-        #self.ui.flush_out_frame.start_stop_button.pressed.connect(lambda: self.move_motor_to(3, FLUSH_OUT_FLASK_1))
-        #self.ui.zero_volt_frame.start_stop_button.pressed.connect(lambda: self.move_motor_to(3, FLUSH_OUT_FLASK_2))
-        #self.ui.safe_disconnect_frame.start_stop_button.pressed.connect(lambda: self.move_motor_to(3, ZERO_V_FLASK))
-        
-
         self.ui.frame_POCII_system_sterilaty.reset_button.pressed.connect(lambda: self.reset_frame_progress_bar(self.ui.frame_POCII_system_sterilaty.progress_bar))
         self.ui.frame_POCII_decontaminate_cartridge.reset_button.pressed.connect(lambda: self.reset_frame_progress_bar(self.ui.frame_POCII_decontaminate_cartridge.progress_bar))
         self.ui.high_voltage_frame.reset_button.pressed.connect(lambda: self.reset_frame_progress_bar(self.ui.high_voltage_frame.progress_bar))
@@ -595,7 +578,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         #endregion
         #just for now so that i dont have to home the motors every single fucking time 
-        self.enable_motor_buttons()
+        #self.enable_motor_buttons()
 
 # region : TEMPERATURE  
     def update_temp_data(self, temp_data): 
@@ -1064,7 +1047,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.circles["Flow Rate Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
             self.ui.circles["Motors"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
         else: 
-            self.ui.circles["Flow Rate Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #0796FF; } QRadioButton { background-color: #222222; }")
+            self.ui.circles["Flow Rate Sensor"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
             self.ui.circles["Motors"].setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
         
         if self.flag_connections[0]:
@@ -1799,30 +1782,27 @@ class Functionality(QtWidgets.QMainWindow):
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("Decontamination sub event started", folder_name)
         #session times
-        fluid_delay_1 = (V[1]/FR[1]) * 60 * 1000
+        fluid_delay_1 = (V[0]/FR[1]) * 60 * 1000
         fluid_delay_1_int = int(round(fluid_delay_1)) + 2000
         fluid_delay_2 = (V[0]/FR[1]) * 60 * 1000
         fluid_delay_2_int = int(round(fluid_delay_2)) + 2000
-        fluid_delay_3 = (V[0]/FR[1]) * 60 * 1000
+        fluid_delay_3 = (V[1]/FR[1]) * 60 * 1000
         fluid_delay_3_int = int(round(fluid_delay_3)) + 2000
-        fluid_delay_4 = (V[1]/FR[1]) * 60 * 1000
+        fluid_delay_4 = (V[0]/FR[1]) * 60 * 1000
         fluid_delay_4_int = int(round(fluid_delay_4)) + 2000
-        fluid_delay_5 = (V[0]/FR[1]) * 60 * 1000
-        fluid_delay_5_int = int(round(fluid_delay_5)) + 2000
         #operations
         QTimer.singleShot(1, lambda: self.WF_move_motor(3, WASTE_FLASK, current_token)) # move to waste flask 
         QTimer.singleShot(24000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce waste flask
-        QTimer.singleShot(24000 + PIERCE_T, lambda: self.WF_start_ethanol_pump(FR[1], V[1], current_token)) # fluid 1
-        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 2
-        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + fluid_delay_2_int, lambda: self.WF_announcement("Five minute ethanol soak", current_token)) # fluid 2
-        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 3
-        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int, lambda: self.WF_start_sucrose_pump(FR[1], V[1], current_token)) # fluid 4
-        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # depierce 
-        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T, lambda: self.WF_move_motor(3, DECONTAMINATION_CONTROL, current_token)) # move to decontamination control  
-        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce 
-        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[1], V[0], current_token)) # fluid 5           
-        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T + fluid_delay_5_int + DRIP_T, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # depierce 
-        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int + SOAK_T + fluid_delay_2_int + fluid_delay_3_int + fluid_delay_4_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T + fluid_delay_5_int + DRIP_T + PIERCE_T + 2000, lambda: self.stop_timed_WF_decontamination(current_token)) # depierce 
+        QTimer.singleShot(24000 + PIERCE_T, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 2
+        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_2_int, lambda: self.WF_announcement("Five minute ethanol soak", current_token)) # fluid 2
+        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 3
+        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int, lambda: self.WF_start_sucrose_pump(FR[1], V[1], current_token)) # fluid 4
+        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + DRIP_T, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # depierce 
+        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + DRIP_T + PIERCE_T, lambda: self.WF_move_motor(3, DECONTAMINATION_CONTROL, current_token)) # move to decontamination control  
+        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + DRIP_T + PIERCE_T + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce 
+        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[1], V[0], current_token)) # fluid 5           
+        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T + fluid_delay_4_int + DRIP_T, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # depierce 
+        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T + fluid_delay_4_int + DRIP_T + PIERCE_T + 2000, lambda: self.stop_timed_WF_decontamination(current_token)) # depierce 
         #progress bar 
         frame_name = "frame_POCII_decontaminate_cartridge"
         self.POCII_counters[frame_name][0] = 0
@@ -1989,7 +1969,7 @@ class Functionality(QtWidgets.QMainWindow):
         #save and display acitivity
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.log_event("ZERO VOLT SUB EVENT STARTED")
-        self.liveDataWorker.save_activity_log("Zero volt sub event manually stopped", folder_name)
+        self.liveDataWorker.save_activity_log("Zero volt sub event started", folder_name)
         #session time
         total_0V_WF_time = (V[2]/FR[0]) * 60 * 1000
         total_0V_WF_time_int = int(round(total_0V_WF_time)) + 2000
@@ -1999,7 +1979,7 @@ class Functionality(QtWidgets.QMainWindow):
         QTimer.singleShot(1 + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[0], V[2], current_token))
         QTimer.singleShot(1 + 10000 + PIERCE_T + 20000, lambda: self.WF_start_blood_pump(current_token))
         QTimer.singleShot(1 + 10000 + PIERCE_T + total_0V_WF_time_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token))
-        QTimer.singleShot(1 + 10000 + PIERCE_T + total_0V_WF_time_int+ 30000 + PIERCE_T + 2000, lambda: self.stop_timed_WF_HV(current_token))
+        QTimer.singleShot(1 + 10000 + PIERCE_T + total_0V_WF_time_int+ 30000 + PIERCE_T + 2000, lambda: self.stop_timed_WF_0V(current_token))
         #progress bar
         frame_name = "zero_volt_frame"
         self.POCII_counters[frame_name][0] = 0
@@ -2011,7 +1991,7 @@ class Functionality(QtWidgets.QMainWindow):
         #save and display activity
         self.log_event("ZERO VOLT SUB EVENT STOPPED MANUALLY")
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-        self.liveDataWorker.save_activity_log("Zero volt sub event started", folder_name)
+        self.liveDataWorker.save_activity_log("Zero volt sub event stopped manually", folder_name)
         #shut down operations 
         self.reset_button_style(self.ui.zero_volt_frame.start_stop_button)
         self.stop_sucrose_pump()
@@ -2103,7 +2083,6 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.zero_volt_frame.show()
         self.ui.safe_disconnect_frame.show()
 
-
         self.ui.spacing_placeholder1.show()
         self.ui.spacing_placeholder2.show()
         self.ui.spacing_placeholder3.show()
@@ -2119,6 +2098,19 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.zero_volt_frame.hide()
         self.ui.safe_disconnect_frame.hide()
 
+        self.reset_frame_progress_bar(self.ui.frame_POCII_system_sterilaty.progress_bar)
+        self.reset_frame_progress_bar(self.ui.frame_POCII_decontaminate_cartridge.progress_bar)
+        self.reset_frame_progress_bar(self.ui.high_voltage_frame.progress_bar)
+        self.reset_frame_progress_bar(self.ui.flush_out_frame.progress_bar)
+        self.reset_frame_progress_bar(self.ui.zero_volt_frame.progress_bar)
+        self.reset_frame_progress_bar(self.ui.safe_disconnect_frame.progress_bar)
+
+        self.ui.frame_POCII_system_sterilaty.hide()
+        self.ui.frame_POCII_decontaminate_cartridge.hide()
+        self.ui.high_voltage_frame.hide()
+        self.ui.flush_out_frame.hide()
+        self.ui.zero_volt_frame.hide()
+        self.ui.safe_disconnect_frame.hide()
 
         self.ui.spacing_placeholder1.hide()
         self.ui.spacing_placeholder2.hide()
@@ -2149,15 +2141,15 @@ class Functionality(QtWidgets.QMainWindow):
 
     def WF_start_blood_pump(self, token):
         if self.POCII_is_running and token == self.current_session_token: 
-            self.start_blood_pump(0.25, 1)
-            self.log_event("Blood syringe pump started with FR = 2.25 ml/min and V = 1 ml")
+            self.start_blood_pump(self.ui.line_edit_blood.text(), self.ui.line_edit_blood_2.text())
+            self.log_event(f"Blood syringe pump started with FR = {self.ui.line_edit_blood.text()} ml/min and V = {self.ui.line_edit_blood_2.text()} ml")
         else: 
             pass
 
     def WF_start_psu_pg(self, token): 
         if self.POCII_is_running and token == self.current_session_token: 
             self.start_psu_pg()
-            self.log_event("High voltage signal started with Vp = 75 V and Vn = -15 V")
+            self.log_event("High voltage signal started with Vp = 75 V and Vn = -75 V")
         else: 
             pass 
 

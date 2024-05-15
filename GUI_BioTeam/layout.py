@@ -9,7 +9,7 @@ from roundprogressBar import QRoundProgressBar
 from roundprogressBar import MainWindow
 import resources_rc
 import application_style
-
+import defaults
 #===============================
 # EXPERIMENT PAGE CLASSES
 #===============================
@@ -115,7 +115,6 @@ class CustomExperimentFrame(QtWidgets.QFrame):
 #===============================
 # LIVE DATA POP UPS
 #===============================
-
 
 class PopupWindow(QDialog):
     def __init__(self, title="Default Title", description="Default Description"):
@@ -767,7 +766,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_sucrose = QtWidgets.QLineEdit()
         self.line_edit_sucrose.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
-        self.line_edit_sucrose.setText("3.00")
+        self.line_edit_sucrose.setText(f"{defaults.sucrose_default}")
 
         group_box_layout.addWidget(self.line_edit_sucrose)
         group_box_layout.addWidget(unit_label)
@@ -784,7 +783,7 @@ class Ui_MainWindow(object):
 
         self.line_edit_sucrose_2 = QtWidgets.QLineEdit()
         self.line_edit_sucrose_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
-        self.line_edit_sucrose_2.setText("5")
+        self.line_edit_sucrose_2.setText("50")
 
         group_box_layout_2.addWidget(self.line_edit_sucrose_2)
         group_box_layout_2.addWidget(unit_label_2)
@@ -1471,7 +1470,7 @@ class Ui_MainWindow(object):
         rep_rate_label.setStyleSheet(application_style.main_window_voltage_style)
         self.line_edit_rep_rate = QtWidgets.QLineEdit()
         self.line_edit_rep_rate.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
-        self.line_edit_rep_rate.setText("250")
+        self.line_edit_rep_rate.setText("200")
         group_box_rep_rate_layout.addWidget(rep_rate_label)
         group_box_rep_rate_layout.addStretch(1)
         group_box_rep_rate_layout.addWidget(self.line_edit_rep_rate)
