@@ -69,30 +69,30 @@ class ESP32Serial(SerialConnections):
             return None  
 # CHILD SERIAL DEVICE CLASS for DEVICES THAT NEED TO BE FOUND BY FTDI SERIAL NUMBERS
 class SerialDeviceBySerialNumber(SerialConnections):
-    def __init__(self, serial_number):
+    def __init__(self, serial_numbers):
         super().__init__(vendor_id=None, product_id=None)
-        self.serial_number = serial_number
+        self.serial_numbers = serial_numbers
    
     def find_serial_port(self):
         """
-        Override to find a serial port based on the device's serial number.
+        Find a serial port by checking each connected device's serial number against a list of known serial numbers.
         """
         ports = serial.tools.list_ports.comports()
         for port in ports:
-            if port.serial_number == self.serial_number:
-                print(f"Found device at {port.device} with serial number {self.serial_number}")
-                return port.device
-        print(f"Device with serial number {self.serial_number} not found.")
-        return None
- 
+            if port.serial_number in self.serial_numbers:
+                print(f"Found device at {port.device} with serial number {port.serial_number}")
+                return port.device, port.serial_number  # Return both device and serial number
+        print("Device with specified serial numbers not found.")
+        return None, None
+    
     def establish_connection(self, baud_rate=9600, timeout=1):
         """
         Establishes a serial connection using the serial number to find the port.
         """
-        port = self.find_serial_port()
+        port, found_serial_number = self.find_serial_port()  # Get both port and serial number
         if port:
             self.serial_device = serial.Serial(port, baud_rate, timeout=timeout)
-            print(f"Connection established to device with serial number {self.serial_number} at port {port}")
+            print(f"Connection established to device with serial number {found_serial_number} at port {port}")
             return self.serial_device
         else:
             print("Failed to establish connection.")
