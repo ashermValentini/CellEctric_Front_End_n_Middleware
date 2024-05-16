@@ -472,6 +472,127 @@ class EndPopupWindow(QDialog):
         self.setLayout(main_vertical_layout)
         self.setStyleSheet("background-color: #222222;")
 
+#=================================
+# SYRINGE DIAMETER SETTINGS POP UP
+#=================================
+class SyringeSettingsPopupWindow(QDialog):
+    def __init__(self, title="Default Title", description="Default Description"):
+        super().__init__()
+        self.title = title
+        self.description = description
+        self.initUI()
+
+    def initUI(self):
+        
+        main_vertical_layout = QVBoxLayout()
+        #================================================================================================================================================================
+        # TITLE AND DESCRIPTION
+        #================================================================================================================================================================
+        # region :
+        self.title = QLabel(self.title)
+        self.title.setStyleSheet(application_style.input_style)
+        
+        self.instructions = QLabel(self.description)
+        self.instructions.setStyleSheet(application_style.input_style)
+        self.instructions.setFixedWidth(200)  
+        self.instructions.setWordWrap(True)
+        # endregion
+        #================================================================================================================================================================
+        # USER INFORMATION
+        #================================================================================================================================================================
+        # region: 
+        layout_h_options = QtWidgets.QHBoxLayout()
+
+        layout_v_options = QtWidgets.QVBoxLayout()
+        label= QLabel("Standard Diameters [ml]: ")
+        label.setStyleSheet(application_style.input_style)
+        self.combobox_options = QtWidgets.QComboBox()
+        self.combobox_options.setStyleSheet(application_style.combobox_button_style)
+        self.combobox_options.addItems(["9.71","20.4", "16"]) 
+        layout_v_options.addWidget(label) 
+        layout_v_options.addWidget(self.combobox_options)
+
+        layout_h_options.addLayout(layout_v_options)
+        #layout_LDA_user_information.addStretch(1)
+        #endregion
+        #================================================================================================================================================================
+        # APPLY AND GO LIVE BUTTONS
+        #================================================================================================================================================================
+        # region : 
+        layout_apply = QtWidgets.QHBoxLayout()
+
+        self.button_apply = QtWidgets.QPushButton("Apply")  # Set the text to empty since we are using an image
+        self.reset_button_style(self.button_apply, 20)
+        layout_apply.addWidget(self.button_apply, 20)
+        layout_apply.addSpacing(10)
+        #endregion
+        #================================================================================================================================================================
+        # ADDING WIDGETS TO THE PARENT LAYOUT
+        #================================================================================================================================================================
+        # region :         
+        #main_vertical_layout.addWidget(self.title)
+        #main_vertical_layout.addWidget(self.instructions)
+        #main_vertical_layout.addSpacing(20) 
+        main_vertical_layout.addSpacing(20) 
+        main_vertical_layout.addLayout(layout_h_options)
+        main_vertical_layout.addSpacing(20) 
+        #main_vertical_layout.addLayout(layout_apply)
+        # endregion
+        self.setLayout(main_vertical_layout)
+        self.setStyleSheet("background-color: #222222;")
+
+    def reset_button_style(self, button, font_size=23):
+        button.setStyleSheet(f"""
+            QPushButton {{
+                border: 2px solid white;
+                border-radius: 10px;
+                background-color: #222222;
+                color: #FFFFFF;
+                font-family: Archivo;
+                font-size: {font_size}px;
+            }}
+
+            QPushButton:hover {{
+                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+            }}
+
+            QPushButton:pressed {{
+                background-color: #0796FF;
+            }}
+        """)
+
+    def set_button_style(self, button, font_size=23, enabled=True):
+        if enabled:
+            button.setStyleSheet(f"""
+                QPushButton {{
+                    border: 2px solid white;
+                    border-radius: 10px;
+                    background-color: #222222;
+                    color: #FFFFFF;
+                    font-family: Archivo;
+                    font-size: {font_size}px;
+                }}
+
+                QPushButton:hover {{
+                    background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
+                }}
+
+                QPushButton:pressed {{
+                    background-color: #0796FF;
+                }}
+            """)
+        else:
+            button.setStyleSheet(f"""
+                QPushButton {{
+                    border: 2px solid #444444;
+                    border-radius: 10px;
+                    background-color: #333333;
+                    color: #AAAAAA;
+                    font-family: Archivo;
+                    font-size: {font_size}px;
+                }}
+            """)
+
 #===============================
 # MAIN WINDOW LAYOUT CLASS
 #===============================
@@ -495,6 +616,9 @@ class Ui_MainWindow(object):
         # Add pages to the stack
         self.stack.addWidget(self.dashboard)
         self.stack.addWidget(self.experiment)
+
+        # Initialize the SyringeSettingsPopupWindow but do not show it
+        self.syringeSettingsPopup = SyringeSettingsPopupWindow(title="Syringe Diameter Settings", description="Select the standard diameter.")
 
         # Layout for the central widget
         self.central_layout = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -804,15 +928,28 @@ class Ui_MainWindow(object):
         self.frame_blood.setLayout(layout_blood)  # set layout to blood frame
         layout_blood.setAlignment(QtCore.Qt.AlignCenter)
 
-        # region: label
+        # region: label and gear symbol
+        layout_label_n_gear = QtWidgets.QHBoxLayout()
+
         label_blood = QtWidgets.QLabel(self.frame_blood)
         label_blood.setStyleSheet(application_style.main_window_title_style)
         label_blood.setText("BLOOD")
+        layout_label_n_gear.addSpacing(120) 
         label_blood.setAlignment(QtCore.Qt.AlignCenter)
-        layout_blood.addWidget(label_blood)  # add label to layout
-        layout_blood.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
-        # endregion
+        layout_label_n_gear.addWidget(label_blood)  # add label to layout
+        layout_label_n_gear.addStretch(1) 
 
+        self.blood_gear = QtWidgets.QPushButton()  # create button
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/gear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.blood_gear.setIcon(icon)
+        self.blood_gear.setIconSize(QtCore.QSize(15, 15))  # Adjust size as needed
+        self.set_button_style(self.blood_gear, 30, True)
+        layout_label_n_gear.addWidget(self.blood_gear)  # add label to layout
+
+        layout_blood.addLayout(layout_label_n_gear) # add label to layout
+        # endregion
+        layout_blood.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
         # region: movement buttons
         progress_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
 
