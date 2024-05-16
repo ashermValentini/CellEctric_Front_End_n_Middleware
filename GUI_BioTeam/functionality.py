@@ -18,6 +18,7 @@ import application_style
 from layout import Ui_MainWindow
 from layout import PopupWindow
 from layout import EndPopupWindow
+from layout import SyringeSettingsPopupWindow
 
 from data_saving_workers import DataSavingWorker
 
@@ -180,8 +181,6 @@ class Functionality(QtWidgets.QMainWindow):
 
         # temperature controller
         self.temperature_control_is_running = False
-
-
 
         #endregion
         #==============================================================================================================================================================================================================================
@@ -385,6 +384,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.button_blood_down.setEnabled(False)
         self.ui.button_blood_up.setEnabled(False)
         self.ui.button_blood_play_pause.setEnabled(False)
+
+        self.ui.blood_gear.clicked.connect(self.show_blood_pump_settings)
         #endregion
         #================================================================================================================================================================================================================================
         # 11 Flask frame functionality
@@ -578,7 +579,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         #endregion
         #just for now so that i dont have to home the motors every single fucking time 
-        #self.enable_motor_buttons()
+        self.enable_motor_buttons()
 
 # region : TEMPERATURE  
     def update_temp_data(self, temp_data): 
@@ -797,6 +798,7 @@ class Functionality(QtWidgets.QMainWindow):
         
         blood_volume = float(V)
         blood_speed = float(FR)
+        syringe_diameter = float(self.ui.syringeSettingsPopup.combobox_options.currentText())
 
         volume_str = f"0{blood_volume:.1f}" if blood_volume < 10 else f"{blood_volume:.1f}"
         speed_str = f"{blood_speed:.3f}"
@@ -804,7 +806,7 @@ class Functionality(QtWidgets.QMainWindow):
         if speed_str[0] == "0":
             speed_str = speed_str[1:]
 
-        message = f'wMB-{volume_str}-{speed_str}\n'
+        message = f'wMB-{volume_str}-{speed_str}-{syringe_diameter}\n'
         #print(message)   
         self.esp32Worker.write_serial_message(message)
         writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
@@ -1496,6 +1498,11 @@ class Functionality(QtWidgets.QMainWindow):
             self.workflow_LDA_popup.button_LDA_go_live.setEnabled(False)
 
 # endregion
+
+# region : BLOOD PUMP SETTINGS 
+    def show_blood_pump_settings(self):
+        self.ui.syringeSettingsPopup.show()
+#endregion
 
 # region : UI ELEMENT UPDATES 
     def updateSucroseProgressBar(self, value):
