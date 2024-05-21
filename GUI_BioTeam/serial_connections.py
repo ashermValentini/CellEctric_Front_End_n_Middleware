@@ -20,8 +20,12 @@ class SerialConnections:
     def establish_connection(self, baud_rate=9600, timeout=1):
         port = self.find_serial_port()
         if port:
-            self.serial_device = serial.Serial(port, baud_rate, timeout=timeout)
-            return self.serial_device
+            try:
+                self.serial_device = serial.Serial(port, baud_rate, timeout=timeout)
+                return self.serial_device
+            except serial.SerialException as e:
+                print(f"Could not open port {port}: {e}")
+                return None
         else:
             print(f"Device with VID: {self.vendor_id} and PID: {self.product_id} not found")
             return None

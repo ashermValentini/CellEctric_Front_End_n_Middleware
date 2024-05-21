@@ -579,7 +579,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         #endregion
         #just for now so that i dont have to home the motors every single fucking time 
-        self.enable_motor_buttons()
+        #self.enable_motor_buttons()
 
 # region : TEMPERATURE  
     def update_temp_data(self, temp_data): 
@@ -809,7 +809,6 @@ class Functionality(QtWidgets.QMainWindow):
         message = f'wMB-{volume_str}-{speed_str}-{syringe_diameter}\n'
         #print(message)   
         self.esp32Worker.write_serial_message(message)
-        writeBloodSyringe(self.device_serials[2], blood_volume, blood_speed)
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log("Blood pump started", folder_name)
@@ -1800,8 +1799,8 @@ class Functionality(QtWidgets.QMainWindow):
         #operations
         QTimer.singleShot(1, lambda: self.WF_move_motor(3, WASTE_FLASK, current_token)) # move to waste flask 
         QTimer.singleShot(24000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce waste flask
-        QTimer.singleShot(24000 + PIERCE_T, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 2
-        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_2_int, lambda: self.WF_announcement("Five minute ethanol soak", current_token)) # fluid 2
+        QTimer.singleShot(24000 + PIERCE_T, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 1
+        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int, lambda: self.WF_announcement("Five minute ethanol soak", current_token)) # fluid 2
         QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 3
         QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int, lambda: self.WF_start_sucrose_pump(FR[1], V[1], current_token)) # fluid 4
         QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + DRIP_T, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # depierce 
