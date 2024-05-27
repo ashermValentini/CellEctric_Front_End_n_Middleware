@@ -74,7 +74,7 @@ class DataSavingWorker(QObject):
         :returns: True if the folder and file were successfully created, False otherwise.
         """
         # Hard-coded base path where the folder will be created
-        base_path = r"C:\Users\BSG2_UI\OneDrive\Desktop"
+        base_path = "C:/"
         
         # Construct the full path to the folder
         folder_path = os.path.join(base_path, folder_name)
@@ -103,7 +103,7 @@ class DataSavingWorker(QObject):
     def save_non_pg_data_to_csv(self, folder_name):
         """Saves the aggregated data to a CSV file."""
         # Use string formatting to insert the folder name
-        file_path = r"C:\Users\BSG2_UI\OneDrive\Desktop\{}\sys_data.csv".format(folder_name)
+        file_path = r"C:\{}\sys_data.csv".format(folder_name)
         try:
             # Check if the file exists to determine whether to write the header
             header = not os.path.exists(file_path)
@@ -138,7 +138,7 @@ class DataSavingWorker(QObject):
 
         # Define the file path (consider making this a parameter or a class attribute)
         # Use string formatting to insert the folder name
-        file_path = r"C:\Users\BSG2_UI\OneDrive\Desktop\{}\header_info.csv".format(folder_name)
+        file_path = r"C:\{}\header_info.csv".format(folder_name)
 
         # Save the DataFrame to CSV
         try:
@@ -156,7 +156,7 @@ class DataSavingWorker(QObject):
         """
         command = command.strip()
         # Hard-coded base path where the folder was created
-        base_path = r"C:\Users\BSG2_UI\OneDrive\Desktop"
+        base_path = "C:/"
         
         # Construct the full path to the log file
         log_file_path = os.path.join(base_path, folder_name, "activity_log.csv")
@@ -179,7 +179,7 @@ class DataSavingWorker(QObject):
 
         # Define the directory where the file will be saved
         #save_directory = r"C:\Users\BSG2_UI\OneDrive\Desktop\Experiments"  # Use raw string for Windows paths
-        save_directory = r"C:\Users\BSG2_UI\OneDrive\Desktop\{}".format(folder_name)
+        save_directory = r"C:\{}".format(folder_name)
 
         full_path = os.path.join(save_directory, filename)
         
