@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QDoubleValidator
 from PyQt5.QtWidgets import QProgressBar, QDialog, QVBoxLayout, QLabel, QTextEdit
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -817,7 +818,7 @@ class Ui_MainWindow(object):
         self.application_region_1_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_1_layout = QtWidgets.QVBoxLayout(self.application_region_1_widget)
 
-        # region : Sucrose
+    # region : Sucrose
         self.frame_sucrose = QtWidgets.QFrame()  # create sucrose frame
         self.frame_sucrose.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_sucrose.setObjectName("frame_d_sucroseFlowrate")
@@ -919,7 +920,7 @@ class Ui_MainWindow(object):
 
         # endregion
         
-        # region : Blood
+    # region : Blood
         self.frame_blood = QtWidgets.QFrame()  # create blood frame
         self.frame_blood.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_blood.setObjectName("frame_d_bloodFlowrate")
@@ -1015,6 +1016,7 @@ class Ui_MainWindow(object):
         unit_label.setStyleSheet(application_style.main_window_input_style)
 
         self.line_edit_blood = QtWidgets.QLineEdit()
+        self.line_edit_blood.setValidator(QDoubleValidator(0.0001, 10000.0, 10, self.line_edit_blood))
         self.line_edit_blood.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
         self.line_edit_blood.setText("0.25")
         group_box_layout.addWidget(self.line_edit_blood)
@@ -1031,6 +1033,7 @@ class Ui_MainWindow(object):
         unit_label_2.setStyleSheet(application_style.main_window_input_style)
 
         self.line_edit_blood_2 = QtWidgets.QLineEdit()
+        self.line_edit_blood_2.setValidator(QDoubleValidator(0.0001, 10000.0, 10, self.line_edit_blood_2))
         self.line_edit_blood_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
         self.line_edit_blood_2.setText("1")
 
@@ -1043,7 +1046,7 @@ class Ui_MainWindow(object):
         #endregion
         #endregion
         
-        # region : Ethanol
+    # region : Ethanol
         self.frame_ethanol = QtWidgets.QFrame()  # create ethanol frame
         self.frame_ethanol.setStyleSheet("background-color: #222222; border-radius: 15px;")
         self.frame_ethanol.setObjectName("frame_d_ethanolFlowrate")
