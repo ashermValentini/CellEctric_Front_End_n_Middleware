@@ -787,11 +787,14 @@ class Functionality(QtWidgets.QMainWindow):
 # region : BLOOD PUMP 
 
     def toggle_blood_pump(self):
-        if not self.blood_is_pumping:
-            self.start_blood_pump(self.ui.line_edit_blood.text(), self.ui.line_edit_blood_2.text())
-        else:
-            self.stop_blood_pump()
-
+        if self.check_inputs(self.ui.line_edit_blood, self.ui.line_edit_blood_2):
+            if not self.blood_is_pumping:
+                self.start_blood_pump(self.ui.line_edit_blood.text(), self.ui.line_edit_blood_2.text())
+            else:
+                self.stop_blood_pump()
+        else: 
+            self.warning_dialogue("Warning", "Either volume or flowrate is not an acceptable input")
+    
     def start_blood_pump(self, FR, V):  
         self.blood_is_pumping = True  
         self.set_button_style(self.ui.button_blood_play_pause)
@@ -800,14 +803,7 @@ class Functionality(QtWidgets.QMainWindow):
         blood_speed = float(FR)
         syringe_diameter = float(self.ui.syringeSettingsPopup.combobox_options.currentText())
 
-        volume_str = f"0{blood_volume:.1f}" if blood_volume < 10 else f"{blood_volume:.1f}"
-        speed_str = f"{blood_speed:.3f}"
-
-        if speed_str[0] == "0":
-            speed_str = speed_str[1:]
-
-        message = f'wMB-{volume_str}-{speed_str}-{syringe_diameter}\n'
-        #print(message)   
+        message = f'wMB-{blood_volume}-{blood_speed}-{syringe_diameter}\n'
         self.esp32Worker.write_serial_message(message)
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
@@ -842,6 +838,10 @@ class Functionality(QtWidgets.QMainWindow):
         self.blood_is_pumping = False
         if self.POCII_is_running: 
             self.log_event("Blood syringe pump stopped")
+
+    def check_inputs(self, input_1, input_2):
+        return input_1.hasAcceptableInput() and input_2.hasAcceptableInput()
+        #return self.line_edit_blood.hasAcceptableInput() and self.line_edit_blood_2.hasAcceptableInput()
 
 #endregion
 
