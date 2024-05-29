@@ -15,14 +15,15 @@ from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTi
 from PyQt5.QtWidgets import QProgressBar, QMessageBox
 
 import application_style
+import device_IDs
+import pocii
+
 from layout import Ui_MainWindow
 from layout import PopupWindow
 from layout import EndPopupWindow
 from layout import SyringeSettingsPopupWindow
 
 from data_saving_workers import DataSavingWorker
-
-import device_IDs
 
 from serial_connections import SerialConnections
 from serial_connections import TemperatureSensorSerial
@@ -60,41 +61,6 @@ FLASK_MOTOR = 3
 PIERCE_MOTOR = 4
 BLOOD_SYRINGE = 1 
 FLUIDICS_MOTOR = 2
-
-#================================================
-# FLASK POSITIONS 
-#================================================
-
-WASTE_FLASK = 220  
-DECONTAMINATION_CONTROL = 180
-HV_FLASK = 138
-FLUSH_OUT_FLASK_1 = 98
-FLUSH_OUT_FLASK_2 = 57
-ZERO_V_FLASK = 16
-
-#================================================
-# PIERCING MOTOR MOVEMENT POSITIONS
-#================================================
-DEPIERCE = 40 
-PIERCE = 8
-
-#================================================
-# PIERCING MOTOR MOVEMENT TIMES
-#================================================
-DRIP_T = 30 * 1000
-SOAK_T = 60 * 1000 * 5
-PIERCE_T = 10000
-
-#================================================
-# DEFAULT FLOW RATE VALUES
-#================================================
-FR = [2.25, 2.5, 5]
-
-#================================================
-# DEFAULT VOLUME VALUES
-#================================================
-V = [5, 10, 11.25] #V[2] = 9mls + 30s of sucrose before and after blood starts. therefore 9 + 2.25/60s *30s *2 = 11.25
-
 
 #========================
 # MAIN GUI THREAD
@@ -1735,7 +1701,7 @@ class Functionality(QtWidgets.QMainWindow):
         #log events 
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.log_event("SYSTEM STERILATY SUB EVENT STOPPED MANUALLY")
-        self.liveDataWorker.save_activity_log("System sterilaty sub event completed", folder_name)
+        self.liveDataWorker.save_activity_log("System sterilaty sub event stopped manually", folder_name)
         #pause progress bar 
         frame_name = "frame_POCII_system_sterilaty"
         self.POCII_counters[frame_name][0] = 0
@@ -1773,7 +1739,7 @@ class Functionality(QtWidgets.QMainWindow):
         #log events 
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.log_event("DECONTAMINATION SUB EVENT STOPPED MANUALLY")
-        self.liveDataWorker.save_activity_log("Decontamination sub event completed", folder_name)
+        self.liveDataWorker.save_activity_log("Decontamination sub event stopped manually", folder_name)
         #pause progress bar 
         frame_name = "frame_POCII_decontaminate_cartridge"
         self.POCII_counters[frame_name][0] = 0
@@ -1788,27 +1754,27 @@ class Functionality(QtWidgets.QMainWindow):
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("Decontamination sub event started", folder_name)
         #session times
-        fluid_delay_1 = (V[0]/FR[1]) * 60 * 1000
-        fluid_delay_1_int = int(round(fluid_delay_1)) + 2000
-        fluid_delay_2 = (V[0]/FR[1]) * 60 * 1000
+        fluid_delay_1 = (pocii.V[1]/pocii.FR[1]) * 60 * 1000 
+        fluid_delay_1_int = int(round(fluid_delay_1)) + 2000 
+        fluid_delay_2 = (pocii.V[0]/pocii.FR[1]) * 60 * 1000
         fluid_delay_2_int = int(round(fluid_delay_2)) + 2000
-        fluid_delay_3 = (V[1]/FR[1]) * 60 * 1000
+        fluid_delay_3 = (pocii.V[1]/pocii.FR[1]) * 60 * 1000
         fluid_delay_3_int = int(round(fluid_delay_3)) + 2000
-        fluid_delay_4 = (V[0]/FR[1]) * 60 * 1000
+        fluid_delay_4 = (pocii.V[0]/pocii.FR[1]) * 60 * 1000
         fluid_delay_4_int = int(round(fluid_delay_4)) + 2000
-        #operations
-        QTimer.singleShot(1, lambda: self.WF_move_motor(3, WASTE_FLASK, current_token)) # move to waste flask 
-        QTimer.singleShot(24000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce waste flask
-        QTimer.singleShot(24000 + PIERCE_T, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 1
-        QTimer.singleShot(24000 + PIERCE_T + fluid_delay_1_int, lambda: self.WF_announcement("Five minute ethanol soak", current_token)) # fluid 2
-        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int, lambda: self.WF_start_ethanol_pump(FR[1], V[0], current_token)) # fluid 3
-        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int, lambda: self.WF_start_sucrose_pump(FR[1], V[1], current_token)) # fluid 4
-        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + DRIP_T, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # depierce 
-        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + DRIP_T + PIERCE_T, lambda: self.WF_move_motor(3, DECONTAMINATION_CONTROL, current_token)) # move to decontamination control  
-        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + DRIP_T + PIERCE_T + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce 
-        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[1], V[0], current_token)) # fluid 5           
-        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T + fluid_delay_4_int + DRIP_T, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # depierce 
-        QTimer.singleShot(24000 + PIERCE_T + SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + DRIP_T + PIERCE_T + 10000 + PIERCE_T + fluid_delay_4_int + DRIP_T + PIERCE_T + 2000, lambda: self.stop_timed_WF_decontamination(current_token)) # depierce 
+        #operations:
+        QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.WASTE_FLASK, current_token)) # move to waste flask 
+        QTimer.singleShot(24000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token)) # pierce waste flask
+        QTimer.singleShot(24000 + pocii.PIERCE_T, lambda: self.WF_start_ethanol_pump(pocii.FR[1], pocii.V[1], current_token)) #req 96 : ethanol-2.5ml/mn-10ml (10ml = total volume in tubing and cartridge)
+        QTimer.singleShot(24000 + pocii.PIERCE_T + fluid_delay_1_int, lambda: self.WF_announcement("Five minute ethanol soak", current_token)) #req 99 : 5 minute soak in ethanol 
+        QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int, lambda: self.WF_start_ethanol_pump(pocii.FR[1], pocii.V[0], current_token)) #req 100: ethanol-2.5ml/mn-5ml 
+        QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int, lambda: self.WF_start_sucrose_pump(pocii.FR[1], pocii.V[1], current_token)) #req 101 : sucrose-2.5ml/mn-10ml (10ml = total volume in tubing cartridge) 
+        QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + pocii.DRIP_T, lambda: self.WF_move_motor(4, pocii.DEPIERCE, current_token)) # depierce 
+        QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + pocii.DRIP_T + pocii.PIERCE_T, lambda: self.WF_move_motor(3, pocii.DECONTAMINATION_CONTROL, current_token)) # move to decontamination control  
+        QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + pocii.DRIP_T + pocii.PIERCE_T + 10000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token)) # pierce 
+        QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + pocii.DRIP_T + pocii.PIERCE_T + 10000 + pocii.PIERCE_T, lambda: self.WF_start_sucrose_pump(pocii.FR[1], pocii.V[0], current_token)) #req 102 : sucrose-2.5ml/min-5ml          
+        QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + pocii.DRIP_T + pocii.PIERCE_T + 10000 + pocii.PIERCE_T + fluid_delay_4_int + pocii.DRIP_T, lambda: self.WF_move_motor(4, pocii.DEPIERCE, current_token)) # depierce 
+        QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + pocii.DRIP_T + pocii.PIERCE_T + 10000 + pocii.PIERCE_T + fluid_delay_4_int + pocii.DRIP_T + pocii.PIERCE_T + 2000, lambda: self.stop_timed_WF_decontamination(current_token)) #end
         #progress bar 
         frame_name = "frame_POCII_decontaminate_cartridge"
         self.POCII_counters[frame_name][0] = 0
@@ -1845,17 +1811,17 @@ class Functionality(QtWidgets.QMainWindow):
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("High volt sub event started", folder_name)
         #session time
-        total_HV_WF_time = (V[2]/FR[0]) * 60 * 1000
+        total_HV_WF_time = (pocii.V[2]/pocii.FR[0]) * 60 * 1000
         total_HV_WF_time_int = int(round(total_HV_WF_time)) 
         #operation
-        QTimer.singleShot(1, lambda: self.WF_move_motor(3, HV_FLASK, current_token))
-        QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token))
-        QTimer.singleShot(1 + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[0], V[2], current_token))
-        QTimer.singleShot(1 + 10000 + PIERCE_T + 5000, lambda: self.WF_start_psu_pg(current_token))
-        QTimer.singleShot(1 + 10000 + PIERCE_T + 20000, lambda: self.WF_start_blood_pump(current_token))
-        QTimer.singleShot(1 + 10000 + PIERCE_T + total_HV_WF_time_int-5000, lambda: self.WF_stop_psu_pg(current_token))
-        QTimer.singleShot(1 + 10000 + PIERCE_T + total_HV_WF_time_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token))
-        QTimer.singleShot(1 + 10000 + PIERCE_T + total_HV_WF_time_int+ 30000 + PIERCE_T + 2000, lambda: self.stop_timed_WF_HV(current_token))
+        QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.HV_FLASK, current_token))
+        QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T, lambda: self.WF_start_sucrose_pump(pocii.FR[0], pocii.V[2], current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + 5000, lambda: self.WF_start_psu_pg(current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + 20000, lambda: self.WF_start_blood_pump(current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + total_HV_WF_time_int-5000, lambda: self.WF_stop_psu_pg(current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + total_HV_WF_time_int + 30000, lambda: self.WF_move_motor(4, pocii.DEPIERCE, current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + total_HV_WF_time_int+ 30000 + pocii.PIERCE_T + 2000, lambda: self.stop_timed_WF_HV(current_token))
         #progress bar
         frame_name = "high_voltage_frame"
         self.POCII_counters[frame_name][0] = 0
@@ -1928,19 +1894,19 @@ class Functionality(QtWidgets.QMainWindow):
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("Flush out sub event started", folder_name)
         #session time
-        fluid_out_delay_1 = (V[2]/FR[0]) * 60 * 1000
+        fluid_out_delay_1 = (pocii.V[0]/pocii.FR[1]) * 60 * 1000
         fluid_out_delay_1_int = int(round(fluid_out_delay_1)) 
         fluid_out_delay_2_int = fluid_out_delay_1_int
         #operation
-        QTimer.singleShot(1, lambda: self.WF_move_motor(3, FLUSH_OUT_FLASK_1, current_token)) # move to flush out flask 1
-        QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce flush out flask 1
-        QTimer.singleShot(1 + 10000 + PIERCE_T , lambda: self.WF_start_sucrose_pump(FR[0], V[2], current_token)) # fluid 1
-        QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # Depierce flush out flask 1
-        QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000 + PIERCE_T, lambda: self.WF_move_motor(3, FLUSH_OUT_FLASK_2, current_token)) # move to flush out flask 2
-        QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000 + PIERCE_T + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce flush out flask 2
-        QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000 + PIERCE_T + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[0], V[2], current_token)) # fluid 2 
-        QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000 + PIERCE_T + 10000 + PIERCE_T + fluid_out_delay_2_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # fluid 2 
-        QTimer.singleShot(1 + 10000 + PIERCE_T + fluid_out_delay_1_int + 30000 + PIERCE_T + 10000 + PIERCE_T + fluid_out_delay_2_int + 30000 + 2000, lambda: self.stop_timed_WF_flush_out(current_token)) # stop sub event
+        QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.FLUSH_OUT_FLASK_1, current_token)) # move to flush out flask 1
+        QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token)) # pierce flush out flask 1
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T , lambda: self.WF_start_sucrose_pump(pocii.FR[1], pocii.V[0], current_token)) # req 111 : sucrose - 2.5 ml/min - 5mls
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + fluid_out_delay_1_int + pocii.DRIP_T, lambda: self.WF_move_motor(4, pocii.DEPIERCE, current_token)) # Depierce flush out flask 1
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + fluid_out_delay_1_int + pocii.DRIP_T + pocii.PIERCE_T, lambda: self.WF_move_motor(3, pocii.FLUSH_OUT_FLASK_2, current_token)) # move to flush out flask 2
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + fluid_out_delay_1_int + pocii.DRIP_T + pocii.PIERCE_T + 10000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token)) # pierce flush out flask 2
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + fluid_out_delay_1_int + pocii.DRIP_T + pocii.PIERCE_T + 10000 + pocii.PIERCE_T, lambda: self.WF_start_sucrose_pump(pocii.FR[1], pocii.V[0], current_token)) # repeat req 111 
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + fluid_out_delay_1_int + pocii.DRIP_T + pocii.PIERCE_T + 10000 + pocii.PIERCE_T + fluid_out_delay_2_int + pocii.DRIP_T, lambda: self.WF_move_motor(4, pocii.DEPIERCE, current_token)) # depierce 
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + fluid_out_delay_1_int + pocii.DRIP_T + pocii.PIERCE_T + 10000 + pocii.PIERCE_T + fluid_out_delay_2_int + pocii.DRIP_T + 2000, lambda: self.stop_timed_WF_flush_out(current_token)) # complete
         #progress bar
         frame_name = "flush_out_frame"
         self.POCII_counters[frame_name][0] = 0
@@ -1977,15 +1943,15 @@ class Functionality(QtWidgets.QMainWindow):
         self.log_event("ZERO VOLT SUB EVENT STARTED")
         self.liveDataWorker.save_activity_log("Zero volt sub event started", folder_name)
         #session time
-        total_0V_WF_time = (V[2]/FR[0]) * 60 * 1000
+        total_0V_WF_time = (pocii.V[2]/pocii.FR[0]) * 60 * 1000
         total_0V_WF_time_int = int(round(total_0V_WF_time)) + 2000
         #operations 
-        QTimer.singleShot(1, lambda: self.WF_move_motor(3, ZERO_V_FLASK, current_token))
-        QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, PIERCE, current_token))
-        QTimer.singleShot(1 + 10000 + PIERCE_T, lambda: self.WF_start_sucrose_pump(FR[0], V[2], current_token))
-        QTimer.singleShot(1 + 10000 + PIERCE_T + 20000, lambda: self.WF_start_blood_pump(current_token))
-        QTimer.singleShot(1 + 10000 + PIERCE_T + total_0V_WF_time_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token))
-        QTimer.singleShot(1 + 10000 + PIERCE_T + total_0V_WF_time_int+ 30000 + PIERCE_T + 2000, lambda: self.stop_timed_WF_0V(current_token))
+        QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.ZERO_V_FLASK, current_token))
+        QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T, lambda: self.WF_start_sucrose_pump(pocii.FR[0], pocii.V[2], current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + 20000, lambda: self.WF_start_blood_pump(current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + total_0V_WF_time_int + 30000, lambda: self.WF_move_motor(4, pocii.DEPIERCE, current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + total_0V_WF_time_int+ 30000 + pocii.PIERCE_T + 2000, lambda: self.stop_timed_WF_0V(current_token))
         #progress bar
         frame_name = "zero_volt_frame"
         self.POCII_counters[frame_name][0] = 0
@@ -2055,14 +2021,14 @@ class Functionality(QtWidgets.QMainWindow):
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
         self.liveDataWorker.save_activity_log("Safe disconnect sub event started", folder_name)
         #session time
-        fluid_safe_disconnect_delay_1 = (V[1]/FR[1]) * 60 * 1000
+        fluid_safe_disconnect_delay_1 = (pocii.V[1]/pocii.FR[1]) * 60 * 1000
         fluid_out_delay_1_int = int(round(fluid_safe_disconnect_delay_1)) 
         #operation
-        QTimer.singleShot(1, lambda: self.WF_move_motor(3, WASTE_FLASK, current_token)) # move to flush out flask 1
-        QTimer.singleShot(1 + 30000, lambda: self.WF_move_motor(4, PIERCE, current_token)) # pierce flush out flask 1
-        QTimer.singleShot(1 + 30000 + PIERCE_T , lambda: self.WF_start_ethanol_pump(FR[1], V[1], current_token)) # fluid 1
-        QTimer.singleShot(1 + 30000 + PIERCE_T + fluid_out_delay_1_int + 30000, lambda: self.WF_move_motor(4, DEPIERCE, current_token)) # Depierce flush out flask 1
-        QTimer.singleShot(1 + 30000 + PIERCE_T + fluid_out_delay_1_int + 30000 + 2000, lambda: self.stop_timed_WF_safe_disconnect(current_token)) # stop sub event
+        QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.WASTE_FLASK, current_token)) # move to flush out flask 1
+        QTimer.singleShot(1 + 30000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token)) # pierce flush out flask 1
+        QTimer.singleShot(1 + 30000 + pocii.PIERCE_T , lambda: self.WF_start_ethanol_pump(pocii.FR[1], pocii.V[1], current_token)) # fluid 1
+        QTimer.singleShot(1 + 30000 + pocii.PIERCE_T + fluid_out_delay_1_int + 30000, lambda: self.WF_move_motor(4, pocii.DEPIERCE, current_token)) # Depierce flush out flask 1
+        QTimer.singleShot(1 + 30000 + pocii.PIERCE_T + fluid_out_delay_1_int + 30000 + 2000, lambda: self.stop_timed_WF_safe_disconnect(current_token)) # stop sub event
         #progress bar
         frame_name = "safe_disconnect_frame"
         self.POCII_counters[frame_name][0] = 0
