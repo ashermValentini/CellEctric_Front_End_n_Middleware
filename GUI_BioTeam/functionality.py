@@ -555,23 +555,28 @@ class Functionality(QtWidgets.QMainWindow):
         if not self.temp_is_plotting and not self.voltage_is_plotting and not self.current_is_plotting:  
             self.temp_is_plotting = True
             self.set_button_style(self.ui.temp_button)
-
+        elif not self.temp_is_plotting and (self.voltage_is_plotting or self.current_is_plotting):
+            self.voltage_is_plotting = False 
+            self.current_is_plotting = False
+            self.reset_button_style(self.ui.current_button)
+            self.reset_button_style(self.ui.voltage_button)
+            self.temp_is_plotting = True 
+            self.set_button_style(self.ui.temp_button)
         else:  
             self.temp_is_plotting = False
             self.reset_button_style(self.ui.temp_button)
 
     @pyqtSlot(float)
     def update_temp_plot(self, temperature):
+        shift = 1
+        self.plotdata = np.roll(self.plotdata, -shift)
+        self.plotdata[-shift:] = temperature
+        self.ydata = self.plotdata[:]
 
+        self.xdata = np.roll(self.xdata, -shift)
+        self.xdata[-1] = self.xdata[-2] + 1  # This will keep increasing the count on the x-axis
+        
         if self.temp_is_plotting:
-            shift = 1
-            self.plotdata = np.roll(self.plotdata, -shift)
-            self.plotdata[-shift:] = temperature
-            self.ydata = self.plotdata[:]
-
-            self.xdata = np.roll(self.xdata, -shift)
-            self.xdata[-1] = self.xdata[-2] + 1  # This will keep increasing the count on the x-axis
-
             self.ui.axes_voltage.clear()
             self.ui.axes_voltage.plot(self.xdata, self.ydata, color='#FFFFFF')
             self.ui.axes_voltage.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
@@ -823,13 +828,26 @@ class Functionality(QtWidgets.QMainWindow):
         if not self.voltage_is_plotting and not self.temp_is_plotting and not self.current_is_plotting:   
             self.voltage_is_plotting = True  
             self.set_button_style(self.ui.voltage_button)       
-        
+        elif not self.voltage_is_plotting and (self.temp_is_plotting or self.current_is_plotting):
+            self.temp_is_plotting = False 
+            self.current_is_plotting = False
+            self.reset_button_style(self.ui.current_button)
+            self.reset_button_style(self.ui.temp_button)
+            self.voltage_is_plotting = True 
+            self.set_button_style(self.ui.voltage_button)
         else: 
             self.voltage_is_plotting = False  
             self.reset_button_style(self.ui.voltage_button)   
 
     def start_current_plotting(self): 
         if not self.current_is_plotting and not self.temp_is_plotting and not self.voltage_is_plotting:  
+            self.current_is_plotting = True 
+            self.set_button_style(self.ui.current_button)
+        elif not self.current_is_plotting and (self.temp_is_plotting or self.voltage_is_plotting):
+            self.temp_is_plotting = False 
+            self.voltage_is_plotting = False
+            self.reset_button_style(self.ui.voltage_button)
+            self.reset_button_style(self.ui.temp_button)
             self.current_is_plotting = True 
             self.set_button_style(self.ui.current_button)
         else: 
