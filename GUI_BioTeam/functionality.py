@@ -321,10 +321,10 @@ class Functionality(QtWidgets.QMainWindow):
         #==============================================================================================================================================================================================================================
         #region:
         self.coolingTimer = None
-        self.threshold_temperature = 35 
+        self.threshold_temperature = 34 
         if self.flag_connections[3]:
-            #self.ui.temp_control_button.pressed.connect(self.toggle_cooling)
-            self.ui.temp_control_button.pressed.connect(lambda: self.warning_dialogue("Attention", "Cooling unavailable on your base station"))
+            self.ui.temp_control_button.pressed.connect(self.toggle_cooling)
+            #self.ui.temp_control_button.pressed.connect(lambda: self.warning_dialogue("Attention", "Cooling unavailable on your base station"))
         #endregion
         #==============================================================================================================================================================================================================================
         # 2 Pressure frame functionality 
@@ -915,12 +915,17 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.canvas_voltage.draw()
 
     def toggle_PSU_PG_signal_button(self): 
+
         if not self.signal_is_enabled: 
+            if not self.live_data_is_logging:
+                if not self.warning_dialogue("Warning", "You are not saving data. Click okay to proceed. Click Cancel to abort."):
+                    return  # Exit the method if the user clicks Cancel
             self.start_psu_pg()
         else: 
             self.stop_psu_pg()
 
-    def start_psu_pg(self):   
+    def start_psu_pg(self):
+
         pos_setpoint_text = self.ui.line_edit_max_signal.text().strip()
         neg_setpoint_text = self.ui.line_edit_min_signal.text().strip()
 
@@ -1637,14 +1642,13 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.spacing_placeholder12.hide()
 
     def warning_dialogue(self, title="Default Title", description="Default Description"):
-        self.title = title
-        self.description = description
         msgBox = QMessageBox()
         msgBox.setIcon(QMessageBox.Warning)
-        msgBox.setText(self.description)
-        msgBox.setWindowTitle(self.title)
-        msgBox.setStandardButtons(QMessageBox.Ok)
-        msgBox.exec_()
+        msgBox.setText(description)
+        msgBox.setWindowTitle(title)
+        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        result = msgBox.exec_()  # This will show the dialog and wait for the user to press a button.
+        return result == QMessageBox.Ok
 #endregion
 
 # region : CHANGING PAGES 
@@ -2208,22 +2212,6 @@ class Functionality(QtWidgets.QMainWindow):
         html_message = f"<span style='{style}'>{message} #{current_time}</span><br>"
         # Append formatted message to the log
         self.ui.WF_activity_log.append(html_message)
-
-# ░▒▓█▓▒░░▒▓█▓▒░░▒▓██████▓▒░░▒▓███████▓▒░░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░      ░▒▓███████▓▒░░▒▓█▓▒░▒▓███████▓▒░▒▓████████▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░ ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░ 
-# ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ 
-# ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ 
-# ░▒▓████████▓▒░▒▓████████▓▒░▒▓███████▓▒░░▒▓███████▓▒░ ░▒▓██████▓▒░       ░▒▓███████▓▒░░▒▓█▓▒░▒▓███████▓▒░  ░▒▓█▓▒░   ░▒▓████████▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░░▒▓██████▓▒░  
-# ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░         ░▒▓█▓▒░          ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░     
-# ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░         ░▒▓█▓▒░          ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░     
-# ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░         ░▒▓█▓▒░          ░▒▓███████▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ░▒▓█▓▒░     
-                                                                                                                                                                          
-                                                                                                                                                                    
-# Happy Birthday Ash!
-# Thank you for fixing all bugs in the base station
-# and in our lives!
-#
-# fdfasdjbjb hjashwqdk dnajw
-
 
     def clear_log(self):
         self.ui.WF_activity_log.clear()
