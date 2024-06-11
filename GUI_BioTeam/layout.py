@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QDoubleValidator
+from PyQt5.QtGui import QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import QProgressBar, QDialog, QVBoxLayout, QLabel, QTextEdit
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -1002,7 +1002,6 @@ class Ui_MainWindow(object):
         progress_button_layout.addWidget(self.button_blood_play_pause)  # add button to the layout
         layout_blood.addLayout(progress_button_layout)  # add layout for progress bar and button to main layout
         # endregion
-       
         # region : Inputs
         group_boxes_layout = QtWidgets.QHBoxLayout()  # create layout for both group boxes
         # region: Groupbox 1
@@ -1579,7 +1578,7 @@ class Ui_MainWindow(object):
         
         frame_d_signal_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
         
-        # region: rep rate 
+        # region: pulse length 
         group_box_pulse_length = QtWidgets.QGroupBox()
         group_box_pulse_length .setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
         group_box_pulse_length .setAlignment(QtCore.Qt.AlignCenter)
@@ -1589,6 +1588,7 @@ class Ui_MainWindow(object):
         pulse_length_label = QtWidgets.QLabel("Pulse Length:")
         pulse_length_label.setStyleSheet(application_style.main_window_voltage_style)
         self.line_edit_pulse_length = QtWidgets.QLineEdit()
+        self.line_edit_pulse_length.setValidator(QIntValidator(defaults.pulse_length_min, defaults.pulse_length_max, self.line_edit_pulse_length))
         self.line_edit_pulse_length.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
         self.line_edit_pulse_length.setText("75")
         group_box_pulse_length_layout.addWidget(pulse_length_label)
@@ -1609,6 +1609,7 @@ class Ui_MainWindow(object):
         rep_rate_label = QtWidgets.QLabel("Repitition Rate:")
         rep_rate_label.setStyleSheet(application_style.main_window_voltage_style)
         self.line_edit_rep_rate = QtWidgets.QLineEdit()
+        self.line_edit_rep_rate.setValidator(QIntValidator(defaults.rep_rate_min, defaults.rep_rate_max, self.line_edit_rep_rate))
         self.line_edit_rep_rate.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
         self.line_edit_rep_rate.setText("200")
         group_box_rep_rate_layout.addWidget(rep_rate_label)
@@ -1632,8 +1633,10 @@ class Ui_MainWindow(object):
         MAX_label = QtWidgets.QLabel("Vp+ :")
         MAX_label.setStyleSheet(application_style.main_window_voltage_style)
         self.line_edit_max_signal = QtWidgets.QLineEdit()
+        self.line_edit_max_signal.setValidator(QIntValidator(defaults.voltage_min, defaults.voltage_max, self.line_edit_max_signal))
+
         self.line_edit_max_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
-        self.line_edit_max_signal.setText(" 75")
+        self.line_edit_max_signal.setText("80")
         group_box_max_voltage_layout.addWidget(MAX_label)
         group_box_max_voltage_layout.addWidget(self.line_edit_max_signal)
         group_box_max_voltage_layout.addWidget(unit_label)
@@ -1652,7 +1655,7 @@ class Ui_MainWindow(object):
         MIN_label.setStyleSheet(application_style.main_window_voltage_style)
         self.line_edit_min_signal = QtWidgets.QLineEdit()
         self.line_edit_min_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
-        self.line_edit_min_signal.setText("-75")
+        self.line_edit_min_signal.setText("-80")
         group_box_min_voltage_layout.addWidget(MIN_label)
         group_box_min_voltage_layout.addWidget(self.line_edit_min_signal)
         group_box_min_voltage_layout.addWidget(min_unit_label)

@@ -151,6 +151,13 @@ class PulseGeneratorSerialWorker(QObject):
 
         finally:
             self._lock.unlock()  # Ensure the lock is always released
+    
+    def set_pulse_shape(self, rep_rate, pulse_length, on_time): 
+        self._lock.lock()
+        try:
+            send_PG_pulsetimes(self.pulse_generator_serial.serial_device, 0, rep_rate, pulse_length, on_time, verbose=1)
+        finally:
+            self._lock.unlock()  # Ensure the lock is always released
 
     @pyqtSlot()
     def stop_pg(self): 

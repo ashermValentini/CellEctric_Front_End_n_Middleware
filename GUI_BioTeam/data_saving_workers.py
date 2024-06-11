@@ -172,7 +172,7 @@ class DataSavingWorker(QObject):
 
         print(f"Logged command: {command}")
 
-    def save_pg_data_to_csv(self, pg_data, VP, VN, T, pulse_number, folder_name):
+    def save_pg_data_to_csv(self, pg_data, VP, VN, T, pulse_number, PL, RP, folder_name):
         # Construct the file name based on the current date and time
         current_time = datetime.now()
         filename = current_time.strftime("%Y%m%d_%H%M%S") + "_experiment_data.csv"
@@ -190,9 +190,9 @@ class DataSavingWorker(QObject):
                 f"#Voltage Pos: {VP}",
                 f"#Voltage Neg: {VN}",
                 f"#Temperature: {T}",
-                "#Pulse Length: 75,00",
+                f"#Pulse Length: {PL}",
                 "#Transistor on time: 75",
-                "#Rate: 200"
+                f"#Rate: {RP}"
             ]
         
 

@@ -290,7 +290,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.pgThread.start()  
         #endregion
         #================================================================================================================================================================================================================================
-        # 0 Side bar functionality 
+        # Side bar functionality 
         #================================================================================================================================================================================================================================
         #region:        
         if self.flag_connections[2]:
@@ -303,21 +303,21 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.button_dashboard_data_recording.clicked.connect(self.toggle_LDA_popup)
         #endregion
         #==============================================================================================================================================================================================================================
-        # 1 Sucrose frame functionality 
+        # Sucrose frame functionality 
         #==============================================================================================================================================================================================================================
         #region:
         if self.flag_connections[2] or self.flag_connections[4]: 
             self.ui.button_sucrose.pressed.connect(self.toggle_sucrose_button)
         #endregion
         #==============================================================================================================================================================================================================================
-        # 2 Ethanol frame functionality 
+        # Ethanol frame functionality 
         #==============================================================================================================================================================================================================================
         #region:
         if self.flag_connections[2] or self.flag_connections[4]: 
             self.ui.button_ethanol.pressed.connect(self.toggle_ethanol_pump)  
         #endregion
         #==============================================================================================================================================================================================================================
-        # 1 Temperature frame 
+        # Temperature frame 
         #==============================================================================================================================================================================================================================
         #region:
         self.coolingTimer = None
@@ -327,7 +327,7 @@ class Functionality(QtWidgets.QMainWindow):
             #self.ui.temp_control_button.pressed.connect(lambda: self.warning_dialogue("Attention", "Cooling unavailable on your base station"))
         #endregion
         #==============================================================================================================================================================================================================================
-        # 2 Pressure frame functionality 
+        # Pressure frame functionality 
         #==============================================================================================================================================================================================================================
         #region:
         #if self.flag_connections[2]: 
@@ -335,7 +335,7 @@ class Functionality(QtWidgets.QMainWindow):
             #self.ui.pressure_reset_button.pressed.connect(self.start_stop_increasing_system_pressure)
         #endregion
         #===============================================================================================================================================================================================
-        # 3 Blood frame functionality
+        # Blood frame functionality
         #================================================================================================================================================================================================
         #region:
         self.blood_pump_timer = None 
@@ -354,7 +354,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.blood_gear.clicked.connect(self.show_blood_pump_settings)
         #endregion
         #================================================================================================================================================================================================================================
-        # 11 Flask frame functionality
+        # Flask frame functionality
         #================================================================================================================================================================================================================================
         #region:   
         if self.flag_connections[2]: 
@@ -377,7 +377,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.button_flask_left.setEnabled(False)
         #endregion
         #================================================================================================================================================================================================================================================================
-        # 6 Fludic frame functionality
+        # Fludic frame functionality
         #================================================================================================================================================================================================================================================================
         #region:
         if self.flag_connections[2]:
@@ -391,7 +391,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.button_cartridge_down.setEnabled(False)
         #endregion
         #======================================================================================================================================================================================================================================================================================================
-        # 4 Connections frame functionality
+        # Connections frame functionality
         #======================================================================================================================================================================================================================================================================
         #region:
         self.coms_timer = QtCore.QTimer()
@@ -400,7 +400,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.coms_timer.start()
         #endregion
         #======================================================================================================================================================================================================================================================================
-        # 9 Signal frame functionality
+        # Signal frame functionality
         #======================================================================================================================================================================================================================================================================================================
         #region:
         if self.flag_connections[0] and self.flag_connections[1]:
@@ -411,7 +411,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         #endregion
         #==============================================================================================================================================================================================================================
-        # 5 Plotting Frame functionality (not the same as the plotting canvas)
+        # Plotting Frame functionality (not the same as the plotting canvas)
         #==============================================================================================================================================================================================================================
         #region:     
         if self.flag_connections[0] and self.flag_connections[1]:
@@ -810,10 +810,6 @@ class Functionality(QtWidgets.QMainWindow):
         if self.POCII_is_running: 
             self.log_event("Blood syringe pump stopped")
 
-    def check_inputs(self, input_1, input_2):
-        return input_1.hasAcceptableInput() and input_2.hasAcceptableInput()
-        #return self.line_edit_blood.hasAcceptableInput() and self.line_edit_blood_2.hasAcceptableInput()
-
 #endregion
 
 # region : PULSE GENENRATOR AND POWER SUPPLY 
@@ -874,14 +870,14 @@ class Functionality(QtWidgets.QMainWindow):
         # before we chop up the data to display on the UI we will save the data to csv as the Octave script potentially requires the full data set to be analyzed
         current_time = time.time()
         # saving data for live data sessions 
-        if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
+        if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled and self.live_tracking_current:
             folder_name = self.popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.line_edit_max_signal.text(), self.ui.line_edit_min_signal.text(), self.current_temp, self.pulse_number, folder_name)
+            self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.line_edit_max_signal.text(), self.ui.line_edit_min_signal.text(), self.current_temp, self.pulse_number, self.ui.line_edit_pulse_length.text(), self.ui.line_edit_rep_rate.text(), folder_name)
             self.last_save_time = current_time
         
-        if self.workflow_live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled:
+        if self.workflow_live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled and self.live_tracking_current:
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.line_edit_max_signal.text(), self.ui.line_edit_min_signal.text(), self.current_temp, self.pulse_number, folder_name)
+            self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.line_edit_max_signal.text(), self.ui.line_edit_min_signal.text(), self.current_temp, self.pulse_number, self.ui.line_edit_pulse_length.text(), self.ui.line_edit_rep_rate.text(), folder_name)
             self.last_save_time = current_time
 
         length_of_data = self.voltage_y.shape[0] 
@@ -925,65 +921,27 @@ class Functionality(QtWidgets.QMainWindow):
             self.stop_psu_pg()
 
     def start_psu_pg(self):
+        self.set_button_style(self.ui.psu_button)
+        self.signal_is_enabled = True
 
         pos_setpoint_text = self.ui.line_edit_max_signal.text().strip()
         neg_setpoint_text = self.ui.line_edit_min_signal.text().strip()
-
-        # Validate positive setpoint
-        if not pos_setpoint_text:
-            QMessageBox.warning(self, "Input Error", "The positive setpoint cannot be blank. Please enter a value.")
-            self.ui.line_edit_max_signal.clear()
-            return
-
-        try:
-            pos_setpoint = int(pos_setpoint_text)
-            if not (20 <= pos_setpoint <= 90):
-                raise ValueError("Positive setpoint out of range.")
-        except ValueError:
-            QMessageBox.warning(self, "Input Error", "Invalid positive setpoint. Please enter an integer between 20 and 90.")
-            self.ui.line_edit_max_signal.clear()
-            return
-
-        # Validate negative setpoint
-        if not neg_setpoint_text:
-            QMessageBox.warning(self, "Input Error", "The negative setpoint cannot be blank. Please enter a value.")
-            self.ui.line_edit_min_signal.clear()
-            return
-
-        try:
-            neg_setpoint = int(neg_setpoint_text)
-            if not (-90 <= neg_setpoint <= -20):
-                raise ValueError("Negative setpoint out of range.")
-        except ValueError:
-            QMessageBox.warning(self, "Input Error", "Invalid negative setpoint. Please enter an integer between -90 and -20.")
-            self.ui.line_edit_min_signal.clear()
-            return
-
-        print("Setpoints are valid.")
-
-        self.set_button_style(self.ui.psu_button)
-        
-        self.signal_is_enabled = True
-
+        pos_setpoint = int(pos_setpoint_text)
+        neg_setpoint = int(neg_setpoint_text)
         neg_setpoint = abs(neg_setpoint)
+
+        rep_rate_text = self.ui.line_edit_rep_rate.text().strip()
+        pulse_length_text = self.ui.line_edit_pulse_length.text().strip()
+        rep_rate_int = int(rep_rate_text)
+        pulse_length_int = int(pulse_length_text)
+        on_time = 248
         
-        print(pos_setpoint)
-        print(neg_setpoint)
         send_PSU_enable(self.device_serials[0], 1)
-        message = "Enabled PSU"
-        if self.live_data_is_logging: 
-            folder_name = self.popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message, folder_name)
-        if self.workflow_live_data_is_logging: 
-            folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_activity_log(message, folder_name)
-  
         time.sleep(.1)
-
-        send_PSU_setpoints(self.device_serials[0], 20, 20, 0)
+        send_PSU_setpoints(self.device_serials[0], 20, 20, 0) #NOTE might not need this step anymore
         time.sleep(.1)
-
         send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
+
         message = "Sent PSU setpoints"
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
@@ -992,6 +950,7 @@ class Functionality(QtWidgets.QMainWindow):
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
 
+        self.pgWorker.set_pulse_shape(rep_rate_int, pulse_length_int, on_time)
         self.pgWorker.start_pg()
         message = "Started PG"
         if self.live_data_is_logging: 
@@ -1493,6 +1452,14 @@ class Functionality(QtWidgets.QMainWindow):
 #endregion
 
 # region : UI ELEMENT UPDATES 
+    def check_inputs(self, *args):
+        # Initialize with True for each of the five possible inputs
+        # Check only the arguments that are provided
+        results = [arg.hasAcceptableInput() if arg is not None else True for arg in args]
+        # Ensure there are at least five results by extending with True
+        results.extend([True] * (5 - len(results)))
+        return all(results)
+    
     def updateSucroseProgressBar(self, value):
         if self.sucrose_is_pumping:
             if value:
