@@ -321,7 +321,7 @@ class Functionality(QtWidgets.QMainWindow):
         #==============================================================================================================================================================================================================================
         #region:
         self.coolingTimer = None
-        self.threshold_temperature = 34 
+        self.threshold_temperature = 15 
         if self.flag_connections[3]:
             self.ui.temp_control_button.pressed.connect(self.toggle_cooling)
             #self.ui.temp_control_button.pressed.connect(lambda: self.warning_dialogue("Attention", "Cooling unavailable on your base station"))
@@ -669,7 +669,7 @@ class Functionality(QtWidgets.QMainWindow):
             print("Invalid input in line_edit_sucrose")
             return 
         message3PAC = f'wFS-410-{FR:.2f}-{V:.1f}\n'
-        messagePeristalticDriver = f'sB-{FR}-{V}-0.171\n'
+        messagePeristalticDriver = f'sB-{FR}-{V}-0.180\n'
         self.esp32Worker.write_serial_message(message3PAC)
         self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
 
@@ -875,7 +875,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.line_edit_max_signal.text(), self.ui.line_edit_min_signal.text(), self.current_temp, self.pulse_number, self.ui.line_edit_pulse_length.text(), self.ui.line_edit_rep_rate.text(), folder_name)
             self.last_save_time = current_time
         
-        if self.workflow_live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled and self.live_tracking_current:
+        if self.workflow_live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled and self.workflow_live_tracking_current:
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.line_edit_max_signal.text(), self.ui.line_edit_min_signal.text(), self.current_temp, self.pulse_number, self.ui.line_edit_pulse_length.text(), self.ui.line_edit_rep_rate.text(), folder_name)
             self.last_save_time = current_time
