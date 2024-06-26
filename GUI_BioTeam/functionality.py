@@ -783,7 +783,7 @@ class Functionality(QtWidgets.QMainWindow):
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log("Blood pump started", folder_name)
 
-        blood_pump_time = int((blood_volume / blood_speed) * 60 * 1000)
+        blood_pump_time = int((blood_volume / blood_speed) * 60 * 1000) 
 
         self.blood_pump_timer = QTimer()
         self.blood_pump_timer.timeout.connect(self.stop_blood_pump)
