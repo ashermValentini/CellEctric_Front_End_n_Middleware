@@ -545,7 +545,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         #endregion
         #just for now so that i dont have to home the motors every single fucking time 
-        #self.enable_motor_buttons()
+        self.enable_motor_buttons()
 
 # region : TEMPERATURE  
     def update_temp_data(self, temp_data): 
@@ -671,7 +671,7 @@ class Functionality(QtWidgets.QMainWindow):
         message3PAC = f'wFS-410-{FR:.2f}-{V:.1f}\n'
         messagePeristalticDriver = f'sB-{FR}-{V}-0.180\n'
         self.esp32Worker.write_serial_message(message3PAC)
-        self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
+        #self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
 
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
@@ -688,7 +688,7 @@ class Functionality(QtWidgets.QMainWindow):
         message3PAC = f'wFO\n'
         messagePeristalticDriver = f'o\n'
         self.esp32Worker.write_serial_message(message3PAC)
-        self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
+        #self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
         self.updateSucroseProgressBar(0)
 
         if self.live_data_is_logging: 
@@ -2110,7 +2110,7 @@ class Functionality(QtWidgets.QMainWindow):
     def WF_start_psu_pg(self, token): 
         if self.POCII_is_running and token == self.current_session_token: 
             self.start_psu_pg()
-            self.log_event("High voltage signal started with Vp = 75 V and Vn = -75 V")
+            self.log_event("High voltage signal started with Vp = 80 V and Vn = -80 V")
         else: 
             pass 
 
