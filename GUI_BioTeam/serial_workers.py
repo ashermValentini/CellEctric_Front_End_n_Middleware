@@ -74,14 +74,23 @@ class ESP32SerialWorker(QObject):
 
     def read_serial_line(self):
         if self.esp32_RTOS_serial.serial_device.in_waiting:
-            return self.esp32_RTOS_serial.serial_device.readline().decode('utf-8').strip()
+            try:
+                # Using 'replace' to substitute invalid characters with a placeholder
+                return self.esp32_RTOS_serial.serial_device.readline().decode('utf-8', 'replace').strip()
+            except UnicodeDecodeError as e:
+                #print(f"Failed to decode line, error: {e}")
+                pass
         return None
 
     def parse_and_emit_data(self, line):
-        # Print the raw line for debugging
-        #print(f"Raw line received: {line}")
+        if not line:
+            #print("Received empty line")
+            return
 
         try:
+            # Print the raw line for debugging
+            #print(f"Raw line received: {line}")
+
             # Find the second occurrence of 'P' and the first occurrence of 'F'
             first_p_index = line.index('P')
             second_p_index = line.index('P', first_p_index + 1)
@@ -99,7 +108,8 @@ class ESP32SerialWorker(QObject):
             self.update_flowrate.emit(flow_rate)
 
         except ValueError as e:
-            print(f"Error parsing pressure or flow rate: {e}")
+            #print(f"Error parsing pressure or flow rate: {e}")
+            # Log or handle the data that caused the error
             pass
 
     def write_serial_message(self, message):
@@ -201,13 +211,13 @@ class PeristalticDriverWorker(QObject):
         return None
 
     def parse_and_emit_data(self, line):
-        print(f"Raw line received: {line}")
+        #print(f"Raw line received: {line}")
         if line == "Motor 1 has reached its target position.": 
-            print('sending ethanol stop')
+            #print('sending ethanol stop')
             self.stop_ethanol.emit(1)
 
         elif line == "Motor 2 has reached its target position.": 
-            print('sending sucrose stop')
+            #print('sending sucrose stop')
             self.stop_sucrose.emit(1)
 
     def write_serial_message(self, message):
@@ -218,7 +228,7 @@ class PeristalticDriverWorker(QObject):
                     print(f"Message '{message}'sent to the peristaltic driver.")
                     self.esp32_RTOS_serial.serial_device.write(message.encode())
                 except Exception as e: 
-                    print(f"Failed to send message Error: {e}")
+                    print(f"Failed to send message Error: {e}")     
         finally:
             self._lock.unlock()
 

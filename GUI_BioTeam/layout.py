@@ -509,7 +509,7 @@ class SyringeSettingsPopupWindow(QDialog):
         label.setStyleSheet(application_style.input_style)
         self.combobox_options = QtWidgets.QComboBox()
         self.combobox_options.setStyleSheet(application_style.combobox_button_style)
-        self.combobox_options.addItems(["9.71","20.4", "35"]) 
+        self.combobox_options.addItems(["9.71","16", "4.75"]) 
         layout_v_options.addWidget(label) 
         layout_v_options.addWidget(self.combobox_options)
 
