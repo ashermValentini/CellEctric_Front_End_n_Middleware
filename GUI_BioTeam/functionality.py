@@ -175,7 +175,7 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         self.device_serials= [None, None,None, None, None]                                # device_serials = [PSU, PG, 3PAC, temperature_sensor]
         
-        esp32_RTOS_serial = ESP32Serial()
+        esp32_RTOS_serial = SerialDeviceBySerialNumber(device_IDs.THREE_PAC_DRIVER_SERIAL_NUMBERS)
         temperature_sensor_serial = TemperatureSensorSerial(device_IDs.TEMPERATURE_SENSOR_VENDOR_ID, device_IDs.TEMPERATURE_SENSOR_PRODUCT_ID) # Create Instance of TemperatureSensorSerial Class   
         pulse_generator_serial = SerialConnections(device_IDs.PG_PSU_VENDOR_ID, device_IDs.PG_PRODUCT_ID)
         psu_serial = SerialConnections(device_IDs.PG_PSU_VENDOR_ID, device_IDs.PSU_PRODUCT_ID)
@@ -183,7 +183,7 @@ class Functionality(QtWidgets.QMainWindow):
         
         self.device_serials[0] = psu_serial.establish_connection()
         self.device_serials[1] = pulse_generator_serial.establish_connection()
-        self.device_serials[2] = esp32_RTOS_serial.establish_connection()        
+        self.device_serials[2] = esp32_RTOS_serial.establish_connection(baud_rate = 115200)        
         self.device_serials[3] = temperature_sensor_serial.establish_connection() 
         self.device_serials[4] = peristaltic_driver_serial.establish_connection(baud_rate = 115200)
 
