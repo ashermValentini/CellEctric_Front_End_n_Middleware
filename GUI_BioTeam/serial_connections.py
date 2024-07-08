@@ -22,6 +22,7 @@ class SerialConnections:
         if port:
             try:
                 self.serial_device = serial.Serial(port, baud_rate, timeout=timeout)
+                print(f"Device with VID: {self.vendor_id} and PID: {self.product_id} found and connected")
                 return self.serial_device
             except serial.SerialException as e:
                 print(f"Could not open port {port}: {e}")
@@ -45,6 +46,7 @@ class TemperatureSensorSerial(SerialConnections):
             self.serial_device.serial.stopbits = 1
             self.serial_device.serial.timeout = 0.1
             self.serial_device.mode = minimalmodbus.MODE_RTU
+            print(f"Temperature sensor with VID: {self.vendor_id} and PID: {self.product_id} found and connected")
             return self.serial_device
         else:
             print(f"Temperature sensor with VID: {self.vendor_id} and PID: {self.product_id} not found")
