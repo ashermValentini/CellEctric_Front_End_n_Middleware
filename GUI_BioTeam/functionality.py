@@ -498,10 +498,10 @@ class Functionality(QtWidgets.QMainWindow):
         self.POCII_time_intervals = { 
 
             "frame_POCII_system_sterilaty": 192,
-            "frame_POCII_decontaminate_cartridge": 1046,
-            "high_voltage_frame": 342,
-            "flush_out_frame": 672,
-            "zero_volt_frame": 344,
+            "frame_POCII_decontaminate_cartridge": 1164,
+            "high_voltage_frame": 362,
+            "flush_out_frame": 352,
+            "zero_volt_frame": 364,
             "safe_disconnect_frame": 312,
         }
         self.POCII_counters = {frame_name: [0] for frame_name in POCII_frame_names}
@@ -865,8 +865,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.voltage_y = voltage_y
         self.voltage_y[:, 0] -= self.zerodata[0]           # voltage data
         self.voltage_y[:, 1] -= self.zerodata[1]           # current data  
-        self.voltage_y[:, 0] *= 0.15        # Nico original guess for voltage scaling 
-        self.voltage_y[:, 1] *= 0.034       # Hans value fo current scaling as calculated by Nico
+        self.voltage_y[:, 0] *= 0.15                       # Nico original guess for voltage scaling 
+        self.voltage_y[:, 1] *= 0.034                      # Hans value fo current scaling as calculated by Nico
 
         # before we chop up the data to display on the UI we will save the data to csv as the Octave script potentially requires the full data set to be analyzed
         current_time = time.time()
