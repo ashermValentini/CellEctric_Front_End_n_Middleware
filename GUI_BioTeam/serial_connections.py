@@ -48,29 +48,7 @@ class TemperatureSensorSerial(SerialConnections):
             return self.serial_device
         else:
             print(f"Temperature sensor with VID: {self.vendor_id} and PID: {self.product_id} not found")
-            return None
-# CHILD SERIAL DEVICE CLASS for ESP32 RTOS dubbed 3PAC
-class ESP32Serial(SerialConnections):
-    def __init__(self):
-        super().__init__(vendor_id=None, product_id=None)
-
-    def find_serial_port(self):
-        ports = serial.tools.list_ports.comports()
-        for port in ports:
-            print(f"Found port: {port.device}, Manufacturer: {port.manufacturer}")
-            if port.manufacturer is not None and "Silicon" in port.manufacturer:
-                return port.device
-        return None
-
-
-    def establish_connection(self, baud_rate=115200, timeout=1):
-        port = self.find_serial_port()
-        if port:
-            self.serial_device = serial.Serial(port, baud_rate, timeout=timeout)
-            return self.serial_device
-        else:
-            print("ESP32 device not found")
-            return None  
+            return None 
 # CHILD SERIAL DEVICE CLASS for DEVICES THAT NEED TO BE FOUND BY FTDI SERIAL NUMBERS
 class SerialDeviceBySerialNumber(SerialConnections):
     def __init__(self, serial_numbers):

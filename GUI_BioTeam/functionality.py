@@ -27,7 +27,6 @@ from data_saving_workers import DataSavingWorker
 
 from serial_connections import SerialConnections
 from serial_connections import TemperatureSensorSerial
-from serial_connections import ESP32Serial
 from serial_connections import SerialDeviceBySerialNumber
 
 from serial_workers import TempWorker
@@ -175,7 +174,7 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         self.device_serials= [None, None,None, None, None]                                # device_serials = [PSU, PG, 3PAC, temperature_sensor]
         
-        esp32_RTOS_serial = ESP32Serial()
+        esp32_RTOS_serial = SerialDeviceBySerialNumber(device_IDs.THREE_PAC_DRIVER_SERIAL_NUMBERS)
         temperature_sensor_serial = TemperatureSensorSerial(device_IDs.TEMPERATURE_SENSOR_VENDOR_ID, device_IDs.TEMPERATURE_SENSOR_PRODUCT_ID) # Create Instance of TemperatureSensorSerial Class   
         pulse_generator_serial = SerialConnections(device_IDs.PG_PSU_VENDOR_ID, device_IDs.PG_PRODUCT_ID)
         psu_serial = SerialConnections(device_IDs.PG_PSU_VENDOR_ID, device_IDs.PSU_PRODUCT_ID)
@@ -183,7 +182,7 @@ class Functionality(QtWidgets.QMainWindow):
         
         self.device_serials[0] = psu_serial.establish_connection()
         self.device_serials[1] = pulse_generator_serial.establish_connection()
-        self.device_serials[2] = esp32_RTOS_serial.establish_connection()        
+        self.device_serials[2] = esp32_RTOS_serial.establish_connection(baud_rate = 115200)        
         self.device_serials[3] = temperature_sensor_serial.establish_connection() 
         self.device_serials[4] = peristaltic_driver_serial.establish_connection(baud_rate = 115200)
 
@@ -277,17 +276,21 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         if self.flag_connections[1]:
 
-            send_PG_pulsetimes(self.device_serials[1], 0, 200, 75, 75, verbose = 0)
+            send_PG_pulsetimes(self.device_serials[1], 0, 200 , 75 , 75, verbose = 0) #might not be needed since we are setting the pulse shape now from the line edits in the signal frame
+            #self.pgWorker.set_pulse_shape(200, 75, 75)
 
             self.pgWorker = PulseGeneratorSerialWorker(pulse_generator_serial)
             self.pgThread = QThread()
             self.pgWorker.moveToThread(self.pgThread)
+            
 
             self.pgWorker.update_pulse.connect(self.process_pg_data)
             self.pgWorker.update_zerodata.connect(self.handleZeroDataUpdate)
             
             self.pgThread.started.connect(self.pgWorker.run)
             self.pgThread.start()  
+            
+
         #endregion
         #================================================================================================================================================================================================================================
         # Side bar functionality 
@@ -323,8 +326,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.coolingTimer = None
         self.threshold_temperature = 15 
         if self.flag_connections[3]:
-            self.ui.temp_control_button.pressed.connect(self.toggle_cooling)
-            #self.ui.temp_control_button.pressed.connect(lambda: self.warning_dialogue("Attention", "Cooling unavailable on your base station"))
+            #self.ui.temp_control_button.pressed.connect(self.toggle_cooling)
+            self.ui.temp_control_button.pressed.connect(lambda: self.warning_dialogue("Attention", "Cooling unavailable on your base station"))
         #endregion
         #==============================================================================================================================================================================================================================
         # Pressure frame functionality 
@@ -495,10 +498,10 @@ class Functionality(QtWidgets.QMainWindow):
         self.POCII_time_intervals = { 
 
             "frame_POCII_system_sterilaty": 192,
-            "frame_POCII_decontaminate_cartridge": 1046,
-            "high_voltage_frame": 342,
-            "flush_out_frame": 672,
-            "zero_volt_frame": 344,
+            "frame_POCII_decontaminate_cartridge": 1164,
+            "high_voltage_frame": 362,
+            "flush_out_frame": 352,
+            "zero_volt_frame": 364,
             "safe_disconnect_frame": 312,
         }
         self.POCII_counters = {frame_name: [0] for frame_name in POCII_frame_names}
@@ -658,7 +661,7 @@ class Functionality(QtWidgets.QMainWindow):
                 self.stop_sucrose_pump()
 
     def start_sucrose_pump(self, FR, V): 
-        #self.close_pressure_release_valve()
+        #self.close_pressure_release_valve()                # not used at the moment but leave here incase we swtich back to the pressure driven flow module
         self.set_button_style(self.ui.button_sucrose)
         self.sucrose_is_pumping = True                      # GUI flag 
         self.liveDataWorker.set_sucrose_is_running(True)    # Data saving thread flag
@@ -671,7 +674,7 @@ class Functionality(QtWidgets.QMainWindow):
         message3PAC = f'wFS-410-{FR:.2f}-{V:.1f}\n'
         messagePeristalticDriver = f'sB-{FR}-{V}-0.180\n'
         self.esp32Worker.write_serial_message(message3PAC)
-        #self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
+        self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
 
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
@@ -688,7 +691,7 @@ class Functionality(QtWidgets.QMainWindow):
         message3PAC = f'wFO\n'
         messagePeristalticDriver = f'o\n'
         self.esp32Worker.write_serial_message(message3PAC)
-        #self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
+        self.peristalticDriverWorker.write_serial_message(messagePeristalticDriver)
         self.updateSucroseProgressBar(0)
 
         if self.live_data_is_logging: 
@@ -712,7 +715,7 @@ class Functionality(QtWidgets.QMainWindow):
                 self.stop_ethanol_pump()
     
     def start_ethanol_pump(self, FR, V): 
-        #self.close_pressure_release_valve()
+        #self.close_pressure_release_valve()    # not using this at the moment but might need if we swtich back to pressure driven flow module
         self.ethanol_is_pumping = True  # GUI flag 
         self.liveDataWorker.set_ethanol_is_running(True) # Live data saving flag
         self.set_button_style(self.ui.button_ethanol)
@@ -722,7 +725,6 @@ class Functionality(QtWidgets.QMainWindow):
         except ValueError:
             print("Invalid input in line_edit_sucrose")
             return 
-        #message3PAC = f'wFE-175-{FR:.2f}-{V:.1f}\n'  
         message3PAC = f'wFE-400-{FR:.2f}-{V:.1f}\n'  
         messagePeristalticDriver = f'sE-{FR}-{V}-0.169\n'  
         self.esp32Worker.write_serial_message(message3PAC)
@@ -795,9 +797,8 @@ class Functionality(QtWidgets.QMainWindow):
             self.blood_pump_timer.stop()  
         blood_volume = float(0) 
         blood_speed = float(0)
-        volume_str = f"0{blood_volume:02.1f}"  
-        speed_str = f"{blood_speed:.2f}"
-        message = f'wMB-{volume_str}-{speed_str}\n'
+        syringe_diameter = float(self.ui.syringeSettingsPopup.combobox_options.currentText())
+        message = f'wMB-{blood_volume}-{blood_speed}-{syringe_diameter}\n'
         print(message)
         self.esp32Worker.write_serial_message(message)
         if self.live_data_is_logging: 
@@ -864,8 +865,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.voltage_y = voltage_y
         self.voltage_y[:, 0] -= self.zerodata[0]           # voltage data
         self.voltage_y[:, 1] -= self.zerodata[1]           # current data  
-        self.voltage_y[:, 0] *= 0.15        # Nico original guess for voltage scaling 
-        self.voltage_y[:, 1] *= 0.034       # Hans value fo current scaling as calculated by Nico
+        self.voltage_y[:, 0] *= 0.15                       # Nico original guess for voltage scaling 
+        self.voltage_y[:, 1] *= 0.034                      # Hans value fo current scaling as calculated by Nico
 
         # before we chop up the data to display on the UI we will save the data to csv as the Octave script potentially requires the full data set to be analyzed
         current_time = time.time()
