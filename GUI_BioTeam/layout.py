@@ -15,6 +15,7 @@ import defaults
 
 from layout_temperature_frame import TemperatureFrame
 from layout_signal_frame import SignalFrame
+from layout_plotting_frame import PlottingFrame
 #===============================
 # EXPERIMENT PAGE CLASSES
 #===============================
@@ -1217,91 +1218,8 @@ class Ui_MainWindow(object):
         #endregion 
         
         # region : Frame for plot buttons
-        plot_button_frame = QtWidgets.QFrame()
-        plot_button_frame.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        plot_button_frame.setObjectName("frame_d_voltageSignal")
-                
-        # Create a layout for the frame
-        layout = QtWidgets.QVBoxLayout(plot_button_frame)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
-        plot_button_frame.setLayout(layout)
-        # Label
-        label = QtWidgets.QLabel()
-        label.setStyleSheet(application_style.main_window_title_style)
-        label.setText("PLOTS")
-        label.setAlignment(QtCore.Qt.AlignCenter)
-
-        layout.addWidget(label)  
-        layout.addSpacing(30)   
-        
-        # button creation
-        self.temp_button = QtWidgets.QPushButton("Electrode Temperature")  # Set the text to empty since we are using an image
-        self.temp_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 10px;
-                background-color: #222222;
-                color: #FFFFFF;
-                font-family: Archivo;
-                font-size: 30px;
-
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
-        self.voltage_button = QtWidgets.QPushButton("Voltage Signal")  # Set the text to empty since we are using an image
-        self.voltage_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 10px;
-                background-color: #222222;
-                color: #FFFFFF;
-                font-family: Archivo;
-                font-size: 30px;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-        
-        self.current_button = QtWidgets.QPushButton("Current Signal")  # Set the text to empty since we are using an image
-        self.current_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 10px;
-                background-color: #222222;
-                color: #FFFFFF;
-                font-family: Archivo;
-                font-size: 30px;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-        
-        layout.addWidget(self.temp_button) 
-        layout.addWidget(self.voltage_button) 
-        layout.addWidget(self.current_button) 
-      
-        layout.addSpacing(0) 
-        self.application_region_2_layout.addWidget(plot_button_frame)
+        self.plotting_frame = PlottingFrame()
+        self.application_region_2_layout.addWidget(self.plotting_frame)
         
         #endregion
         

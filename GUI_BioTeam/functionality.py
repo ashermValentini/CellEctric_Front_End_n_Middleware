@@ -420,10 +420,10 @@ class Functionality(QtWidgets.QMainWindow):
         #==============================================================================================================================================================================================================================
         #region:     
         if self.flag_connections[0] and self.flag_connections[1]:
-            self.ui.voltage_button.pressed.connect(self.start_voltage_plotting)
-            self.ui.current_button.pressed.connect(self.start_current_plotting)
+            self.ui.plotting_frame.voltage_button.pressed.connect(self.start_voltage_plotting)
+            self.ui.plotting_frame.current_button.pressed.connect(self.start_current_plotting)
         if self.flag_connections[3]:            
-            self.ui.temp_button.pressed.connect(self.start_stop_temp_plotting)
+            self.ui.plotting_frame.temp_button.pressed.connect(self.start_stop_temp_plotting)
         #endregion
         #================================================================================================================================================================================================================================================
         # Experiment selection 
@@ -559,17 +559,17 @@ class Functionality(QtWidgets.QMainWindow):
     def start_stop_temp_plotting(self):
         if not self.temp_is_plotting and not self.voltage_is_plotting and not self.current_is_plotting:  
             self.temp_is_plotting = True
-            self.set_button_style(self.ui.temp_button)
+            self.set_button_style(self.ui.plotting_frame.temp_button)
         elif not self.temp_is_plotting and (self.voltage_is_plotting or self.current_is_plotting):
             self.voltage_is_plotting = False 
             self.current_is_plotting = False
-            self.reset_button_style(self.ui.current_button)
-            self.reset_button_style(self.ui.voltage_button)
+            self.reset_button_style(self.ui.plotting_frame.current_button)
+            self.reset_button_style(self.ui.plotting_frame.voltage_button)
             self.temp_is_plotting = True 
-            self.set_button_style(self.ui.temp_button)
+            self.set_button_style(self.ui.plotting_frame.temp_button)
         else:  
             self.temp_is_plotting = False
-            self.reset_button_style(self.ui.temp_button)
+            self.reset_button_style(self.ui.plotting_frame.temp_button)
 
     @pyqtSlot(float)
     def update_temp_plot(self, temperature):
@@ -826,32 +826,32 @@ class Functionality(QtWidgets.QMainWindow):
     def start_voltage_plotting(self):
         if not self.voltage_is_plotting and not self.temp_is_plotting and not self.current_is_plotting:   
             self.voltage_is_plotting = True  
-            self.set_button_style(self.ui.voltage_button)       
+            self.set_button_style(self.ui.plotting_frame.voltage_button)       
         elif not self.voltage_is_plotting and (self.temp_is_plotting or self.current_is_plotting):
             self.temp_is_plotting = False 
             self.current_is_plotting = False
-            self.reset_button_style(self.ui.current_button)
-            self.reset_button_style(self.ui.temp_button)
+            self.reset_button_style(self.ui.plotting_frame.current_button)
+            self.reset_button_style(self.ui.plotting_frame.temp_button)
             self.voltage_is_plotting = True 
-            self.set_button_style(self.ui.voltage_button)
+            self.set_button_style(self.ui.plotting_frame.voltage_button)
         else: 
             self.voltage_is_plotting = False  
-            self.reset_button_style(self.ui.voltage_button)   
+            self.reset_button_style(self.ui.plotting_frame.voltage_button)   
 
     def start_current_plotting(self): 
         if not self.current_is_plotting and not self.temp_is_plotting and not self.voltage_is_plotting:  
             self.current_is_plotting = True 
-            self.set_button_style(self.ui.current_button)
+            self.set_button_style(self.ui.plotting_frame.current_button)
         elif not self.current_is_plotting and (self.temp_is_plotting or self.voltage_is_plotting):
             self.temp_is_plotting = False 
             self.voltage_is_plotting = False
-            self.reset_button_style(self.ui.voltage_button)
-            self.reset_button_style(self.ui.temp_button)
+            self.reset_button_style(self.ui.plotting_frame.voltage_button)
+            self.reset_button_style(self.ui.plotting_frame.temp_button)
             self.current_is_plotting = True 
-            self.set_button_style(self.ui.current_button)
+            self.set_button_style(self.ui.plotting_frame.current_button)
         else: 
             self.current_is_plotting = False 
-            self.reset_button_style(self.ui.current_button)
+            self.reset_button_style(self.ui.plotting_frame.current_button)
     
     def butter_lowpass_filter(self, data, cutoff, fs, order):
         nyq = 0.5 * fs
