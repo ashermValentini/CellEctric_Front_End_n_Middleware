@@ -134,21 +134,32 @@ def testCRC(binaryData, verbose=0):
     if verbose: print("----------------- START: TEST CRC -----------------")        # PRINT FORMATTING
 
     crc_check = False
-    # GET AND CALCULATE THE CRC VALUES
-    arr = np.array(struct.unpack('<' + 'H' * (len(binaryData) // 2), binaryData))   # CREATE DATA ARRAY (uint16) 
-    dataCRC = arr[0]                                                                # GET CRC VALUE FROM THE ARRAY
-    calcCRC = crc16(np.frombuffer(binaryData[2:], dtype=np.uint8))              	# CALCULATE CRC VALUE ACCORDING TO DATA
 
-    if verbose >1: print("DATA AS ARRAY:\n{}".format(arr))                          # PRINT FORMATTING
-    if verbose: print("CRC IN DATA:\t\t{}".format(dataCRC))                         # PRINT FORMATTING
-    if verbose: print("CRC CALCULATED:\t{}".format(calcCRC))                        # PRINT FORMATTING
+    # CHECK IF BINARY DATA IS AVAILABLE
+    if not binaryData:
+        if verbose: print("No binary data available.")
+        return crc_check, None
+
+    # GET AND CALCULATE THE CRC VALUES
+    try:
+        arr = np.array(struct.unpack('<' + 'H' * (len(binaryData) // 2), binaryData))   # CREATE DATA ARRAY (uint16) 
+        dataCRC = arr[0]                                                                # GET CRC VALUE FROM THE ARRAY
+        calcCRC = crc16(np.frombuffer(binaryData[2:], dtype=np.uint8))              	# CALCULATE CRC VALUE ACCORDING TO DATA
+
+        if verbose >1: print("DATA AS ARRAY:\n{}".format(arr))                          # PRINT FORMATTING
+        if verbose: print("CRC IN DATA:\t\t{}".format(dataCRC))                         # PRINT FORMATTING
+        if verbose: print("CRC CALCULATED:\t{}".format(calcCRC))                        # PRINT FORMATTING
+        
+        # CRC CHECK
+        if dataCRC == calcCRC:
+            crc_check = True
+        
+        if verbose: print("CRC CHECK:\t\t{}".format(crc_check))                         # PRINT FORMATTING
+        if verbose: print("----------------- END: TEST CRC -----------------")          # PRINT FORMATTING
     
-    # CRC CHECK
-    if dataCRC == calcCRC:
-        crc_check = True
-    
-    if verbose: print("CRC CHECK:\t\t{}".format(crc_check))                         # PRINT FORMATTING
-    if verbose: print("----------------- END: TEST CRC -----------------")          # PRINT FORMATTING
+    except struct.error as e:
+        if verbose: print(f"Error unpacking binaryData: {e}")
+        return crc_check, None
     
     # RETURN DATA
     return crc_check, calcCRC
