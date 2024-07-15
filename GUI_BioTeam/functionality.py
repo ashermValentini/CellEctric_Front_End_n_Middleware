@@ -125,6 +125,7 @@ class Functionality(QtWidgets.QMainWindow):
         
         #flag to control the pulse generator button
         self.signal_is_enabled=False 
+        self.pg_is_enabled = False
 
         #flags for live data saving outside of a worklow
         self.experiment_choice_is_locked_in = False
@@ -327,7 +328,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.threshold_temperature = 15 
         if self.flag_connections[3]:
             #self.ui.temp_control_button.pressed.connect(self.toggle_cooling)
-            self.ui.temp_control_button.pressed.connect(lambda: self.warning_dialogue("Attention", "Cooling unavailable on your base station"))
+            self.ui.temperature_frame.temp_control_button.pressed.connect(lambda: self.warning_dialogue("Attention", "Cooling unavailable on your base station"))
         #endregion
         #==============================================================================================================================================================================================================================
         # Pressure frame functionality 
@@ -407,10 +408,11 @@ class Functionality(QtWidgets.QMainWindow):
         #======================================================================================================================================================================================================================================================================================================
         #region:
         if self.flag_connections[0] and self.flag_connections[1]:
-            self.ui.psu_button.pressed.connect(self.toggle_PSU_PG_signal_button)
-        
-        self.ui.line_edit_min_signal.setReadOnly(True)                                              #negative value should not be able to be edited
-        self.ui.line_edit_max_signal.textChanged.connect(self.line_edit_min_signal_text_changed)    #updates to the positive signal value must be reflected in the negative line edit
+            self.ui.signal_frame.psu_button.pressed.connect(self.toggle_PSU_signal_button)
+            self.ui.signal_frame.pg_button.pressed.connect(self.toggle_PG_signal_button)
+
+        self.ui.signal_frame.line_edit_min_signal.setReadOnly(True)                                              #negative value should not be able to be edited
+        self.ui.signal_frame.line_edit_max_signal.textChanged.connect(self.line_edit_min_signal_text_changed)    #updates to the positive signal value must be reflected in the negative line edit
 
         #endregion
         #==============================================================================================================================================================================================================================
@@ -593,23 +595,23 @@ class Functionality(QtWidgets.QMainWindow):
         if temp_data > self.max_temp:
             self.max_temp = temp_data
             if(self.max_temp>30 and self.max_temp<35):
-                self.ui.max_temp_data.setStyleSheet(application_style.medium_temperature_number_style)
+                self.ui.temperature_frame.max_temp_data.setStyleSheet(application_style.medium_temperature_number_style)
             elif(self.max_temp>35): 
-                self.ui.max_temp_data.setStyleSheet(application_style.high_temperature_number_style)
+                self.ui.temperature_frame.max_temp_data.setStyleSheet(application_style.high_temperature_number_style)
 
-            self.ui.max_temp_data.setText(f"{self.max_temp}°")
+            self.ui.temperature_frame.max_temp_data.setText(f"{self.max_temp}°")
     
-        self.ui.current_temp_data.setText(f"{self.current_temp}°")
+        self.ui.temperature_frame.current_temp_data.setText(f"{self.current_temp}°")
 
     def toggle_cooling(self): 
         if self.temperature_control_is_running: 
             self.stop_temperature_control()
             self.temperature_control_is_running = False
-            self.reset_button_style(self.ui.temp_control_button)
+            self.reset_button_style(self.ui.temperature_frame.temp_control_button)
         else: 
             self.start_temperature_control() 
             self.temperature_control_is_running = True
-            self.set_button_style(self.ui.temp_control_button)
+            self.set_button_style(self.ui.temperature_frame.temp_control_button)
     
     def start_temperature_control(self): 
         self.coolingTimer = QTimer(self)
@@ -816,7 +818,7 @@ class Functionality(QtWidgets.QMainWindow):
 # region : PULSE GENENRATOR AND POWER SUPPLY 
     def line_edit_min_signal_text_changed(self, text):
         neg_text = "-" + text
-        self.ui.line_edit_min_signal.setText(neg_text)
+        self.ui.signal_frame.line_edit_min_signal.setText(neg_text)
 
     def handleZeroDataUpdate(self, zerodata):
         self.zerodata = zerodata
@@ -873,12 +875,12 @@ class Functionality(QtWidgets.QMainWindow):
         # saving data for live data sessions 
         if self.live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled and self.live_tracking_current:
             folder_name = self.popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.line_edit_max_signal.text(), self.ui.line_edit_min_signal.text(), self.current_temp, self.pulse_number, self.ui.line_edit_pulse_length.text(), self.ui.line_edit_rep_rate.text(), folder_name)
+            self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.signal_frame.line_edit_max_signal.text(), self.ui.signal_frame.line_edit_min_signal.text(), self.current_temp, self.pulse_number, self.ui.signal_frame.line_edit_pulse_length.text(), self.ui.signal_frame.line_edit_rep_rate.text(), folder_name)
             self.last_save_time = current_time
         
         if self.workflow_live_data_is_logging and (self.last_save_time is None or current_time - self.last_save_time >= self.save_interval) and self.signal_is_enabled and self.workflow_live_tracking_current:
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-            self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.line_edit_max_signal.text(), self.ui.line_edit_min_signal.text(), self.current_temp, self.pulse_number, self.ui.line_edit_pulse_length.text(), self.ui.line_edit_rep_rate.text(), folder_name)
+            self.liveDataWorker.save_pg_data_to_csv(self.voltage_y, self.ui.signal_frame.line_edit_max_signal.text(), self.ui.signal_frame.line_edit_min_signal.text(), self.current_temp, self.pulse_number, self.ui.signal_frame.line_edit_pulse_length.text(), self.ui.signal_frame.line_edit_rep_rate.text(), folder_name)
             self.last_save_time = current_time
 
         length_of_data = self.voltage_y.shape[0] 
@@ -911,35 +913,36 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.ui.canvas_voltage.draw()
 
-    def toggle_PSU_PG_signal_button(self): 
+    def toggle_PSU_signal_button(self): 
 
         if not self.signal_is_enabled: 
             if not self.live_data_is_logging:
                 if not self.warning_dialogue("Warning", "You are not saving data. Click okay to proceed. Click Cancel to abort."):
                     return  # Exit the method if the user clicks Cancel
-            self.start_psu_pg()
+            self.start_psu()
         else: 
-            self.stop_psu_pg()
+            self.stop_psu()
 
-    def start_psu_pg(self):
-        self.set_button_style(self.ui.psu_button)
+    def toggle_PG_signal_button(self): 
+        if not self.pg_is_enabled: 
+            if not self.signal_is_enabled:
+                if not self.warning_dialogue("Warning", "You are turning the Pulse Generator on without enabling the Power Supply Unit. To continue press OK. To abort press Cancel."):
+                    return  # Exit the method if the user clicks Cancel
+            self.start_pg()
+        else: 
+            self.stop_pg()
+
+    def start_psu(self):
+        self.ui.signal_frame.set_button_style(self.ui.signal_frame.psu_button)
         self.signal_is_enabled = True
 
-        pos_setpoint_text = self.ui.line_edit_max_signal.text().strip()
-        neg_setpoint_text = self.ui.line_edit_min_signal.text().strip()
+        pos_setpoint_text = self.ui.signal_frame.line_edit_max_signal.text().strip()
+        neg_setpoint_text = self.ui.signal_frame.line_edit_min_signal.text().strip()
         pos_setpoint = int(pos_setpoint_text)
         neg_setpoint = int(neg_setpoint_text)
         neg_setpoint = abs(neg_setpoint)
 
-        rep_rate_text = self.ui.line_edit_rep_rate.text().strip()
-        pulse_length_text = self.ui.line_edit_pulse_length.text().strip()
-        rep_rate_int = int(rep_rate_text)
-        pulse_length_int = int(pulse_length_text)
-        on_time = 248
-        
         send_PSU_enable(self.device_serials[0], 1)
-        time.sleep(.1)
-        send_PSU_setpoints(self.device_serials[0], 20, 20, 0) #NOTE might not need this step anymore
         time.sleep(.1)
         send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
 
@@ -951,9 +954,20 @@ class Functionality(QtWidgets.QMainWindow):
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
 
+    def start_pg(self):
+        self.ui.signal_frame.set_button_style(self.ui.signal_frame.pg_button)
+        self.pg_is_enabled = True
+
+        rep_rate_text = self.ui.signal_frame.line_edit_rep_rate.text().strip()
+        pulse_length_text = self.ui.signal_frame.line_edit_pulse_length.text().strip()
+        rep_rate_int = int(rep_rate_text)
+        pulse_length_int = int(pulse_length_text)
+        on_time = 248
+
         self.pgWorker.set_pulse_shape(rep_rate_int, pulse_length_int, on_time)
         self.pgWorker.start_pg()
         message = "Started PG"
+
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
@@ -961,8 +975,8 @@ class Functionality(QtWidgets.QMainWindow):
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
 
-    def stop_psu_pg(self):
-        self.reset_button_style(self.ui.psu_button)
+    def stop_psu(self):
+        self.ui.signal_frame.reset_button_style(self.ui.signal_frame.psu_button)
         self.signal_is_enabled = False         
         
         send_PSU_disable(self.device_serials[0], 1)
@@ -973,7 +987,10 @@ class Functionality(QtWidgets.QMainWindow):
         if self.workflow_live_data_is_logging: 
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
-
+    
+    def stop_pg(self):
+        self.ui.signal_frame.reset_button_style(self.ui.signal_frame.pg_button)
+        self.pg_is_enabled = False
         self.pgWorker.stop_pg()
         message = "Stopped PG"
         if self.live_data_is_logging: 
@@ -1807,9 +1824,11 @@ class Functionality(QtWidgets.QMainWindow):
         QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.HV_FLASK, current_token))
         QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token))
         QTimer.singleShot(1 + 10000 + pocii.PIERCE_T, lambda: self.WF_start_sucrose_pump(pocii.FR[0], pocii.V[2], current_token))
-        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + 5000, lambda: self.WF_start_psu_pg(current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + 5000, lambda: self.WF_start_psu(current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + 5000 + 500, lambda: self.WF_start_pg(current_token))        
         QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + 20000, lambda: self.WF_start_blood_pump(current_token))
-        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + total_HV_WF_time_int-5000, lambda: self.WF_stop_psu_pg(current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + total_HV_WF_time_int-5000, lambda: self.WF_stop_psu(current_token))
+        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + total_HV_WF_time_int-4500, lambda: self.WF_stop_pg(current_token))
         QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + total_HV_WF_time_int + 30000, lambda: self.WF_move_motor(4, pocii.DEPIERCE, current_token))
         QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + total_HV_WF_time_int+ 30000 + pocii.PIERCE_T + 2000, lambda: self.stop_timed_WF_HV(current_token))
         #progress bar
@@ -1828,7 +1847,8 @@ class Functionality(QtWidgets.QMainWindow):
         #shut down operations 
         self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
         self.stop_sucrose_pump()
-        self.stop_psu_pg()
+        self.stop_psu()
+        self.stop_pg()
         self.stop_blood_pump()
         self.stop_motors(0, 0)
         #pause the progress bar
@@ -1838,8 +1858,11 @@ class Functionality(QtWidgets.QMainWindow):
     
     def stop_timed_WF_HV(self, token): 
         if self.POCII_is_running and token == self.current_session_token : 
+            
             self.liveDataWorker.start_saving_live_non_pg_data(False)     # Live data saving thread flag
+            
             self.reset_button_style(self.ui.high_voltage_frame.start_stop_button)
+            
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.log_event("HIGH VOLTAGE SUB EVENT COMPLETED")
             self.liveDataWorker.save_activity_log("High volt sub event completed", folder_name)
@@ -2108,17 +2131,31 @@ class Functionality(QtWidgets.QMainWindow):
         else: 
             pass
 
-    def WF_start_psu_pg(self, token): 
+    def WF_start_psu(self, token): 
         if self.POCII_is_running and token == self.current_session_token: 
-            self.start_psu_pg()
-            self.log_event("High voltage signal started with Vp = 80 V and Vn = -80 V")
+            self.start_psu()
+            self.log_event("PSU signal started")
         else: 
             pass 
 
-    def WF_stop_psu_pg(self, token): 
+    def WF_stop_psu(self, token): 
         if self.POCII_is_running and token == self.current_session_token: 
-            self.stop_psu_pg()
-            self.log_event("High voltage signal stopped")
+            self.stop_psu()
+            self.log_event("PSU signal stopped")
+        else: 
+            pass 
+    
+    def WF_start_pg(self, token): 
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.start_pg()
+            self.log_event("PG signal started")
+        else: 
+            pass 
+
+    def WF_stop_pg(self, token): 
+        if self.POCII_is_running and token == self.current_session_token: 
+            self.stop_pg()
+            self.log_event("PG signal stopped")
         else: 
             pass 
 
