@@ -16,6 +16,7 @@ import defaults
 from layout_temperature_frame import TemperatureFrame
 from layout_signal_frame import SignalFrame
 from layout_plotting_frame import PlottingFrame
+from layout_connections_frame import ConnectionsFrame
 #===============================
 # EXPERIMENT PAGE CLASSES
 #===============================
@@ -1163,64 +1164,14 @@ class Ui_MainWindow(object):
         self.application_region_2_layout = QtWidgets.QVBoxLayout(self.application_region_2_widget)
 
         # region : Frame for connections
-        frame = QtWidgets.QFrame()
-        frame.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        frame.setObjectName("frame_d_coms_status")
+        self.connections_frame = ConnectionsFrame()
 
-        # Create a layout for the frame
-        layout = QtWidgets.QVBoxLayout(frame)
-
-        # Create the label and add it to the layout
-        label = QtWidgets.QLabel()
-        label.setStyleSheet(application_style.main_window_title_style)
-        label.setText("CONNECTIONS")
-        label.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(label)  # Add the label to the layout
-
-        # Add a spacer for some vertical space
-        layout.addSpacing(10)
-    
-        # List of module names
-        module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "Pumps", "Motors", "Flow Rate Sensor"]
-
-        # Dictionary to hold the circles
-        self.circles = {}
-
-        for module in module_names:
-            # Create a layout for the module name and circle
-            module_layout = QtWidgets.QHBoxLayout()
-            
-            # Create the module label and add it to the layout
-            module_label = QtWidgets.QLabel()
-            module_label.setStyleSheet(application_style.main_window_15p_style) 
-            module_label.setText(module)
-            module_label.setAlignment(QtCore.Qt.AlignLeft)
-            module_layout.addWidget(module_label)
-            
-            # Add stretch to push the next widget to the right
-            module_layout.addStretch(1)
-            
-            # Create the circle (using a radio button) and add it to the layout
-            circle = QtWidgets.QRadioButton()
-            circle.setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
-            circle.setEnabled(False)  # Initially set as disabled so it appears as white
-            module_layout.addWidget(circle)
-
-            # Add the circle to the dictionary
-            self.circles[module] = circle
-
-            # Add the module layout to the main layout
-            layout.addLayout(module_layout)
-
-        layout.addSpacing(30) 
-
-        self.application_region_2_layout.addWidget(frame)
+        self.application_region_2_layout.addWidget(self.connections_frame)
         #endregion 
         
         # region : Frame for plot buttons
         self.plotting_frame = PlottingFrame()
-        self.application_region_2_layout.addWidget(self.plotting_frame)
-        
+        self.application_region_2_layout.addWidget(self.plotting_frame) 
         #endregion
         
         # region : Frame for fluidic motors
