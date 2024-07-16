@@ -311,14 +311,14 @@ class Functionality(QtWidgets.QMainWindow):
         #==============================================================================================================================================================================================================================
         #region:
         if self.flag_connections[2] or self.flag_connections[4]: 
-            self.ui.button_sucrose.pressed.connect(self.toggle_sucrose_button)
+            self.ui.sucrose_frame.button.pressed.connect(self.toggle_sucrose_button)
         #endregion
         #==============================================================================================================================================================================================================================
         # Ethanol frame functionality 
         #==============================================================================================================================================================================================================================
         #region:
         if self.flag_connections[2] or self.flag_connections[4]: 
-            self.ui.button_ethanol.pressed.connect(self.toggle_ethanol_pump)  
+            self.ui.ethanol_frame.button.pressed.connect(self.toggle_ethanol_pump)  
         #endregion
         #==============================================================================================================================================================================================================================
         # Temperature frame 
@@ -344,55 +344,55 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         self.blood_pump_timer = None 
         if self.flag_connections[2]: 
-            self.ui.button_blood_top.clicked.connect(lambda: self.movement_homing(1))                       # connect the signal to the slot 
-            self.ui.button_blood_up.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, False)) # connect the signal to the slot    
-            self.ui.button_blood_up.released.connect(lambda: self.movement_stopjogging(1))                  # connect the signal to the slot              
-            self.ui.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, False)) # connect the signal to the slot
-            self.ui.button_blood_down.released.connect(lambda: self.movement_stopjogging(1))                    # connect the signal to the slot
-            self.ui.button_blood_play_pause.pressed.connect(self.toggle_blood_pump)
+            self.ui.blood_frame.button_blood_top.clicked.connect(lambda: self.movement_homing(1))                               # connect the signal to the slot 
+            self.ui.blood_frame.button_blood_up.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, False))        # connect the signal to the slot    
+            self.ui.blood_frame.button_blood_up.released.connect(lambda: self.movement_stopjogging(1))                          # connect the signal to the slot              
+            self.ui.blood_frame.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, False))    # connect the signal to the slot
+            self.ui.blood_frame.button_blood_down.released.connect(lambda: self.movement_stopjogging(1))            # connect the signal to the slot
+            self.ui.blood_frame.button_blood_play_pause.pressed.connect(self.toggle_blood_pump)
         
-        self.ui.button_blood_down.setEnabled(False)
-        self.ui.button_blood_up.setEnabled(False)
-        self.ui.button_blood_play_pause.setEnabled(False)
+        self.ui.blood_frame.button_blood_down.setEnabled(False)
+        self.ui.blood_frame.button_blood_up.setEnabled(False)
+        self.ui.blood_frame.button_blood_play_pause.setEnabled(False)
 
-        self.ui.blood_gear.clicked.connect(self.show_blood_pump_settings)
+        self.ui.blood_frame.blood_gear.clicked.connect(self.show_blood_pump_settings)
         #endregion
         #================================================================================================================================================================================================================================
         # Flask frame functionality
         #================================================================================================================================================================================================================================
         #region:   
         if self.flag_connections[2]: 
-            self.ui.button_flask_bottom.clicked.connect(lambda: self.movement_homing(4))                        # connect the signal to the slot 
-            self.ui.button_flask_up.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, True))     # connect the signal to the slot    
-            self.ui.button_flask_up.released.connect(lambda: self.movement_stopjogging(4))                      # connect the signal to the slot              
-            self.ui.button_flask_down.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, True)) # connect the signal to the slot
-            self.ui.button_flask_down.released.connect(lambda: self.movement_stopjogging(4))                    # connect the signal to the slot   
+            self.ui.flask_motors_frame.button_flask_bottom.clicked.connect(lambda: self.movement_homing(4))                        # connect the signal to the slot 
+            self.ui.flask_motors_frame.button_flask_up.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, True))     # connect the signal to the slot    
+            self.ui.flask_motors_frame.button_flask_up.released.connect(lambda: self.movement_stopjogging(4))                      # connect the signal to the slot              
+            self.ui.flask_motors_frame.button_flask_down.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, True)) # connect the signal to the slot
+            self.ui.flask_motors_frame.button_flask_down.released.connect(lambda: self.movement_stopjogging(4))                    # connect the signal to the slot   
 
         if self.flag_connections[2]:
-            self.ui.button_flask_rightmost.clicked.connect(lambda: self.movement_homing(3))                           # connect the signal to the slot 
-            self.ui.button_flask_right.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, True))     # connect the signal to the slot    
-            self.ui.button_flask_right.released.connect(lambda: self.movement_stopjogging(3))                      # connect the signal to the slot              
-            self.ui.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, True)) # connect the signal to the slot
-            self.ui.button_flask_left.released.connect(lambda: self.movement_stopjogging(3))                    # connect the signal to the slot
+            self.ui.flask_motors_frame.button_flask_leftmost.clicked.connect(lambda: self.movement_homing(3))                           # connect the signal to the slot 
+            self.ui.flask_motors_frame.button_flask_right.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, True))     # connect the signal to the slot    
+            self.ui.flask_motors_frame.button_flask_right.released.connect(lambda: self.movement_stopjogging(3))                      # connect the signal to the slot              
+            self.ui.flask_motors_frame.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, True)) # connect the signal to the slot
+            self.ui.flask_motors_frame.button_flask_left.released.connect(lambda: self.movement_stopjogging(3))                    # connect the signal to the slot
         
-        self.ui.button_flask_up.setEnabled(False)
-        self.ui.button_flask_down.setEnabled(False)
-        self.ui.button_flask_right.setEnabled(False)
-        self.ui.button_flask_left.setEnabled(False)
+        self.ui.flask_motors_frame.button_flask_up.setEnabled(False)
+        self.ui.flask_motors_frame.button_flask_down.setEnabled(False)
+        self.ui.flask_motors_frame.button_flask_right.setEnabled(False)
+        self.ui.flask_motors_frame.button_flask_left.setEnabled(False)
         #endregion
         #================================================================================================================================================================================================================================================================
         # Fludic frame functionality
         #================================================================================================================================================================================================================================================================
         #region:
         if self.flag_connections[2]:
-            self.ui.button_cartridge_bottom.clicked.connect(lambda: self.movement_homing(2))                           # connect the signal to the slot 
-            self.ui.button_cartridge_up.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_UP, False))     # connect the signal to the slot    
-            self.ui.button_cartridge_up.released.connect(lambda: self.movement_stopjogging(2))                      # connect the signal to the slot              
-            self.ui.button_cartridge_down.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, False)) # connect the signal to the slot
-            self.ui.button_cartridge_down.released.connect(lambda: self.movement_stopjogging(2))                    # connect the signal to the slot
+            self.ui.fluidic_motors_frame.button_bottom.clicked.connect(lambda: self.movement_homing(2))                           # connect the signal to the slot 
+            self.ui.fluidic_motors_frame.button_up.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_UP, False))     # connect the signal to the slot    
+            self.ui.fluidic_motors_frame.button_up.released.connect(lambda: self.movement_stopjogging(2))                      # connect the signal to the slot              
+            self.ui.fluidic_motors_frame.button_down.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, False)) # connect the signal to the slot
+            self.ui.fluidic_motors_frame.button_down.released.connect(lambda: self.movement_stopjogging(2))                    # connect the signal to the slot
         
-        self.ui.button_cartridge_up.setEnabled(False)
-        self.ui.button_cartridge_down.setEnabled(False)
+        self.ui.fluidic_motors_frame.button_up.setEnabled(False)
+        self.ui.fluidic_motors_frame.button_down.setEnabled(False)
         #endregion
         #======================================================================================================================================================================================================================================================================================================
         # Connections frame functionality
@@ -658,13 +658,13 @@ class Functionality(QtWidgets.QMainWindow):
     def toggle_sucrose_button(self): 
         if not self.ethanol_is_pumping: 
             if not self.sucrose_is_pumping: 
-                self.start_sucrose_pump(self.ui.line_edit_sucrose.text(), self.ui.line_edit_sucrose_2.text() )
+                self.start_sucrose_pump(self.ui.sucrose_frame.line_edit.text(), self.ui.sucrose_frame.line_edit_2.text() )
             else: 
                 self.stop_sucrose_pump()
 
     def start_sucrose_pump(self, FR, V): 
         #self.close_pressure_release_valve()                # not used at the moment but leave here incase we swtich back to the pressure driven flow module
-        self.set_button_style(self.ui.button_sucrose)
+        self.set_button_style(self.ui.sucrose_frame.button)
         self.sucrose_is_pumping = True                      # GUI flag 
         self.liveDataWorker.set_sucrose_is_running(True)    # Data saving thread flag
         try:
@@ -687,7 +687,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.liveDataWorker.save_activity_log("Sucrose pump started", folder_name)
 
     def stop_sucrose_pump(self): 
-        self.reset_button_style(self.ui.button_sucrose)
+        self.reset_button_style(self.ui.sucrose_frame.button)
         self.sucrose_is_pumping = False 
         self.liveDataWorker.set_sucrose_is_running(False) # Data saving thread flag
         message3PAC = f'wFO\n'
@@ -704,6 +704,23 @@ class Functionality(QtWidgets.QMainWindow):
             self.liveDataWorker.save_activity_log("Sucrose pump stopped", folder_name)
         if self.POCII_is_running: 
             self.log_event("Sucrose pump stopped")
+    
+    def updateSucroseProgressBar(self, value):
+        if self.sucrose_is_pumping:
+            if value:
+                value = float(value)
+                # Check if the value is below zero
+                if value < 0:
+                    self.ui.sucrose_frame.progress_bar.setValue(0)
+                # Check if the value is greater than the maximum allowed value
+                elif value > self.ui.sucrose_frame.progress_bar.max:
+                    self.ui.sucrose_frame.progress_bar.setValue(self.ui.sucrose_frame.progress_bar.max)
+                else:
+                    self.ui.sucrose_frame.progress_bar.setValue(value)
+            else:
+                self.ui.sucrose_frame.progress_bar.setValue(0)
+        else: 
+            self.ui.sucrose_frame.progress_bar.setValue(0)
 
 #endregion
 
@@ -712,7 +729,7 @@ class Functionality(QtWidgets.QMainWindow):
     def toggle_ethanol_pump(self): 
         if not self.sucrose_is_pumping:
             if not self.ethanol_is_pumping: 
-                self.start_ethanol_pump(self.ui.line_edit_ethanol.text(), self.ui.line_edit_ethanol_2.text())
+                self.start_ethanol_pump(self.ui.ethanol_frame.line_edit.text(), self.ui.ethanol_frame.line_edit_2.text())
             else: 
                 self.stop_ethanol_pump()
     
@@ -720,7 +737,7 @@ class Functionality(QtWidgets.QMainWindow):
         #self.close_pressure_release_valve()    # not using this at the moment but might need if we swtich back to pressure driven flow module
         self.ethanol_is_pumping = True  # GUI flag 
         self.liveDataWorker.set_ethanol_is_running(True) # Live data saving flag
-        self.set_button_style(self.ui.button_ethanol)
+        self.set_button_style(self.ui.ethanol_frame.button)
         try:
             FR = float(FR)
             V = float(V)
@@ -740,7 +757,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.liveDataWorker.save_activity_log("Ethanol pump started", folder_name)
   
     def stop_ethanol_pump(self): 
-        self.reset_button_style(self.ui.button_ethanol)
+        self.reset_button_style(self.ui.ethanol_frame.button)
         self.ethanol_is_pumping = False 
         self.liveDataWorker.set_ethanol_is_running(False) # Live data saving flag
         message3PAC = f'wFO\n'
@@ -757,14 +774,30 @@ class Functionality(QtWidgets.QMainWindow):
         if self.POCII_is_running: 
             self.log_event("Ethanol pump stopped")
 
+    def updateEthanolProgressBar(self, value):
+        if self.ethanol_is_pumping:
+            if value:
+                value = float(value)
+                # Check if the value is below zero
+                if value < 0:
+                    self.ui.ethanol_frame.progress_bar.setValue(0)
+                # Check if the value is greater than the maximum allowed value
+                elif value > self.ui.ethanol_frame.progress_bar.max:
+                    self.ui.ethanol_frame.progress_bar.setValue(self.ui.ethanol_frame.progress_bar.max)
+                else:
+                    self.ui.ethanol_frame.progress_bar.setValue(value)
+            else:
+                self.ui.ethanol_frame.progress_bar.setValue(0)
+        else: self.ui.ethanol_frame.progress_bar.setValue(0)
+
 #endregion
 
 # region : BLOOD PUMP 
 
     def toggle_blood_pump(self):
-        if self.check_inputs(self.ui.line_edit_blood, self.ui.line_edit_blood_2):
+        if self.check_inputs(self.ui.blood_frame.line_edit_blood, self.ui.blood_frame.line_edit_blood_2):
             if not self.blood_is_pumping:
-                self.start_blood_pump(self.ui.line_edit_blood.text(), self.ui.line_edit_blood_2.text())
+                self.start_blood_pump(self.ui.blood_frame.line_edit_blood.text(), self.ui.blood_frame.line_edit_blood_2.text())
             else:
                 self.stop_blood_pump()
         else: 
@@ -772,7 +805,7 @@ class Functionality(QtWidgets.QMainWindow):
     
     def start_blood_pump(self, FR, V):  
         self.blood_is_pumping = True  
-        self.set_button_style(self.ui.button_blood_play_pause)
+        self.set_button_style(self.ui.blood_frame.button_blood_play_pause)
         
         blood_volume = float(V)
         blood_speed = float(FR)
@@ -794,7 +827,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.blood_pump_timer.start(blood_pump_time)  
             
     def stop_blood_pump(self):
-        self.reset_button_style(self.ui.button_blood_play_pause)
+        self.reset_button_style(self.ui.blood_frame.button_blood_play_pause)
         if self.blood_pump_timer: 
             self.blood_pump_timer.stop()  
         blood_volume = float(0) 
@@ -1036,24 +1069,24 @@ class Functionality(QtWidgets.QMainWindow):
 
 # region : MOTOR (MOVEMENT FUNCTIONS DO NOT INCLUDE BLOOD MOTOR) NOTE: use the esp worker to send motor commands not the comminication file
     def enable_motor_buttons(self): 
-        self.ui.button_blood_down.setEnabled(True)
-        self.ui.button_blood_up.setEnabled(True)
-        self.ui.button_blood_play_pause.setEnabled(True)
-        self.ui.button_flask_up.setEnabled(True)
-        self.ui.button_flask_down.setEnabled(True)
-        self.ui.button_flask_right.setEnabled(True)
-        self.ui.button_flask_left.setEnabled(True)
-        self.ui.button_cartridge_up.setEnabled(True)
-        self.ui.button_cartridge_down.setEnabled(True)
-        self.reset_button_style(self.ui.button_blood_up)
-        self.reset_button_style(self.ui.button_blood_down)
-        self.reset_button_style(self.ui.button_blood_play_pause)
-        self.reset_button_style(self.ui.button_flask_down)
-        self.reset_button_style(self.ui.button_flask_up)
-        self.reset_button_style(self.ui.button_flask_left)
-        self.reset_button_style(self.ui.button_flask_right)
-        self.reset_button_style(self.ui.button_cartridge_down)
-        self.reset_button_style(self.ui.button_cartridge_up)
+        self.ui.blood_frame.button_blood_down.setEnabled(True)
+        self.ui.blood_frame.button_blood_up.setEnabled(True)
+        self.ui.blood_frame.button_blood_play_pause.setEnabled(True)
+        self.ui.flask_motors_frame.button_flask_up.setEnabled(True)
+        self.ui.flask_motors_frame.button_flask_down.setEnabled(True)
+        self.ui.flask_motors_frame.button_flask_right.setEnabled(True)
+        self.ui.flask_motors_frame.button_flask_left.setEnabled(True)
+        self.ui.fluidic_motors_frame.button_up.setEnabled(True)
+        self.ui.fluidic_motors_frame.button_down.setEnabled(True)
+        self.reset_button_style(self.ui.blood_frame.button_blood_up)
+        self.reset_button_style(self.ui.blood_frame.button_blood_down)
+        self.reset_button_style(self.ui.blood_frame.button_blood_play_pause)
+        self.reset_button_style(self.ui.flask_motors_frame.button_flask_down)
+        self.reset_button_style(self.ui.flask_motors_frame.button_flask_up)
+        self.reset_button_style(self.ui.flask_motors_frame.button_flask_left)
+        self.reset_button_style(self.ui.flask_motors_frame.button_flask_right)
+        self.reset_button_style(self.ui.fluidic_motors_frame.button_down)
+        self.reset_button_style(self.ui.fluidic_motors_frame.button_up)
     
     def movement_homing(self, motornumber=0):
         # motornumber = 0 --> ALL MOTORS
@@ -1477,40 +1510,7 @@ class Functionality(QtWidgets.QMainWindow):
         # Ensure there are at least five results by extending with True
         results.extend([True] * (5 - len(results)))
         return all(results)
-    
-    def updateSucroseProgressBar(self, value):
-        if self.sucrose_is_pumping:
-            if value:
-                value = float(value)
-                # Check if the value is below zero
-                if value < 0:
-                    self.ui.progress_bar_sucrose.setValue(0)
-                # Check if the value is greater than the maximum allowed value
-                elif value > self.ui.progress_bar_sucrose.max:
-                    self.ui.progress_bar_sucrose.setValue(self.ui.progress_bar_sucrose.max)
-                else:
-                    self.ui.progress_bar_sucrose.setValue(value)
-            else:
-                self.ui.progress_bar_sucrose.setValue(0)
-        else: 
-            self.ui.progress_bar_sucrose.setValue(0)
-    
-    def updateEthanolProgressBar(self, value):
-        if self.ethanol_is_pumping:
-            if value:
-                value = float(value)
-                # Check if the value is below zero
-                if value < 0:
-                    self.ui.progress_bar_ethanol.setValue(0)
-                # Check if the value is greater than the maximum allowed value
-                elif value > self.ui.progress_bar_ethanol.max:
-                    self.ui.progress_bar_ethanol.setValue(self.ui.progress_bar_ethanol.max)
-                else:
-                    self.ui.progress_bar_ethanol.setValue(value)
-            else:
-                self.ui.progress_bar_ethanol.setValue(0)
-        else: self.ui.progress_bar_ethanol.setValue(0)  
-
+  
     def set_plot_canvas(self, x_title: str, y_title: str):
         # Get the Axes object from the Figure for voltage plot
         self.ui.axes_voltage.grid(True, color='#808080', linestyle='--')

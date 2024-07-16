@@ -17,6 +17,10 @@ from layout_temperature_frame import TemperatureFrame
 from layout_signal_frame import SignalFrame
 from layout_plotting_frame import PlottingFrame
 from layout_connections_frame import ConnectionsFrame
+from layout_sucrose_ethanol_frames import SucroseEthanolFrame
+from layout_blood_frame import BloodFrame
+from layout_fluidic_motors_frame import FluidicMotorsFrame
+from layout_flask_motor_frame import FlaskMotorsFrame
 #===============================
 # EXPERIMENT PAGE CLASSES
 #===============================
@@ -608,7 +612,7 @@ class Ui_MainWindow(object):
 
     def setupUi(self, MainWindow):
 
-        # Set up the main window 
+# region: main window setup
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1280, 1920)
         MainWindow.setStyleSheet("background-color: #121212;")
@@ -637,7 +641,8 @@ class Ui_MainWindow(object):
                 padding: 10px;
                 }
          """)
-    
+#endregion
+ 
 #region : Dashboard Page Layout     
         self.h_layout = QtWidgets.QHBoxLayout(self.dashboard)
         self.h_layout.setContentsMargins(0, 0, 0, 0)   
@@ -815,7 +820,7 @@ class Ui_MainWindow(object):
         self.main_content.setContentsMargins(0, 0, 0, 0)
         self.v_layout.addLayout(self.main_content)
 
-# region: Applications
+    # region: Applications
         self.application_region = QtWidgets.QHBoxLayout()
         self.main_content.addLayout(self.application_region)
 
@@ -824,340 +829,25 @@ class Ui_MainWindow(object):
         self.application_region_1_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.application_region_1_layout = QtWidgets.QVBoxLayout(self.application_region_1_widget)
 
-    # region : Sucrose
-        self.frame_sucrose = QtWidgets.QFrame()  # create sucrose frame
-        self.frame_sucrose.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        self.frame_sucrose.setObjectName("frame_d_sucroseFlowrate")
-
-        layout_sucrose = QtWidgets.QVBoxLayout(self.frame_sucrose)  # create layout for sucrose frame
-        self.frame_sucrose.setLayout(layout_sucrose)  # set layout to sucrose frame
-        layout_sucrose.setAlignment(QtCore.Qt.AlignCenter)
-
-        # region: label
-        label_sucrose = QtWidgets.QLabel(self.frame_sucrose)
-        label_sucrose.setStyleSheet(application_style.main_window_title_style)
-        label_sucrose.setText("SUCROSE")
-        label_sucrose.setAlignment(QtCore.Qt.AlignCenter)
-        layout_sucrose.addWidget(label_sucrose)  # add label to layout
-        layout_sucrose.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
-        # endregion
-
-        # region: progress bar and button
-        progress_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
-
-        self.progress_bar_sucrose = QRoundProgressBar()  # create progress bar
-        self.progress_bar_sucrose.setFixedSize(175, 175)
-        self.progress_bar_sucrose.setRange(0, 60)
-        self.progress_bar_sucrose.setValue(0)
-        self.progress_bar_sucrose.setBarColor('#0796FF')
-        self.progress_bar_sucrose.setDecimals(2)
-        self.progress_bar_sucrose.setDonutThicknessRatio(0.85)
-        
-        progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
-        progress_button_layout.addWidget(self.progress_bar_sucrose)  # add progress bar to the layout
-        progress_button_layout.addSpacing(5)  # add fixed space of 20 pixels
-
-        self.button_sucrose = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/play_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_sucrose.setIcon(icon)
-        self.button_sucrose.setIconSize(QtCore.QSize(50, 50))  # Adjust size as needed
-        self.button_sucrose.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
-        progress_button_layout.addWidget(self.button_sucrose)  # add button to the layout
-
-        layout_sucrose.addLayout(progress_button_layout)  # add layout for progress bar and button to main layout
-        # endregion
-       
-        # region : Inputs
-        group_boxes_layout = QtWidgets.QHBoxLayout()  # create layout for both group boxes
-        # region: Groupbox 1
-        group_box_sucrose = QtWidgets.QGroupBox(self.frame_sucrose)  # create groupbox
-        group_box_sucrose.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
-        group_box_sucrose.setAlignment(QtCore.Qt.AlignCenter)
-        group_box_layout = QtWidgets.QHBoxLayout(group_box_sucrose)  # create layout for groupbox
-        group_box_sucrose.setLayout(group_box_layout)  # set layout to groupbox
-
-        unit_label = QtWidgets.QLabel("ml/min")
-        unit_label.setStyleSheet(application_style.main_window_input_style)
-
-        self.line_edit_sucrose = QtWidgets.QLineEdit()
-        self.line_edit_sucrose.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
-        self.line_edit_sucrose.setText(f"{defaults.sucrose_default}")
-
-        group_box_layout.addWidget(self.line_edit_sucrose)
-        group_box_layout.addWidget(unit_label)
-        # endregion
-        # region: Groupbox 2
-        group_box_sucrose_2 = QtWidgets.QGroupBox(self.frame_sucrose)  # create second groupbox
-        group_box_sucrose_2.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
-        group_box_sucrose_2.setAlignment(QtCore.Qt.AlignCenter)
-        group_box_layout_2 = QtWidgets.QHBoxLayout(group_box_sucrose_2)  # create layout for second groupbox
-        group_box_sucrose_2.setLayout(group_box_layout_2)  # set layout to second groupbox
-
-        unit_label_2 = QtWidgets.QLabel("ml")  # unit for time variable
-        unit_label_2.setStyleSheet(application_style.main_window_input_style)
-
-        self.line_edit_sucrose_2 = QtWidgets.QLineEdit()
-        self.line_edit_sucrose_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
-        self.line_edit_sucrose_2.setText("50")
-
-        group_box_layout_2.addWidget(self.line_edit_sucrose_2)
-        group_box_layout_2.addWidget(unit_label_2)
-        # endregion
-        group_boxes_layout.addWidget(group_box_sucrose)
-        group_boxes_layout.addWidget(group_box_sucrose_2)
-        layout_sucrose.addLayout(group_boxes_layout)  # add layout for group boxes to main layout
+        # region : Sucrose
+        self.sucrose_frame = SucroseEthanolFrame('SUCROSE', defaults.sucrose_default, 50)
+        self.application_region_1_layout.addWidget(self.sucrose_frame)
         #endregion
-
+                
+        # region : Ethanol        
+        self.ethanol_frame = SucroseEthanolFrame('ETHANOL', 5, 50)
+        self.application_region_1_layout.addWidget(self.ethanol_frame)
         # endregion
         
-    # region : Blood
-        self.frame_blood = QtWidgets.QFrame()  # create blood frame
-        self.frame_blood.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        self.frame_blood.setObjectName("frame_d_bloodFlowrate")
-
-        layout_blood = QtWidgets.QVBoxLayout(self.frame_blood)  # create layout for ethanol frame
-        self.frame_blood.setLayout(layout_blood)  # set layout to blood frame
-        layout_blood.setAlignment(QtCore.Qt.AlignCenter)
-
-        # region: label and gear symbol
-        layout_label_n_gear = QtWidgets.QHBoxLayout()
-
-        label_blood = QtWidgets.QLabel(self.frame_blood)
-        label_blood.setStyleSheet(application_style.main_window_title_style)
-        label_blood.setText("BLOOD")
-        layout_label_n_gear.addSpacing(120) 
-        label_blood.setAlignment(QtCore.Qt.AlignCenter)
-        layout_label_n_gear.addWidget(label_blood)  # add label to layout
-        layout_label_n_gear.addStretch(1) 
-
-        self.blood_gear = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/gear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.blood_gear.setIcon(icon)
-        self.blood_gear.setIconSize(QtCore.QSize(15, 15))  # Adjust size as needed
-        self.set_button_style(self.blood_gear, 30, True)
-        layout_label_n_gear.addWidget(self.blood_gear)  # add label to layout
-
-        layout_blood.addLayout(layout_label_n_gear) # add label to layout
-        # endregion
-        layout_blood.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
-        # region: movement buttons
-        progress_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
-
-        self.button_blood_top = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/top_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_blood_top.setIcon(icon)
-        self.button_blood_top.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.button_blood_top.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
-        self.button_blood_up = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/up_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_blood_up.setIcon(icon)
-        self.button_blood_up.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.set_button_style(self.button_blood_up, 30, False)
-
-        self.button_blood_down = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/down_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_blood_down.setIcon(icon)
-        self.button_blood_down.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.set_button_style(self.button_blood_down, 30, False)
-
-        self.button_blood_play_pause = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/play_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_blood_play_pause.setIcon(icon)
-        self.button_blood_play_pause.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.set_button_style(self.button_blood_play_pause, 30, False)
-
-        progress_button_layout.addWidget(self.button_blood_top)  # add button to the layout
-        progress_button_layout.addWidget(self.button_blood_up)
-        progress_button_layout.addWidget(self.button_blood_down)
-        progress_button_layout.addWidget(self.button_blood_play_pause)  # add button to the layout
-        layout_blood.addLayout(progress_button_layout)  # add layout for progress bar and button to main layout
-        # endregion
-        # region : Inputs
-        group_boxes_layout = QtWidgets.QHBoxLayout()  # create layout for both group boxes
-        # region: Groupbox 1
-        group_box_blood = QtWidgets.QGroupBox(self.frame_blood)  # create groupbox
-        group_box_blood.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
-        group_box_blood.setAlignment(QtCore.Qt.AlignCenter)
-        group_box_layout= QtWidgets.QHBoxLayout(group_box_blood)  # create layout for groupbox
-        group_box_blood.setLayout(group_box_layout)  # set layout to groupbox
-
-        unit_label = QtWidgets.QLabel("ml/min")
-        unit_label.setStyleSheet(application_style.main_window_input_style)
-
-        self.line_edit_blood = QtWidgets.QLineEdit()
-        self.line_edit_blood.setValidator(QDoubleValidator(0.0001, 10000.0, 10, self.line_edit_blood))
-        self.line_edit_blood.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
-        self.line_edit_blood.setText("0.25")
-        group_box_layout.addWidget(self.line_edit_blood)
-        group_box_layout.addWidget(unit_label)
-        # endregion
-        # region: Groupbox 2
-        group_box_blood_2 = QtWidgets.QGroupBox(self.frame_blood)  # create second groupbox
-        group_box_blood_2.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
-        group_box_blood_2.setAlignment(QtCore.Qt.AlignCenter)
-        group_box_layout_2 = QtWidgets.QHBoxLayout(group_box_blood_2)  # create layout for second groupbox
-        group_box_blood_2.setLayout(group_box_layout_2)  # set layout to second groupbox
-
-        unit_label_2 = QtWidgets.QLabel("ml")  # unit for time variable
-        unit_label_2.setStyleSheet(application_style.main_window_input_style)
-
-        self.line_edit_blood_2 = QtWidgets.QLineEdit()
-        self.line_edit_blood_2.setValidator(QDoubleValidator(0.0001, 10000.0, 10, self.line_edit_blood_2))
-        self.line_edit_blood_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
-        self.line_edit_blood_2.setText("1")
-
-        group_box_layout_2.addWidget(self.line_edit_blood_2)
-        group_box_layout_2.addWidget(unit_label_2)
-        # endregion
-        group_boxes_layout.addWidget(group_box_blood)
-        group_boxes_layout.addWidget(group_box_blood_2)
-        layout_blood.addLayout(group_boxes_layout)  # add layout for group boxes to main layout
+        #region : Blood 
+        self.blood_frame = BloodFrame()
+        self.application_region_1_layout.addWidget(self.blood_frame)
         #endregion
-        #endregion
-        
-    # region : Ethanol
-        self.frame_ethanol = QtWidgets.QFrame()  # create ethanol frame
-        self.frame_ethanol.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        self.frame_ethanol.setObjectName("frame_d_ethanolFlowrate")
 
-        layout_ethanol = QtWidgets.QVBoxLayout(self.frame_ethanol)  # create layout for ethanol frame
-        self.frame_ethanol.setLayout(layout_ethanol)  # set layout to ethanol frame
-        layout_ethanol.setAlignment(QtCore.Qt.AlignCenter)
-
-        # region: label
-        label_ethanol = QtWidgets.QLabel(self.frame_ethanol)
-        label_ethanol.setStyleSheet(application_style.main_window_title_style)
-        label_ethanol.setText("ETHANOL")
-        label_ethanol.setAlignment(QtCore.Qt.AlignCenter)
-        layout_ethanol.addWidget(label_ethanol)  # add label to layout
-        layout_ethanol.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
-        # endregion
-
-        # region: progress bar and button
-        progress_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
-
-        self.progress_bar_ethanol = QRoundProgressBar()  # create progress bar
-        self.progress_bar_ethanol.setFixedSize(175, 175)
-        self.progress_bar_ethanol.setRange(0, 60)
-        self.progress_bar_ethanol.setValue(0)
-        self.progress_bar_ethanol.setDecimals(2)
-        self.progress_bar_ethanol.setDonutThicknessRatio(0.85)
-        self.progress_bar_ethanol.setBarColor('#0796FF')
-        
-        progress_button_layout.addSpacing(20)  # add fixed space of 20 pixels
-        progress_button_layout.addWidget(self.progress_bar_ethanol)  # add progress bar to the layout
-        progress_button_layout.addSpacing(5)  # add fixed space of 20 pixels
-
-        self.button_ethanol = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/play_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_ethanol.setIcon(icon)
-        self.button_ethanol.setIconSize(QtCore.QSize(50, 50))  # Adjust size as needed
-        self.button_ethanol.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
-        progress_button_layout.addWidget(self.button_ethanol)  # add button to the layout
-
-        layout_ethanol.addLayout(progress_button_layout)  # add layout for progress bar and button to main layout
-        # endregion
-       
-        # region : Inputs
-        group_boxes_layout = QtWidgets.QHBoxLayout()  # create layout for both group boxes
-        # region: Groupbox 1
-        group_box_ethanol = QtWidgets.QGroupBox(self.frame_ethanol)  # create groupbox
-        group_box_ethanol.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
-        group_box_ethanol.setAlignment(QtCore.Qt.AlignCenter)
-        group_box_layout = QtWidgets.QHBoxLayout(group_box_ethanol)  # create layout for groupbox
-        group_box_ethanol.setLayout(group_box_layout)  # set layout to groupbox
-
-        unit_label = QtWidgets.QLabel("ml/min")
-        unit_label.setStyleSheet(application_style.main_window_input_style)
-
-        self.line_edit_ethanol = QtWidgets.QLineEdit()
-        self.line_edit_ethanol.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px; }")
-        self.line_edit_ethanol.setText("3.00")
-        group_box_layout.addWidget(self.line_edit_ethanol)
-        group_box_layout.addWidget(unit_label)
-        # endregion
-        # region: Groupbox 2
-        group_box_ethanol_2 = QtWidgets.QGroupBox(self.frame_ethanol)  # create second groupbox
-        group_box_ethanol_2.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
-        group_box_ethanol_2.setAlignment(QtCore.Qt.AlignCenter)
-        group_box_layout_2 = QtWidgets.QHBoxLayout(group_box_ethanol_2)  # create layout for second groupbox
-        group_box_ethanol_2.setLayout(group_box_layout_2)  # set layout to second groupbox
-
-        unit_label_2 = QtWidgets.QLabel("ml")  # unit for time variable
-        unit_label_2.setStyleSheet(application_style.main_window_input_style)
-
-        self.line_edit_ethanol_2 = QtWidgets.QLineEdit()
-        self.line_edit_ethanol_2.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 25px;}")
-        self.line_edit_ethanol_2.setText("5")
-
-        group_box_layout_2.addWidget(self.line_edit_ethanol_2)
-        group_box_layout_2.addWidget(unit_label_2)
-        # endregion
-        group_boxes_layout.addWidget(group_box_ethanol)
-        group_boxes_layout.addWidget(group_box_ethanol_2)
-        layout_ethanol.addLayout(group_boxes_layout)  # add layout for group boxes to main layout
-        #endregion
-        #endregion
-        
-        #adding each of the frames to the application region 1 and then adding application region 1 to application region
-        self.application_region_1_layout.addWidget(self.frame_sucrose)
-        self.application_region_1_layout.addWidget(self.frame_ethanol)
-        self.application_region_1_layout.addWidget(self.frame_blood)
-        self.application_region.addWidget(self.application_region_1_widget)
-    #endregion
+        self.application_region.addWidget(self.application_region_1_widget)    
     
+    #endregion : LEFT FRAMES
+
     # region : MIDDLE FRAMES  
         self.application_region_2_widget = QtWidgets.QWidget()
         self.application_region_2_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -1165,7 +855,6 @@ class Ui_MainWindow(object):
 
         # region : Frame for connections
         self.connections_frame = ConnectionsFrame()
-
         self.application_region_2_layout.addWidget(self.connections_frame)
         #endregion 
         
@@ -1175,56 +864,9 @@ class Ui_MainWindow(object):
         #endregion
         
         # region : Frame for fluidic motors
-        self.frame_cartridge = QtWidgets.QFrame()  # create cartridge frame
-        self.frame_cartridge.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        self.frame_cartridge.setObjectName("frame_d_cartridgeMotors")
-
-        layout_cartridge = QtWidgets.QVBoxLayout(self.frame_cartridge)  # create layout for ethanol frame
-        self.frame_cartridge.setLayout(layout_cartridge)  # set layout to cartridge frame
-        layout_cartridge.setAlignment(QtCore.Qt.AlignCenter)
-
-        # region: label
-        label_cartridge = QtWidgets.QLabel(self.frame_cartridge)
-        label_cartridge.setStyleSheet(application_style.main_window_title_style)
-        label_cartridge.setText("FLUIDICS")
-        label_cartridge.setAlignment(QtCore.Qt.AlignCenter)
-        layout_cartridge.addWidget(label_cartridge)  # add label to layout
-        layout_cartridge.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        self.fluidic_motors_frame = FluidicMotorsFrame()
+        self.application_region_2_layout.addWidget(self.fluidic_motors_frame)
         # endregion
-
-        # region: movement buttons
-        progress_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
-
-        self.button_cartridge_bottom = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/top_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_cartridge_bottom.setIcon(icon)
-        self.button_cartridge_bottom.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.set_button_style(self.button_cartridge_bottom, 30, True)
-
-        self.button_cartridge_up  = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/up_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_cartridge_up.setIcon(icon)
-        self.button_cartridge_up.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.set_button_style(self.button_cartridge_up, 30, False)
-
-        self.button_cartridge_down = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/down_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_cartridge_down.setIcon(icon)
-        self.button_cartridge_down.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.set_button_style(self.button_cartridge_down, 30, False)
-
-        progress_button_layout.addWidget(self.button_cartridge_bottom)  # add button to the layout
-        progress_button_layout.addWidget(self.button_cartridge_up)
-        progress_button_layout.addWidget(self.button_cartridge_down)
-        layout_cartridge.addLayout(progress_button_layout)  # add layout for progress bar and button to main layout
-        
-        self.application_region_2_layout.addWidget(self.frame_cartridge)
-        # endregion
-
-        #endregion
         
         self.application_region.addWidget(self.application_region_2_widget)
     #endregion
@@ -1362,128 +1004,16 @@ class Ui_MainWindow(object):
         # endregion
 
         # region : Frame for flask motors
-        self.frame_flask = QtWidgets.QFrame()  # create flask frame
-        self.frame_flask.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        self.frame_flask.setObjectName("frame_d_flaskMotors")
-
-        layout_flask = QtWidgets.QVBoxLayout(self.frame_flask)  # create layout for ethanol frame
-        self.frame_flask.setLayout(layout_flask)  # set layout to flask frame
-        layout_flask.setAlignment(QtCore.Qt.AlignCenter)
-
-        # region: label
-        label_flask = QtWidgets.QLabel(self.frame_flask)
-        label_flask.setStyleSheet(application_style.main_window_title_style)
-        label_flask.setText("FLASKS")
-        label_flask.setAlignment(QtCore.Qt.AlignCenter)
-        layout_flask.addWidget(label_flask)  # add label to layout
-        layout_flask.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
+        self.flask_motors_frame = FlaskMotorsFrame()
+        self.application_region_3_layout.addWidget(self.flask_motors_frame)
         # endregion
-
-        # region: flask up down buttons
-        flask_up_down_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
-
-        self.button_flask_bottom = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/bottom_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_flask_bottom.setIcon(icon)
-        self.button_flask_bottom.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.button_flask_bottom.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
-        self.button_flask_up  = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/up_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_flask_up.setIcon(icon)
-        self.button_flask_up.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.set_button_style(self.button_flask_up, 30, False)
-
-        self.button_flask_down = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/down_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_flask_down.setIcon(icon)
-        self.button_flask_down.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.set_button_style(self.button_flask_down, 30, False)
-
-        flask_up_down_button_layout.addWidget(self.button_flask_bottom)  # add button to the layout
-        flask_up_down_button_layout.addWidget(self.button_flask_up)
-        flask_up_down_button_layout.addWidget(self.button_flask_down)
-
-        layout_flask.addLayout(flask_up_down_button_layout)  # add layout for progress bar and button to main layout 
-        # endregion
-        
-        # region: flask left right
-        flask_left_right_button_layout = QtWidgets.QHBoxLayout()  # create layout for progress bar and button
-
-        self.button_flask_rightmost = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        # Load the pixmap from the resource file
-        pixmap = QtGui.QPixmap(":/images/rightmost_w.png")
-        # Create a transformation and rotate it 180 degrees
-        transform = QtGui.QTransform().rotate(180)
-        rotated_pixmap = pixmap.transformed(transform)
-        icon.addPixmap(rotated_pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_flask_rightmost.setIcon(icon)
-        self.button_flask_rightmost.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.button_flask_rightmost.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
-        self.button_flask_left  = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/left_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_flask_left.setIcon(icon)
-        self.button_flask_left.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.set_button_style(self.button_flask_left, 30, False)
-
-        self.button_flask_right = QtWidgets.QPushButton()  # create button
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/right_slow_w.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.button_flask_right.setIcon(icon)
-        self.button_flask_right.setIconSize(QtCore.QSize(30, 30))  # Adjust size as needed
-        self.set_button_style(self.button_flask_right, 30, False)
-
-        flask_left_right_button_layout.addWidget(self.button_flask_rightmost)  # add button to the layout
-        flask_left_right_button_layout.addWidget(self.button_flask_left)
-        flask_left_right_button_layout.addWidget(self.button_flask_right)
-
-        layout_flask.addLayout(flask_left_right_button_layout)  # add layout for progress bar and button to main layout
-        # endregion
-        
-        self.application_region_3_layout.addWidget(self.frame_flask)
-        
         #endregion
         
         self.application_region.addWidget(self.application_region_3_widget)
-    #endregion
 
 # endregion: Applications   
   
-# region : Plots
+    # region : Plots
     
         # Plot region of the main content region
         self.plot_layout = QtWidgets.QVBoxLayout()
@@ -1528,10 +1058,11 @@ class Ui_MainWindow(object):
 
     #endregion
     
-    # endregion : Main content 
         MainWindow.setCentralWidget(self.centralwidget)
         self.main_content.setStretchFactor(self.application_region, 50)
         self.main_content.setStretchFactor(self.plot_layout, 50)    
+    # endregion : Main content 
+
 #endregion
 
 #region : Experiment Page Layout    
