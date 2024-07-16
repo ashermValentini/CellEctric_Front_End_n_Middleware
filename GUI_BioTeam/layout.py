@@ -8,9 +8,15 @@ from matplotlib.patches import FancyBboxPatch
 from matplotlib.transforms import Bbox
 from roundprogressBar import QRoundProgressBar
 from roundprogressBar import MainWindow
+
 import resources_rc
 import application_style
 import defaults
+
+from layout_temperature_frame import TemperatureFrame
+from layout_signal_frame import SignalFrame
+from layout_plotting_frame import PlottingFrame
+from layout_connections_frame import ConnectionsFrame
 #===============================
 # EXPERIMENT PAGE CLASSES
 #===============================
@@ -1158,147 +1164,14 @@ class Ui_MainWindow(object):
         self.application_region_2_layout = QtWidgets.QVBoxLayout(self.application_region_2_widget)
 
         # region : Frame for connections
-        frame = QtWidgets.QFrame()
-        frame.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        frame.setObjectName("frame_d_coms_status")
+        self.connections_frame = ConnectionsFrame()
 
-        # Create a layout for the frame
-        layout = QtWidgets.QVBoxLayout(frame)
-
-        # Create the label and add it to the layout
-        label = QtWidgets.QLabel()
-        label.setStyleSheet(application_style.main_window_title_style)
-        label.setText("CONNECTIONS")
-        label.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(label)  # Add the label to the layout
-
-        # Add a spacer for some vertical space
-        layout.addSpacing(10)
-    
-        # List of module names
-        module_names = ["Pulse Generator", "PSU", "Temperature Sensor", "Pumps", "Motors", "Flow Rate Sensor"]
-
-        # Dictionary to hold the circles
-        self.circles = {}
-
-        for module in module_names:
-            # Create a layout for the module name and circle
-            module_layout = QtWidgets.QHBoxLayout()
-            
-            # Create the module label and add it to the layout
-            module_label = QtWidgets.QLabel()
-            module_label.setStyleSheet(application_style.main_window_15p_style) 
-            module_label.setText(module)
-            module_label.setAlignment(QtCore.Qt.AlignLeft)
-            module_layout.addWidget(module_label)
-            
-            # Add stretch to push the next widget to the right
-            module_layout.addStretch(1)
-            
-            # Create the circle (using a radio button) and add it to the layout
-            circle = QtWidgets.QRadioButton()
-            circle.setStyleSheet("QRadioButton::indicator { width: 20px; height: 20px; border: 1px solid white; border-radius: 10px; background-color: #222222; } QRadioButton { background-color: #222222; }")
-            circle.setEnabled(False)  # Initially set as disabled so it appears as white
-            module_layout.addWidget(circle)
-
-            # Add the circle to the dictionary
-            self.circles[module] = circle
-
-            # Add the module layout to the main layout
-            layout.addLayout(module_layout)
-
-        layout.addSpacing(30) 
-
-        self.application_region_2_layout.addWidget(frame)
+        self.application_region_2_layout.addWidget(self.connections_frame)
         #endregion 
         
         # region : Frame for plot buttons
-        plot_button_frame = QtWidgets.QFrame()
-        plot_button_frame.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        plot_button_frame.setObjectName("frame_d_voltageSignal")
-                
-        # Create a layout for the frame
-        layout = QtWidgets.QVBoxLayout(plot_button_frame)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
-        plot_button_frame.setLayout(layout)
-        # Label
-        label = QtWidgets.QLabel()
-        label.setStyleSheet(application_style.main_window_title_style)
-        label.setText("PLOTS")
-        label.setAlignment(QtCore.Qt.AlignCenter)
-
-        layout.addWidget(label)  
-        layout.addSpacing(30)   
-        
-        # button creation
-        self.temp_button = QtWidgets.QPushButton("Electrode Temperature")  # Set the text to empty since we are using an image
-        self.temp_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 10px;
-                background-color: #222222;
-                color: #FFFFFF;
-                font-family: Archivo;
-                font-size: 30px;
-
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-
-        self.voltage_button = QtWidgets.QPushButton("Voltage Signal")  # Set the text to empty since we are using an image
-        self.voltage_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 10px;
-                background-color: #222222;
-                color: #FFFFFF;
-                font-family: Archivo;
-                font-size: 30px;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-        
-        self.current_button = QtWidgets.QPushButton("Current Signal")  # Set the text to empty since we are using an image
-        self.current_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 10px;
-                background-color: #222222;
-                color: #FFFFFF;
-                font-family: Archivo;
-                font-size: 30px;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-        
-        layout.addWidget(self.temp_button) 
-        layout.addWidget(self.voltage_button) 
-        layout.addWidget(self.current_button) 
-      
-        layout.addSpacing(0) 
-        self.application_region_2_layout.addWidget(plot_button_frame)
-        
+        self.plotting_frame = PlottingFrame()
+        self.application_region_2_layout.addWidget(self.plotting_frame) 
         #endregion
         
         # region : Frame for fluidic motors
@@ -1362,86 +1235,8 @@ class Ui_MainWindow(object):
         self.application_region_3_layout = QtWidgets.QVBoxLayout(self.application_region_3_widget)
 
         # region: Frame for temperature
-        temp_frame = QtWidgets.QFrame()
-        temp_frame.setStyleSheet("background-color: #222222; border-radius: 15px; height: 20%;")
-        temp_frame.setObjectName("frame_d_temperature")
-        self.application_region_3_layout.addWidget(temp_frame)
-
-        # Layout for temperature components
-        temp_layout = QtWidgets.QVBoxLayout(temp_frame)
-
-        # Title for temperature frame
-        title_label = QtWidgets.QLabel("TEMPERATURE")
-        title_label.setStyleSheet(application_style.main_window_title_style)
-        title_label.setAlignment(QtCore.Qt.AlignTop)
-        title_label.setAlignment(QtCore.Qt.AlignCenter)
-        temp_layout.addWidget(title_label)
-        temp_layout.addSpacing(45)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
-
-        # Layout for image and stats
-        temp_details_layout = QtWidgets.QHBoxLayout()
-        temp_layout.addLayout(temp_details_layout)
-
-        # Add labels for the temperature stats frame
-        temp_stats_labels_layout = QtWidgets.QVBoxLayout()
-        temp_details_layout.addLayout(temp_stats_labels_layout)
-
-        self.max_temp_label = QtWidgets.QLabel("Max")
-        self.max_temp_label.setStyleSheet(application_style.main_window_temperature_number_style)
-        temp_stats_labels_layout.addWidget(self.max_temp_label, alignment=QtCore.Qt.AlignTop )
-
-        self.min_temp_label = QtWidgets.QLabel("Current")
-        self.min_temp_label.setStyleSheet(application_style.main_window_temperature_number_style)
-        temp_stats_labels_layout.addWidget(self.min_temp_label, alignment=QtCore.Qt.AlignBottom)
-
-        # Add temperature statistics next to labels
-        temp_stats_layout = QtWidgets.QVBoxLayout()
-        temp_details_layout.addLayout(temp_stats_layout)
-
-        self.max_temp_data = QtWidgets.QLabel("-")
-        self.max_temp_data.setStyleSheet(application_style.main_window_temperature_number_style)
-        temp_stats_layout.addWidget(self.max_temp_data, alignment=QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter)
-
-        self.current_temp_data = QtWidgets.QLabel("-")
-        self.current_temp_data.setStyleSheet(application_style.main_window_temperature_number_style)
-        temp_stats_layout.addWidget(self.current_temp_data, alignment=QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
-        
-        #temp_layout.addSpacing(25)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
-
-        # temperature control label
-        temp_control_layout = QtWidgets.QHBoxLayout()
-        self.temp_control_label = QtWidgets.QLabel("Control")
-        self.temp_control_label.setStyleSheet(application_style.main_window_temperature_number_style)
-        temp_control_layout.addWidget(self.temp_control_label)
-        
-        # temperature control button
-        self.temp_control_button = QtWidgets.QPushButton()  # Set the text to empty since we are using an image
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/snowflake.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.temp_control_button.setIcon(icon)
-        self.temp_control_button.setIconSize(QtCore.QSize(38, 120))  # Adjust size as needed
-        self.temp_control_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-        temp_control_layout.addStretch(1)
-        temp_control_layout.addWidget(self.temp_control_button)
-        temp_control_layout.addSpacing(36)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
-        # add the temperature control label and button to the temperature frame layout
-        temp_layout.addLayout(temp_control_layout)
-        temp_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
-
+        self.temperature_frame = TemperatureFrame()
+        self.application_region_3_layout.addWidget(self.temperature_frame)
         #endregion
         
         # region: (not in use atm) Frame for resevoir pressure reading/reseting 
@@ -1562,131 +1357,8 @@ class Ui_MainWindow(object):
         # endregion
         
         # region: Frame for voltage signal 
-        frame_d_signal = QtWidgets.QFrame()
-        frame_d_signal.setStyleSheet("background-color: #222222; border-radius: 15px;")
-        frame_d_signal.setObjectName("frame_d_psuButton")
-        self.application_region_3_layout.addWidget(frame_d_signal)
-        frame_d_signal_layout = QtWidgets.QVBoxLayout(frame_d_signal) # Create a vertical layout for this frame
-        
-        # region : Frame Label
-        label = QtWidgets.QLabel("SIGNAL", frame_d_signal)
-        label.setAlignment(QtCore.Qt.AlignCenter)
-        label.setStyleSheet(application_style.main_window_title_style)  # Set the color of the text as needed
-        
-        frame_d_signal_layout.addWidget(label)   #Place SIGNAL at the top of the frame
-        #endregion
-        
-        frame_d_signal_layout.addSpacing(20)     # Add a fixed amount of vertical space  # Adjust the number for more or less space
-        
-        # region: pulse length 
-        group_box_pulse_length = QtWidgets.QGroupBox()
-        group_box_pulse_length .setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
-        group_box_pulse_length .setAlignment(QtCore.Qt.AlignCenter)
-        group_box_pulse_length_layout = QtWidgets.QHBoxLayout(group_box_pulse_length)
-        unit_label = QtWidgets.QLabel("uS")
-        unit_label.setStyleSheet(application_style.main_window_voltage_style)
-        pulse_length_label = QtWidgets.QLabel("Pulse Length:")
-        pulse_length_label.setStyleSheet(application_style.main_window_voltage_style)
-        self.line_edit_pulse_length = QtWidgets.QLineEdit()
-        self.line_edit_pulse_length.setValidator(QIntValidator(defaults.pulse_length_min, defaults.pulse_length_max, self.line_edit_pulse_length))
-        self.line_edit_pulse_length.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
-        self.line_edit_pulse_length.setText("75")
-        group_box_pulse_length_layout.addWidget(pulse_length_label)
-        group_box_pulse_length_layout.addStretch(1)
-        group_box_pulse_length_layout.addWidget(self.line_edit_pulse_length)
-        group_box_pulse_length_layout.addWidget(unit_label)
-        group_box_pulse_length.setLayout(group_box_pulse_length_layout)
-        frame_d_signal_layout.addWidget(group_box_pulse_length)
-        #endregion
-
-        # region: rep rate 
-        group_box_rep_rate = QtWidgets.QGroupBox()
-        group_box_rep_rate.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
-        group_box_rep_rate.setAlignment(QtCore.Qt.AlignCenter)
-        group_box_rep_rate_layout = QtWidgets.QHBoxLayout(group_box_rep_rate)
-        unit_label = QtWidgets.QLabel("Hz")
-        unit_label.setStyleSheet(application_style.main_window_voltage_style)
-        rep_rate_label = QtWidgets.QLabel("Repitition Rate:")
-        rep_rate_label.setStyleSheet(application_style.main_window_voltage_style)
-        self.line_edit_rep_rate = QtWidgets.QLineEdit()
-        self.line_edit_rep_rate.setValidator(QIntValidator(defaults.rep_rate_min, defaults.rep_rate_max, self.line_edit_rep_rate))
-        self.line_edit_rep_rate.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
-        self.line_edit_rep_rate.setText("200")
-        group_box_rep_rate_layout.addWidget(rep_rate_label)
-        group_box_rep_rate_layout.addStretch(1)
-        group_box_rep_rate_layout.addWidget(self.line_edit_rep_rate)
-        group_box_rep_rate_layout.addWidget(unit_label)
-        group_box_rep_rate.setLayout(group_box_rep_rate_layout)
-        frame_d_signal_layout.addWidget(group_box_rep_rate)
-        #endregion
-        
-        inner_layout = QtWidgets.QHBoxLayout()   # Create a horizontal layout for group boxes and button   
-        group_boxes_layout = QtWidgets.QVBoxLayout() # Create a vertical layout for JUST the group boxes
-        
-        # region : line edit and label for max voltage
-        group_box_max_voltage = QtWidgets.QGroupBox(frame_d_signal)
-        group_box_max_voltage.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
-        group_box_max_voltage.setAlignment(QtCore.Qt.AlignCenter)
-        group_box_max_voltage_layout = QtWidgets.QHBoxLayout(group_box_max_voltage)
-        unit_label = QtWidgets.QLabel("V")
-        unit_label.setStyleSheet(application_style.main_window_voltage_style)
-        MAX_label = QtWidgets.QLabel("Vp+ :")
-        MAX_label.setStyleSheet(application_style.main_window_voltage_style)
-        self.line_edit_max_signal = QtWidgets.QLineEdit()
-        self.line_edit_max_signal.setValidator(QIntValidator(defaults.voltage_min, defaults.voltage_max, self.line_edit_max_signal))
-
-        self.line_edit_max_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
-        self.line_edit_max_signal.setText("80")
-        group_box_max_voltage_layout.addWidget(MAX_label)
-        group_box_max_voltage_layout.addWidget(self.line_edit_max_signal)
-        group_box_max_voltage_layout.addWidget(unit_label)
-        group_box_max_voltage.setLayout(group_box_max_voltage_layout)
-        group_boxes_layout.addWidget(group_box_max_voltage)
-
-        #endregion
-        # region : line edit and label for min voltage
-        group_box_min_voltage = QtWidgets.QGroupBox(frame_d_signal)
-        group_box_min_voltage.setStyleSheet("QGroupBox { border: 2px solid white; border-radius: 10px; background-color: #222222; }")
-        group_box_min_voltage.setAlignment(QtCore.Qt.AlignCenter)
-        group_box_min_voltage_layout = QtWidgets.QHBoxLayout(group_box_min_voltage)
-        min_unit_label = QtWidgets.QLabel("V")
-        min_unit_label.setStyleSheet(application_style.main_window_voltage_style)
-        MIN_label = QtWidgets.QLabel("Vp- : ")
-        MIN_label.setStyleSheet(application_style.main_window_voltage_style)
-        self.line_edit_min_signal = QtWidgets.QLineEdit()
-        self.line_edit_min_signal.setStyleSheet("QLineEdit { color: white; background-color: #222222; font-size: 20px; }")
-        self.line_edit_min_signal.setText("-80")
-        group_box_min_voltage_layout.addWidget(MIN_label)
-        group_box_min_voltage_layout.addWidget(self.line_edit_min_signal)
-        group_box_min_voltage_layout.addWidget(min_unit_label)
-        group_box_min_voltage.setLayout(group_box_min_voltage_layout)
-        group_boxes_layout.addWidget(group_box_min_voltage)
-        #endregion
-        inner_layout.addLayout(group_boxes_layout)  # Add the vertical layout to the inner layout
-        # region PSU button 
-        self.psu_button = QtWidgets.QPushButton("", frame_d_signal)  # Set the text to empty since we are using an image
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/images/lightning_symbol.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.psu_button.setIcon(icon)
-        self.psu_button.setIconSize(QtCore.QSize(64, 120))  # Adjust size as needed
-        self.psu_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 6px;
-                background-color: #222222;
-            }
-
-            QPushButton:hover {
-                background-color: rgba(7, 150, 255, 0.7);  /* 70% opacity */
-            }
-
-            QPushButton:pressed {
-                background-color: #0796FF;
-            }
-        """)
-        inner_layout.addWidget(self.psu_button)# Add the button to the inner layout
-        #endregion
-        frame_d_signal_layout.addLayout(inner_layout)# Add the inner layout to the frame's layout
+        self.signal_frame = SignalFrame()
+        self.application_region_3_layout.addWidget(self.signal_frame)
         # endregion
 
         # region : Frame for flask motors
