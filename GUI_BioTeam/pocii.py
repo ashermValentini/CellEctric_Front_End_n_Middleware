@@ -1,7 +1,20 @@
 
 #================================================
-# FLASK POSITIONS 
+# FLASK POSITIONS BACTALERT
 #================================================
+BACTALERT_FLASK_POS = [220, 178, 136, 96, 55, 14]
+
+WASTE_FLASK = 220  
+DECONTAMINATION_CONTROL = 178
+HV_FLASK = 136
+FLUSH_OUT_FLASK_1 = 96
+FLUSH_OUT_FLASK_2 = 55
+ZERO_V_FLASK = 14
+
+#================================================
+# FLASK POSITIONS FLACONS
+#================================================
+BACTALERT_FLASK_POS = [220, 178, 136, 96, 55, 14]
 
 WASTE_FLASK = 220  
 DECONTAMINATION_CONTROL = 178

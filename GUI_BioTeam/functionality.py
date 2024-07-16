@@ -2126,8 +2126,8 @@ class Functionality(QtWidgets.QMainWindow):
 
     def WF_start_blood_pump(self, token):
         if self.POCII_is_running and token == self.current_session_token: 
-            self.start_blood_pump(self.ui.line_edit_blood.text(), self.ui.line_edit_blood_2.text())
-            self.log_event(f"Blood syringe pump started with FR = {self.ui.line_edit_blood.text()} ml/min and V = {self.ui.line_edit_blood_2.text()} ml")
+            self.start_blood_pump(self.ui.blood_frame.line_edit_blood.text(), self.ui.blood_frame.line_edit_blood_2.text())
+            self.log_event(f"Blood syringe pump started with FR = {self.ui.blood_frame.line_edit_blood.text()} ml/min and V = {self.ui.blood_frame.line_edit_blood_2.text()} ml")
         else: 
             pass
 
@@ -2162,16 +2162,16 @@ class Functionality(QtWidgets.QMainWindow):
     def WF_start_sucrose_pump(self, FR, V, token): 
         if self.POCII_is_running and token == self.current_session_token: 
             self.start_sucrose_pump(FR, V)
-            self.ui.line_edit_sucrose.setText(f"{FR}")
-            self.ui.line_edit_sucrose_2.setText(f"{V}")
+            self.ui.sucrose_frame.line_edit.setText(f"{FR}")
+            self.ui.sucrose_frame.line_edit_2.setText(f"{V}")
             self.log_event(f"Sucrose pump started with FR = {FR} ml/min and V = {V} ml")
         else: 
             pass
 
     def WF_start_ethanol_pump(self, FR, V, token): 
         if self.POCII_is_running and token == self.current_session_token: 
-            self.ui.line_edit_ethanol.setText(f"{FR}")
-            self.ui.line_edit_ethanol_2.setText(f"{V}")
+            self.ui.ethanol_frame.line_edit.setText(f"{FR}")
+            self.ui.ethanol_frame.line_edit_2.setText(f"{V}")
             self.start_ethanol_pump(FR, V)
             self.log_event(f"Ethanol pump started with FR = {FR} ml/min and V = {V} ml")
         else: 

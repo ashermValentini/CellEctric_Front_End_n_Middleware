@@ -173,20 +173,20 @@ class PopupWindow(QDialog):
         layout_LDA_user_name.addWidget(self.label_LDA_user_name) 
         layout_LDA_user_name.addWidget(self.combobox_LDA_user_name)
 
-        layout_LDA_user_email = QtWidgets.QVBoxLayout()
-        self.label_LDA_user_email = QLabel("Email")
-        self.label_LDA_user_email.setStyleSheet(application_style.input_style)
-        self.combobox_LDA_user_email = QtWidgets.QComboBox()
-        self.combobox_LDA_user_email.setStyleSheet(application_style.combobox_button_style)
-        self.combobox_LDA_user_email.addItems(["","email@email", "hotdoghotdoghotdiggidydog"])     
-        layout_LDA_user_email.addWidget(self.label_LDA_user_email)
-        layout_LDA_user_email.addWidget(self.combobox_LDA_user_email)
+        layout_LDA_flask_holder = QtWidgets.QVBoxLayout()
+        self.label_LDA_flask_holder = QLabel("Flask Holder Type")
+        self.label_LDA_flask_holder.setStyleSheet(application_style.input_style)
+        self.combobox_LDA_flask_holder = QtWidgets.QComboBox()
+        self.combobox_LDA_flask_holder.setStyleSheet(application_style.combobox_button_style)
+        self.combobox_LDA_flask_holder.addItems(["Bactalert", "Falcons"])     
+        layout_LDA_flask_holder.addWidget(self.label_LDA_flask_holder)
+        layout_LDA_flask_holder.addWidget(self.combobox_LDA_flask_holder)
 
         layout_LDA_user_information.addLayout(layout_LDA_folder_name)
         layout_LDA_user_information.addStretch(1)
         layout_LDA_user_information.addLayout(layout_LDA_user_name)
         layout_LDA_user_information.addStretch(1)
-        layout_LDA_user_information.addLayout(layout_LDA_user_email)
+        layout_LDA_user_information.addLayout(layout_LDA_flask_holder)
         layout_LDA_user_information.addStretch(1)
         
         #endregion
@@ -1314,54 +1314,34 @@ class Ui_MainWindow(object):
         })
         #endregion   
         # region : create the Demo frames
-
         self.frame_DEMO_close_fluidic_circuit = CustomExperimentFrame("Close Fluidic Circuit", {
             "start_stop": ":/images/play_pause.png",
             "reset": ":/images/undo.png"
         })
-
-
-
         self.frame_DEMO_connect_waste_flask = CustomExperimentFrame("Waste Flask Connection", {
             "start_stop": ":/images/play_pause.png",
             "reset": ":/images/undo.png"
         })
-
-
         self.frame_DEMO_ethanol_flush = CustomExperimentFrame("Ethanol Flush", {
             "start_stop": ":/images/play_pause.png",
             "reset": ":/images/undo.png"
         })
-
-
-
         self.frame_DEMO_connect_to_harvest_flask = CustomExperimentFrame("Harvest Flask Connection", {
             "start_stop": ":/images/play_pause.png",
             "reset": ":/images/undo.png"
         })
-
-
-
         self.frame_DEMO_blood_sucrose_mix = CustomExperimentFrame("Blood and Sucrose Delivery", {
             "start_stop": ":/images/play_pause.png",
             "reset": ":/images/undo.png"
         })
-
-
-
         self.frame_DEMO_sample_retrieval = CustomExperimentFrame("Retrieve Sample", {
             "start_stop": ":/images/play_pause.png",
             "reset": ":/images/undo.png"
         })
-
-
-
         self.save_experiment_data_frame = CustomExperimentFrame("Save Your Data", {
             "start_stop": ":/images/send.png",
             "reset": ":/images/trash.png"
         })
-
-
         #endregion 
 
     #endregion  
