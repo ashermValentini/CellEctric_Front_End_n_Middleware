@@ -1348,6 +1348,7 @@ class Ui_MainWindow(object):
         })
         #endregion 
         # region : create mouse blood frames
+        # endregion : mouse blood frames 
     #endregion  
         # region : experiment activity logger 
         self.frame_activity_logger = QtWidgets.QFrame()

@@ -1317,7 +1317,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.set_button_style(self.ui.user_info_lockin_button)
         self.ui.application_combobox.setEnabled(False)
 
-        if self.ui.application_combobox.currentText() == "POCII":
+        if self.ui.application_combobox.currentText() == "POCII" or self.ui.application_combobox.currentText() == "Human Blood":
             self.create_POCII_experiment_page()
             self.show_activity_logger()
             pass
