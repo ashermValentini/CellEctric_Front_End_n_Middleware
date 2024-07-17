@@ -1245,7 +1245,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         header_values = {
             "Name": self.popup.combobox_LDA_user_name.currentText(),
-            "Email": self.popup.combobox_LDA_user_email.currentText(),
+            "Email": self.popup.combobox_LDA_flask_holder.currentText(),
             "Purpose": self.popup.line_edit_LDA_experiment_purpose.text(), 
             "ID": self.popup.line_edit_LDA_experiment_number.text(),  
             "Strain Name": self.popup.combobox_LDA_strain.currentText(),
@@ -1447,7 +1447,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         header_values = {
             "Name": self.workflow_LDA_popup.combobox_LDA_user_name.currentText(),
-            "Email": self.workflow_LDA_popup.combobox_LDA_user_email.currentText(),
+            "Email": self.workflow_LDA_popup.combobox_LDA_flask_holder.currentText(),
             "Purpose": self.workflow_LDA_popup.line_edit_LDA_experiment_purpose.text(), 
             "ID": self.workflow_LDA_popup.line_edit_LDA_experiment_number.text(),  
             "Strain Name": self.workflow_LDA_popup.combobox_LDA_strain.currentText(),
@@ -1770,13 +1770,32 @@ class Functionality(QtWidgets.QMainWindow):
         fluid_delay_4 = (pocii.V[0]/pocii.FR[1]) * 60 * 1000
         fluid_delay_4_int = int(round(fluid_delay_4)) + 2000
         #operations:
-        QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.WASTE_FLASK, current_token)) # move to waste flask 
+        
+        current_text = self.workflow_LDA_popup.combobox_LDA_flask_holder.currentText()
+        print(f"Current Text: '{current_text}'")  # Debug print statement
+
+        if current_text == 'Bactalert': 
+            print("Condition met: Bactalert")  # Debug print statement
+            QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.WASTE_FLASK, current_token)) # move to waste flask 
+        elif current_text == 'Falcons': 
+            print("Condition met: Falcons")  # Debug print statement
+            QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.FALCON_FLASK_1, current_token)) # move to waste flask
+        else:
+            print("No condition met")  # Debug print statement
         QTimer.singleShot(24000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token)) # pierce waste flask
         QTimer.singleShot(24000 + pocii.PIERCE_T, lambda: self.WF_start_ethanol_pump(pocii.FR[1], pocii.V[1], current_token)) #req 96 : ethanol-2.5ml/mn-10ml (10ml = total volume in tubing and cartridge)
         QTimer.singleShot(24000 + pocii.PIERCE_T + fluid_delay_1_int, lambda: self.WF_announcement("Five minute ethanol soak", current_token)) #req 99 : 5 minute soak in ethanol 
         QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int, lambda: self.WF_start_ethanol_pump(pocii.FR[1], pocii.V[0], current_token)) #req 100: ethanol-2.5ml/mn-5ml 
         QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int, lambda: self.WF_start_sucrose_pump(pocii.FR[1], pocii.V[1], current_token)) #req 101 : sucrose-2.5ml/mn-10ml (10ml = total volume in tubing cartridge) 
         QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + pocii.DRIP_T, lambda: self.WF_move_motor(4, pocii.DEPIERCE, current_token)) # depierce 
+        if current_text == 'Bactalert': 
+            print("Condition met: Bactalert")  # Debug print statement
+            QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + pocii.DRIP_T + pocii.PIERCE_T, lambda: self.WF_move_motor(3, pocii.DECONTAMINATION_CONTROL, current_token)) # move to decontamination control  
+        elif current_text == 'Falcons': 
+            print("Condition met: Falcons")  # Debug print statement
+            QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + pocii.DRIP_T + pocii.PIERCE_T, lambda: self.WF_move_motor(3, pocii.FALCON_FLASK_2, current_token)) # move to decontamination control  
+        else:
+            print("No condition met")  # Debug print statement
         QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + pocii.DRIP_T + pocii.PIERCE_T, lambda: self.WF_move_motor(3, pocii.DECONTAMINATION_CONTROL, current_token)) # move to decontamination control  
         QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + pocii.DRIP_T + pocii.PIERCE_T + 10000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token)) # pierce 
         QTimer.singleShot(24000 + pocii.PIERCE_T + pocii.SOAK_T + fluid_delay_1_int + fluid_delay_2_int + fluid_delay_3_int + pocii.DRIP_T + pocii.PIERCE_T + 10000 + pocii.PIERCE_T, lambda: self.WF_start_sucrose_pump(pocii.FR[1], pocii.V[0], current_token)) #req 102 : sucrose-2.5ml/min-5ml          
@@ -1821,7 +1840,16 @@ class Functionality(QtWidgets.QMainWindow):
         total_HV_WF_time = (pocii.V[2]/pocii.FR[0]) * 60 * 1000
         total_HV_WF_time_int = int(round(total_HV_WF_time)) 
         #operation
-        QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.HV_FLASK, current_token))
+        current_text = self.workflow_LDA_popup.combobox_LDA_flask_holder.currentText()
+        print(f"Current Text: '{current_text}'")  # Debug print statement
+        if current_text == 'Bactalert': 
+            QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.HV_FLASK, current_token))
+            print("Condition met: Bactalert")  # Debug print statement
+        elif current_text == 'Falcons': 
+            QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.FALCON_FLASK_3, current_token))
+            print("Condition met: Falcons")  # Debug print statement
+        else:
+            print("No condition met")  # Debug print statement
         QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token))
         QTimer.singleShot(1 + 10000 + pocii.PIERCE_T, lambda: self.WF_start_sucrose_pump(pocii.FR[0], pocii.V[2], current_token))
         QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + 5000, lambda: self.WF_start_psu(current_token))
@@ -1911,11 +1939,29 @@ class Functionality(QtWidgets.QMainWindow):
         fluid_out_delay_1_int = int(round(fluid_out_delay_1)) 
         fluid_out_delay_2_int = fluid_out_delay_1_int
         #operation
-        QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.FLUSH_OUT_FLASK_1, current_token)) # move to flush out flask 1
+        current_text = self.workflow_LDA_popup.combobox_LDA_flask_holder.currentText()
+        print(f"Current Text: '{current_text}'")  # Debug print statement
+        
+        if current_text == 'Bactalert': 
+            QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.FLUSH_OUT_FLASK_1, current_token)) # move to flush out flask 1
+            print("Condition met: Bactalert")  # Debug print statement
+        elif current_text == 'Falcons': 
+            QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.FALCON_FLASK_4, current_token)) # move to flush out flask 1
+            print("Condition met: Falcons")  # Debug print statement
+        else:
+            print("No condition met")  # Debug print statement
         QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token)) # pierce flush out flask 1
         QTimer.singleShot(1 + 10000 + pocii.PIERCE_T , lambda: self.WF_start_sucrose_pump(pocii.FR[1], pocii.V[0], current_token)) # req 111 : sucrose - 2.5 ml/min - 5mls
         QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + fluid_out_delay_1_int + pocii.DRIP_T, lambda: self.WF_move_motor(4, pocii.DEPIERCE, current_token)) # Depierce flush out flask 1
-        QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + fluid_out_delay_1_int + pocii.DRIP_T + pocii.PIERCE_T, lambda: self.WF_move_motor(3, pocii.FLUSH_OUT_FLASK_2, current_token)) # move to flush out flask 2
+        if current_text == 'Bactalert': 
+            QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + fluid_out_delay_1_int + pocii.DRIP_T + pocii.PIERCE_T, lambda: self.WF_move_motor(3, pocii.FLUSH_OUT_FLASK_2, current_token)) # move to flush out flask 2
+            print("Condition met: Bactalert")  # Debug print statement
+        elif current_text == 'Falcons': 
+            QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + fluid_out_delay_1_int + pocii.DRIP_T + pocii.PIERCE_T, lambda: self.WF_move_motor(3, pocii.FALCON_FLASK_4, current_token)) # move to flush out flask 2
+            print("Condition met: Falcons")  # Debug print statement
+        else:
+            print("No condition met")  # Debug print statement
+        
         QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + fluid_out_delay_1_int + pocii.DRIP_T + pocii.PIERCE_T + 10000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token)) # pierce flush out flask 2
         QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + fluid_out_delay_1_int + pocii.DRIP_T + pocii.PIERCE_T + 10000 + pocii.PIERCE_T, lambda: self.WF_start_sucrose_pump(pocii.FR[1], pocii.V[0], current_token)) # repeat req 111 
         QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + fluid_out_delay_1_int + pocii.DRIP_T + pocii.PIERCE_T + 10000 + pocii.PIERCE_T + fluid_out_delay_2_int + pocii.DRIP_T, lambda: self.WF_move_motor(4, pocii.DEPIERCE, current_token)) # depierce 
@@ -1959,7 +2005,17 @@ class Functionality(QtWidgets.QMainWindow):
         total_0V_WF_time = (pocii.V[2]/pocii.FR[0]) * 60 * 1000
         total_0V_WF_time_int = int(round(total_0V_WF_time)) + 2000
         #operations 
-        QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.ZERO_V_FLASK, current_token))
+        current_text = self.workflow_LDA_popup.combobox_LDA_flask_holder.currentText()
+        print(f"Current Text: '{current_text}'")  # Debug print statement
+        
+        if current_text == 'Bactalert': 
+            QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.ZERO_V_FLASK, current_token))
+            print("Condition met: Bactalert")  # Debug print statement
+        elif current_text == 'Falcons': 
+            QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.FALCON_FLASK_5, current_token))
+            print("Condition met: Falcons")  # Debug print statement
+        else:
+            print("No condition met")  # Debug print statement
         QTimer.singleShot(1 + 10000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token))
         QTimer.singleShot(1 + 10000 + pocii.PIERCE_T, lambda: self.WF_start_sucrose_pump(pocii.FR[0], pocii.V[2], current_token))
         QTimer.singleShot(1 + 10000 + pocii.PIERCE_T + 20000, lambda: self.WF_start_blood_pump(current_token))
@@ -2037,7 +2093,16 @@ class Functionality(QtWidgets.QMainWindow):
         fluid_safe_disconnect_delay_1 = (pocii.V[1]/pocii.FR[1]) * 60 * 1000
         fluid_out_delay_1_int = int(round(fluid_safe_disconnect_delay_1)) 
         #operation
-        QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.WASTE_FLASK, current_token)) # move to flush out flask 1
+        current_text = self.workflow_LDA_popup.combobox_LDA_flask_holder.currentText()
+        print(f"Current Text: '{current_text}'")  # Debug print statement
+        if current_text == 'Bactalert': 
+            QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.WASTE_FLASK, current_token)) # move to flush out flask 1
+            print("Condition met: Bactalert")  # Debug print statement
+        elif current_text == 'Falcons': 
+            QTimer.singleShot(1, lambda: self.WF_move_motor(3, pocii.FALCON_FLASK_1, current_token)) # move to flush out flask 1
+            print("Condition met: Falcons")  # Debug print statement
+        else:
+            print("No condition met")  # Debug print statement
         QTimer.singleShot(1 + 30000, lambda: self.WF_move_motor(4, pocii.PIERCE, current_token)) # pierce flush out flask 1
         QTimer.singleShot(1 + 30000 + pocii.PIERCE_T , lambda: self.WF_start_ethanol_pump(pocii.FR[1], pocii.V[1], current_token)) # fluid 1
         QTimer.singleShot(1 + 30000 + pocii.PIERCE_T + fluid_out_delay_1_int + 30000, lambda: self.WF_move_motor(4, pocii.DEPIERCE, current_token)) # Depierce flush out flask 1
