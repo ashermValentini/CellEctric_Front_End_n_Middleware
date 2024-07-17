@@ -1238,7 +1238,11 @@ class Ui_MainWindow(object):
         """   
         
         self.application_combobox.setStyleSheet(combobox_button_style)
-        self.application_combobox.addItems(["POCII", "Ethanol to Sucrose Flush", "CG2 QC", "Autotune", "Demonstration"])  # Add more emails as needed
+        if hasattr(self, 'username') and self.username == "LBI":     
+            self.application_combobox.addItems(["Mouse Blood", "Human Blood"])  # Add more emails as needed
+        else:    
+            self.application_combobox.addItems(["POCII", "Ethanol to Sucrose Flush", "CG2 QC", "Autotune", "Demonstration"])  # Add more emails as needed
+   
         #endregion
 
         # region: add choice lockin button 
@@ -1343,7 +1347,7 @@ class Ui_MainWindow(object):
             "reset": ":/images/trash.png"
         })
         #endregion 
-
+        # region : create mouse blood frames
     #endregion  
         # region : experiment activity logger 
         self.frame_activity_logger = QtWidgets.QFrame()

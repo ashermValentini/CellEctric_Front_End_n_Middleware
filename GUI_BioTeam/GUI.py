@@ -21,6 +21,7 @@ from login_dialog import CustomMessageBox
 from layout import Ui_MainWindow  # Ensure layout.py is correctly referenced
 from functionality import Functionality  # Ensure functionality.py is correctly referenced
 
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
     QtGui.QFontDatabase.addApplicationFont(":/fonts/static/Archivo-Regular.ttf")
@@ -28,8 +29,8 @@ def main():
     login_dialog = LoginDialog()
 
     if login_dialog.exec_() == QtWidgets.QDialog.Accepted:
-        #logged_in_user = login_dialog.username_input.text()  # Get the logged-in username
-        window = Functionality()
+        logged_in_user = login_dialog.username  # Get the logged-in username
+        window = Functionality(logged_in_user)  # Pass the username to Functionality
         window.show()
         sys.exit(app.exec_())
     else:
@@ -37,3 +38,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

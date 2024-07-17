@@ -126,14 +126,14 @@ class LoginDialog(QtWidgets.QDialog):
         layout.addWidget(self.login_button)
 
         self.setLayout(layout)
-
+    
     def handle_login(self):
-        username = self.username_input.text()
+        self.username = self.username_input.text()
         password = self.password_input.text()
 
         # Check if the username is in the list and the password matches the corresponding entry
-        if username in usernames:
-            user_index = usernames.index(username)
+        if self.username in usernames:
+            user_index = usernames.index(self.username)
             if passwords[user_index] == password:
                 self.accept()
             else:
@@ -147,12 +147,3 @@ class LoginDialog(QtWidgets.QDialog):
         msg_box.setWindowTitle("Error")
         msg_box.setText(message)
         msg_box.exec_()
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    login_dialog = LoginDialog()
-    if login_dialog.exec_() == QtWidgets.QDialog.Accepted:
-        print("Login successful")
-    else:
-        print("Login failed")
-    sys.exit(app.exec_())

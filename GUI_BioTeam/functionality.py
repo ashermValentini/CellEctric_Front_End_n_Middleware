@@ -72,13 +72,14 @@ class Functionality(QtWidgets.QMainWindow):
     #region: 
     stopTimer = pyqtSignal()  # Signal to request the timer to stop (needed when stopping timers running in a different thread)
     #endregion
-    def __init__(self):
+    def __init__(self, username):
         super(Functionality, self).__init__()
         #==============================================================================================================================================================================================================================
         # Initialize the applications widget structure creating an instance of the UI_MainWindow class that defined the application layout
         #==============================================================================================================================================================================================================================
         #region:
         self.ui = Ui_MainWindow()
+        self.ui.username = username  # Set the username in Ui_MainWindow
         self.ui.setupUi(self)
         #endregion
         #==============================================================================================================================================================================================================================
