@@ -551,7 +551,7 @@ class Functionality(QtWidgets.QMainWindow):
 
         #endregion
         #just for now so that i dont have to home the motors every single fucking time 
-        self.enable_motor_buttons()
+        #self.enable_motor_buttons()
 
 # region : TEMPERATURE  
     def update_temp_data(self, temp_data): 
