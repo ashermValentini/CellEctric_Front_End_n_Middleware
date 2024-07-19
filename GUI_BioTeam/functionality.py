@@ -19,9 +19,9 @@ import device_IDs
 import pocii
 
 from layout import Ui_MainWindow
-from layout import PopupWindow
-from layout import EndPopupWindow
-from layout import SyringeSettingsPopupWindow
+from layout_popup_dialogues import PopupWindow
+from layout_popup_dialogues import EndPopupWindow
+from layout_popup_dialogues import SyringeSettingsPopupWindow
 
 from data_saving_workers import DataSavingWorker
 
@@ -411,7 +411,7 @@ class Functionality(QtWidgets.QMainWindow):
         if self.flag_connections[0] and self.flag_connections[1]:
             self.ui.signal_frame.psu_button.pressed.connect(self.toggle_PSU_signal_button)
             self.ui.signal_frame.pg_button.pressed.connect(self.toggle_PG_signal_button)
-
+            self.ui.signal_frame.line_edit_max_signal.returnPressed.connect(self.lysis_curve) #trial for julia
         self.ui.signal_frame.line_edit_min_signal.setReadOnly(True)                                              #negative value should not be able to be edited
         self.ui.signal_frame.line_edit_max_signal.textChanged.connect(self.line_edit_min_signal_text_changed)    #updates to the positive signal value must be reflected in the negative line edit
 
@@ -976,10 +976,14 @@ class Functionality(QtWidgets.QMainWindow):
         neg_setpoint = int(neg_setpoint_text)
         neg_setpoint = abs(neg_setpoint)
 
+        self.current_setpoint_text = self.ui.signal_frame.line_edit_max_signal.text().strip()
+        
         send_PSU_enable(self.device_serials[0], 1)
+        
         time.sleep(.1)
         send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
-
+        print(f"sending setpoint {pos_setpoint} and {neg_setpoint} ")
+        
         message = "Sent PSU setpoints"
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
@@ -997,6 +1001,9 @@ class Functionality(QtWidgets.QMainWindow):
         rep_rate_int = int(rep_rate_text)
         pulse_length_int = int(pulse_length_text)
         on_time = 248
+
+        ##if not self.ui.signal_frame.line_edit_max_signal.text().strip() == self.current_setpoint_text and self.signal_is_enabled: 
+            ##self.start_psu() 
 
         self.pgWorker.set_pulse_shape(rep_rate_int, pulse_length_int, on_time)
         self.pgWorker.start_pg()
@@ -1026,6 +1033,10 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.signal_frame.reset_button_style(self.ui.signal_frame.pg_button)
         self.pg_is_enabled = False
         self.pgWorker.stop_pg()
+
+        ##if not self.ui.signal_frame.line_edit_max_signal.text().strip() == self.current_setpoint_text and self.signal_is_enabled: 
+            ##self.start_psu() 
+
         message = "Stopped PG"
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
@@ -1033,6 +1044,15 @@ class Functionality(QtWidgets.QMainWindow):
         if self.workflow_live_data_is_logging: 
             folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
             self.liveDataWorker.save_activity_log(message, folder_name)
+
+    def lysis_curve(self): 
+        if self.signal_is_enabled and self.pg_is_enabled: 
+            self.start_psu()
+            self.start_pg()
+        else: 
+            self.warning_dialogue("Alert", "Please, first actuate the PSU and PG buttons before incrementing the voltage rails from within the line edit. Once both modules are actuated begin to increment voltage from the line edit. Edit the max signal value and hit enter and watch the magic.")
+
+
 #endregion
 
 # region : CONNECTION CIRCLE FUNCTION     
@@ -1338,7 +1358,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.reset_button_style(self.ui.user_info_lockin_button)
         self.ui.application_combobox.setEnabled(True)
 
-        if self.ui.application_combobox.currentText() == "POCII":
+        if self.ui.application_combobox.currentText() == "POCII" or self.ui.application_combobox.currentText() == "Human Blood":
             self.destroy_POCII_experiment_page()
             self.hide_activity_logger()
             pass
@@ -1439,7 +1459,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.lock_experiment_choice()
         print("Going live and starting data saving...")
         folder_name = self.workflow_LDA_popup.line_edit_LDA_folder_name.text()
-        self.liveDataWorker.save_activity_log("POCII workflows started", folder_name)
+        self.liveDataWorker.save_activity_log("Experiment workflows started", folder_name)
 
     def workflow_end_go_live(self):
         border_style = "#centralwidget { border: 0px solid green; }"
@@ -1472,7 +1492,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.flag_workflow_live_data_saving_applied = False
         print("Ending live data saving...")
 
-        self.liveDataWorker.save_activity_log("POCII workflows stopped", folder_name)
+        self.liveDataWorker.save_activity_log("Experiment workflows stopped", folder_name)
         self.clear_log()
 
     def toggle_LDA_workflow_apply(self): 
