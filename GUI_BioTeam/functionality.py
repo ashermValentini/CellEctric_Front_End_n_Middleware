@@ -1341,8 +1341,9 @@ class Functionality(QtWidgets.QMainWindow):
             self.create_POCII_experiment_page()
             self.show_activity_logger()
             pass
-        elif self.ui.application_combobox.currentText() == "Ethanol to Sucrose Flush":
-            # Do something for Ethanol to Sucrose Flush
+        elif self.ui.application_combobox.currentText() == "Mouse Blood":
+            self.create_Mouse_Blood_experiment_page()
+            self.show_activity_logger()
             pass
         elif self.ui.application_combobox.currentText() == "CG2 QC":
             # Do something for CG2 QC
@@ -1362,8 +1363,9 @@ class Functionality(QtWidgets.QMainWindow):
             self.destroy_POCII_experiment_page()
             self.hide_activity_logger()
             pass
-        elif self.ui.application_combobox.currentText() == "Ethanol to Sucrose Flush":
-            # Do something for Ethanol to Sucrose Flush
+        elif self.ui.application_combobox.currentText() == "Mouse Blood":
+            self.destroy_Mouse_Blood_experiment_page()
+            self.hide_activity_logger()
             pass
         elif self.ui.application_combobox.currentText() == "CG2 QC":
             # Do something for CG2 QC
@@ -1667,7 +1669,7 @@ class Functionality(QtWidgets.QMainWindow):
         
 #endregion 
 
-# region : POCII
+# region : WORKFLOW SUBEVENTS
     # region : SYSTEM STERILATY 
     def toggle_system_sterilaty_start_stop_button(self): 
         if self.POCII_is_running: 
@@ -2145,7 +2147,7 @@ class Functionality(QtWidgets.QMainWindow):
 
 #endregion
 
-    # region : UI METHODS
+    # region : WORKFLOW UI METHODS
     def create_POCII_experiment_page(self):
         self.ui.frame_POCII_system_sterilaty.show()
         self.ui.frame_POCII_decontaminate_cartridge.show()
@@ -2189,6 +2191,42 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.spacing_placeholder4.hide()
         self.ui.spacing_placeholder5.hide()
     
+    def create_Mouse_Blood_experiment_page(self):
+        self.ui.frame_POCII_decontaminate_cartridge.show()
+        self.ui.high_voltage_frame.show()
+        self.ui.flush_out_frame.show()
+        self.ui.zero_volt_frame.show()
+        self.ui.safe_disconnect_frame.show()
+
+        self.ui.spacing_placeholder2.show()
+        self.ui.spacing_placeholder3.show()
+        self.ui.spacing_placeholder4.show()
+        self.ui.spacing_placeholder5.show()
+    
+    def destroy_Mouse_Blood_experiment_page(self): 
+        self.ui.frame_POCII_decontaminate_cartridge.hide()
+        self.ui.high_voltage_frame.hide()
+        self.ui.flush_out_frame.hide()
+        self.ui.zero_volt_frame.hide()
+        self.ui.safe_disconnect_frame.hide()
+
+        self.reset_frame_progress_bar(self.ui.frame_POCII_decontaminate_cartridge.progress_bar)
+        self.reset_frame_progress_bar(self.ui.high_voltage_frame.progress_bar)
+        self.reset_frame_progress_bar(self.ui.flush_out_frame.progress_bar)
+        self.reset_frame_progress_bar(self.ui.zero_volt_frame.progress_bar)
+        self.reset_frame_progress_bar(self.ui.safe_disconnect_frame.progress_bar)
+
+        self.ui.frame_POCII_decontaminate_cartridge.hide()
+        self.ui.high_voltage_frame.hide()
+        self.ui.flush_out_frame.hide()
+        self.ui.zero_volt_frame.hide()
+        self.ui.safe_disconnect_frame.hide()
+
+        self.ui.spacing_placeholder2.hide()
+        self.ui.spacing_placeholder3.hide()
+        self.ui.spacing_placeholder4.hide()
+        self.ui.spacing_placeholder5.hide()
+
     def update_experiment_step_progress_bar(self, counter, timer, progress_bar, frame_name):
         
         interval = self.POCII_time_intervals[frame_name]
