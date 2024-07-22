@@ -80,6 +80,7 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         self.ui = Ui_MainWindow()
         self.ui.username = username  # Set the username in Ui_MainWindow
+        self.username = username
         self.ui.setupUi(self)
         #endregion
         #==============================================================================================================================================================================================================================
@@ -326,10 +327,14 @@ class Functionality(QtWidgets.QMainWindow):
         #==============================================================================================================================================================================================================================
         #region:
         self.coolingTimer = None
-        self.threshold_temperature = 15 
+        self.threshold_temperature = 35 
         if self.flag_connections[3]:
-            #self.ui.temp_control_button.pressed.connect(self.toggle_cooling)
-            self.ui.temperature_frame.temp_control_button.pressed.connect(lambda: self.warning_dialogue("Attention", "Cooling unavailable on your base station"))
+
+            if (hasattr(self, 'username') and self.username == "salome") or (hasattr(self, 'username') and self.username == "steve"):     
+                self.ui.temperature_frame.temp_control_button.pressed.connect(self.toggle_cooling)
+            else:    
+                self.ui.temperature_frame.temp_control_button.pressed.connect(lambda: self.warning_dialogue("Attention", "Cooling unavailable on your base station"))
+    
         #endregion
         #==============================================================================================================================================================================================================================
         # Pressure frame functionality 
