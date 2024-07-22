@@ -147,9 +147,12 @@ class PulseGeneratorSerialWorker(QObject):
                 self._lock.unlock()
                 break
             self._lock.unlock()
-            pg_data, _ = read_next_PG_pulse(self.pulse_generator_serial.serial_device)
-            if pg_data is not None:
-                self.update_pulse.emit(pg_data)
+            try:
+                pg_data, _ = read_next_PG_pulse(self.pulse_generator_serial.serial_device)
+                if pg_data is not None:
+                    self.update_pulse.emit(pg_data)
+            except Exception as e:
+                print(f"Error in read_next_PG_pulse: {e}")  # or handle the error in a more appropriate way
             QThread.msleep(self.interval)
     
     @pyqtSlot()
@@ -158,7 +161,8 @@ class PulseGeneratorSerialWorker(QObject):
         try:
             zerodata = send_PG_enable(self.pulse_generator_serial.serial_device, 0)
             self.update_zerodata.emit(zerodata)         
-
+        except Exception as e:
+            print(f"Error in start_pg: {e}")  # or handle the error in a more appropriate way
         finally:
             self._lock.unlock()  # Ensure the lock is always released
     
@@ -166,6 +170,8 @@ class PulseGeneratorSerialWorker(QObject):
         self._lock.lock()
         try:
             send_PG_pulsetimes(self.pulse_generator_serial.serial_device, 0, rep_rate, pulse_length, on_time, verbose=1)
+        except Exception as e:
+            print(f"Error in set_pulse_shape: {e}")  # or handle the error in a more appropriate way
         finally:
             self._lock.unlock()  # Ensure the lock is always released
 
@@ -174,6 +180,8 @@ class PulseGeneratorSerialWorker(QObject):
         self._lock.lock()
         try:
             send_PG_disable(self.pulse_generator_serial.serial_device, 0)
+        except Exception as e:
+            print(f"Error in stop_pg: {e}")  # or handle the error in a more appropriate way
         finally:
             self._lock.unlock()  # Ensure the lock is always released
 
