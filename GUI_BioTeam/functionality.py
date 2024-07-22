@@ -7,8 +7,8 @@ from datetime import datetime  # This allows you to use datetime.now()
 
 from scipy.signal import butter, filtfilt
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from Communication_Functions.communication_functions import *
+#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#from Communication_Functions.communication_functions import *
 
 from PyQt5 import QtWidgets, QtCore, QtGui 
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTimer, QDateTime
@@ -33,6 +33,7 @@ from serial_workers import TempWorker
 from serial_workers import ESP32SerialWorker
 from serial_workers import PulseGeneratorSerialWorker
 from serial_workers import PeristalticDriverWorker
+from serial_workers import PowerSupplyUnitSerialWorker
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -279,19 +280,24 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         if self.flag_connections[1]:
 
-            send_PG_pulsetimes(self.device_serials[1], 0, 200 , 75 , 75, verbose = 0) #might not be needed since we are setting the pulse shape now from the line edits in the signal frame
-            #self.pgWorker.set_pulse_shape(200, 75, 75)
-
             self.pgWorker = PulseGeneratorSerialWorker(pulse_generator_serial)
             self.pgThread = QThread()
             self.pgWorker.moveToThread(self.pgThread)
             
+            self.pgWorker.send_PG_pulsetimes(self.device_serials[1], 0, 200 , 75 , 75, verbose = 0) #might not be needed since we are setting the pulse shape now from the line edits in the signal frame
 
             self.pgWorker.update_pulse.connect(self.process_pg_data)
             self.pgWorker.update_zerodata.connect(self.handleZeroDataUpdate)
             
             self.pgThread.started.connect(self.pgWorker.run)
             self.pgThread.start()  
+
+        if self.flag_connections[0]: 
+            self.psuWorker = PowerSupplyUnitSerialWorker(psu_serial)
+            self.psuThread = QThread() 
+            self.psuWorker.moveToThread(self.psuThread)
+
+            self.psuThread.start()
             
 
         #endregion
@@ -417,6 +423,7 @@ class Functionality(QtWidgets.QMainWindow):
             self.ui.signal_frame.psu_button.pressed.connect(self.toggle_PSU_signal_button)
             self.ui.signal_frame.pg_button.pressed.connect(self.toggle_PG_signal_button)
             self.ui.signal_frame.line_edit_max_signal.returnPressed.connect(self.lysis_curve) #trial for julia
+        
         self.ui.signal_frame.line_edit_min_signal.setReadOnly(True)                                              #negative value should not be able to be edited
         self.ui.signal_frame.line_edit_max_signal.textChanged.connect(self.line_edit_min_signal_text_changed)    #updates to the positive signal value must be reflected in the negative line edit
         
@@ -984,10 +991,11 @@ class Functionality(QtWidgets.QMainWindow):
 
         self.current_setpoint_text = self.ui.signal_frame.line_edit_max_signal.text().strip()
         
-        send_PSU_enable(self.device_serials[0], 1)
+        #send_PSU_enable(self.device_serials[0], 1)
+        self.psuWorker.start_psu()
         
         time.sleep(.1)
-        send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
+        self.psuWorker.send_PSU_setpoints(self.device_serials[0], pos_setpoint, neg_setpoint, 0)
         print(f"sending setpoint {pos_setpoint} and {neg_setpoint} ")
         
         message = "Sent PSU setpoints"
@@ -1009,7 +1017,7 @@ class Functionality(QtWidgets.QMainWindow):
         on_time = 248
 
         if not current_setpoint == self.current_setpoint_text and self.signal_is_enabled: 
-            self.start_psu() 
+            self.psuWorker.start_psu() 
 
         self.pgWorker.set_pulse_shape(rep_rate_int, pulse_length_int, on_time)
         self.pgWorker.start_pg()
@@ -1026,7 +1034,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.signal_frame.reset_button_style(self.ui.signal_frame.psu_button)
         self.signal_is_enabled = False         
         
-        send_PSU_disable(self.device_serials[0], 1)
+        #send_PSU_disable(self.device_serials[0], 1)
+        self.psuWorker.stop_psu()
         message = "Disabled PSU"
         if self.live_data_is_logging: 
             folder_name = self.popup.line_edit_LDA_folder_name.text()
@@ -1041,7 +1050,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.pgWorker.stop_pg()
 
         if not current_setpoint == self.current_setpoint_text and self.signal_is_enabled: 
-            self.start_psu() 
+            self.psuWorker.start_psu() 
 
         message = "Stopped PG"
         if self.live_data_is_logging: 
@@ -1116,8 +1125,9 @@ class Functionality(QtWidgets.QMainWindow):
     def movement_homing(self, motornumber=0):
         # motornumber = 0 --> ALL MOTORS
         if self.flag_connections[2]:
-            writeMotorHoming(self.device_serials[2], motornumber)
+            #writeMotorHoming(self.device_serials[2], motornumber)
             message = f'wMH-{motornumber}\n'
+            self.esp32Worker.write_serial_message(message)
             if self.live_data_is_logging: 
                 folder_name = self.popup.line_edit_LDA_folder_name.text()
                 self.liveDataWorker.save_activity_log(message, folder_name)
@@ -1136,8 +1146,9 @@ class Functionality(QtWidgets.QMainWindow):
             else:
                 speed = 0
             
-            writeMotorJog(self.device_serials[2], motornumber, direction, fast)
-            message = f'wMJ-{motornumber}-{direction}-{speed}\n'   
+            #writeMotorJog(self.device_serials[2], motornumber, direction, fast)
+            message = f'wMJ-{motornumber}-{direction}-{speed}\n' 
+            self.esp32Worker.write_serial_message(message)
             if self.live_data_is_logging: 
                 folder_name = self.popup.line_edit_LDA_folder_name.text()
                 self.liveDataWorker.save_activity_log(message, folder_name)
@@ -1146,8 +1157,9 @@ class Functionality(QtWidgets.QMainWindow):
 
     def movement_stopjogging(self, motornumber):
         if self.flag_connections[2]:
-            writeMotorJog(self.device_serials[2], motornumber, 0, 0)
-            message = f'wMJ-{motornumber}-{0}-{0}\n'   
+            #writeMotorJog(self.device_serials[2], motornumber, 0, 0)
+            message = f'wMJ-{motornumber}-{0}-{0}\n'  
+            self.esp32Worker.write_serial_message(message) 
             if self.live_data_is_logging: 
                 folder_name = self.popup.line_edit_LDA_folder_name.text()
                 self.liveDataWorker.save_activity_log(message, folder_name)
@@ -1160,12 +1172,12 @@ class Functionality(QtWidgets.QMainWindow):
             self.lights_are_on = True  
             self.set_button_style(self.ui.button_lights)
 
-            writeLedStatus(self.device_serials[2], 1, 1, 1)
+            #writeLedStatus(self.device_serials[2], 1, 1, 1)
 
         else: #Else if surcrose_is_pumping is true then it means the button was pressed during a state of pumping sucrose and the user would like to stop pumping which means we need to:
             self.lights_are_on = False 
             self.reset_button_style(self.ui.button_lights)
-            writeLedStatus(self.device_serials[2], 0, 0, 0)
+            #writeLedStatus(self.device_serials[2], 0, 0, 0)
 #endregion
 
 # region : LIVE DATA AQUISITION OUTSIDE OF AUTOMATED WORKFLOW 
