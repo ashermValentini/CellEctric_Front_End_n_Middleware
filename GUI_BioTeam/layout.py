@@ -575,7 +575,7 @@ class Ui_MainWindow(object):
         """   
         
         self.application_combobox.setStyleSheet(combobox_button_style)
-        if hasattr(self, 'username') and self.username == "LBI":     
+        if hasattr(self, 'username') and self.username == "0201":     
             self.application_combobox.addItems(["Mouse Blood", "Human Blood"])  # Add more emails as needed
         else:    
             self.application_combobox.addItems(["POCII", "Ethanol to Sucrose Flush", "CG2 QC", "Autotune", "Demonstration"])  # Add more emails as needed
