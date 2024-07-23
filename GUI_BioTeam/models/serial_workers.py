@@ -724,7 +724,7 @@ class PowerSupplyUnitSerialWorker(QObject):
         if not crc_check: sendable_bytedata = 0
 
         return sendable_bytedata
-    # START THE PSU
+
     def start_psu(self): 
         self._lock.lock()
         try:
@@ -739,7 +739,6 @@ class PowerSupplyUnitSerialWorker(QObject):
         success = self.writeSerialData(ser, package, verbose=0)
         return success
 
-    # STOP THE PSU
     def send_PSU_disable(self, ser, verbose=0):
         package = self.CraftPackage_stop(verbose=0)
         success = self.writeSerialData(ser, package, verbose=0)
@@ -753,7 +752,7 @@ class PowerSupplyUnitSerialWorker(QObject):
             print(f"Error in stop_psu: {e}")  # or handle the error in a more appropriate way
         finally:
             self._lock.unlock()  # Ensure the lock is always released
-    # SEND ALL SETPOINTS
+    
     def send_PSU_setpoints(self, ser, posVoltage, negVoltage, verbose=0):
         package = self.PSU_CraftPackage_setSetpoints(posVoltage, negVoltage, verbose=0)
         self._lock.lock()
@@ -765,7 +764,6 @@ class PowerSupplyUnitSerialWorker(QObject):
         finally: 
             self._lock.unlock()
 
-    # READS AND RESTRUCTURES PSU DATA
     def read_PSU_data(self, ser, verbose=0):
 
         # READ SERIAL DATA FROM PSU

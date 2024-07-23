@@ -1,9 +1,12 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QIntValidator
 import sys
-import defaults
+import os 
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
+import constants.defaults
 import resources_rc
-import application_style
+import styling.application_style as application_style
 
 class SignalFrame(QtWidgets.QFrame):
     def __init__(self):
@@ -25,16 +28,16 @@ class SignalFrame(QtWidgets.QFrame):
         layout.addSpacing(20)  # Vertical spacing
 
         # Setup group boxes for Pulse Length and Repetition Rate
-        self.line_edit_pulse_length, self.pulse_length_group_box = self.setupGroupBox(layout, "Pulse Length:", "uS", defaults.pulse_length_min, defaults.pulse_length_max, "75")
-        self.line_edit_rep_rate, self.rep_rate_group_box = self.setupGroupBox(layout, "Repetition Rate:", "Hz", defaults.rep_rate_min, defaults.rep_rate_max, "200")
+        self.line_edit_pulse_length, self.pulse_length_group_box = self.setupGroupBox(layout, "Pulse Length:", "uS", constants.defaults.pulse_length_min, constants.defaults.pulse_length_max, "75")
+        self.line_edit_rep_rate, self.rep_rate_group_box = self.setupGroupBox(layout, "Repetition Rate:", "Hz", constants.defaults.rep_rate_min, constants.defaults.rep_rate_max, "200")
 
         # Horizontal layout for voltage settings and PSU button
         voltage_and_button_layout = QtWidgets.QHBoxLayout()
         
         # Group boxes for min and max voltage
         voltage_layout = QtWidgets.QVBoxLayout()  # Vertical layout for voltage group boxes
-        self.line_edit_max_signal, self.max_voltage_group_box = self.setupGroupBox(voltage_layout, "Vp+ :", "V", defaults.voltage_min, defaults.voltage_max, "80")
-        self.line_edit_min_signal, self.min_voltage_group_box = self.setupGroupBox(voltage_layout, "Vp- :", "V", defaults.voltage_min, defaults.voltage_max, "-80")
+        self.line_edit_max_signal, self.max_voltage_group_box = self.setupGroupBox(voltage_layout, "Vp+ :", "V", constants.defaults.voltage_min, constants.defaults.voltage_max, "80")
+        self.line_edit_min_signal, self.min_voltage_group_box = self.setupGroupBox(voltage_layout, "Vp- :", "V", constants.defaults.voltage_min, constants.defaults.voltage_max, "-80")
         
         voltage_and_button_layout.addLayout(voltage_layout)
 

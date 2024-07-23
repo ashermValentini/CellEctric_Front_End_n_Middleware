@@ -9,8 +9,8 @@ from matplotlib.transforms import Bbox
 
 
 import resources_rc
-import application_style
-import defaults
+import styling.application_style as application_style
+import constants.defaults
 
 from views.layout_temperature_frame import TemperatureFrame
 from views.layout_signal_frame import SignalFrame
@@ -194,7 +194,7 @@ class Ui_MainWindow(object):
         self.application_region_1_layout = QtWidgets.QVBoxLayout(self.application_region_1_widget)
 
         # region : Sucrose
-        self.sucrose_frame = SucroseEthanolFrame('SUCROSE', defaults.sucrose_default, 50)
+        self.sucrose_frame = SucroseEthanolFrame('SUCROSE', constants.defaults.sucrose_default, 50)
         self.application_region_1_layout.addWidget(self.sucrose_frame)
         #endregion
                 

@@ -7,9 +7,13 @@ from matplotlib.figure import Figure
 from matplotlib.patches import FancyBboxPatch
 from matplotlib.transforms import Bbox
 
+import sys
+import os 
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
 import resources_rc
-import application_style
-import defaults
+import styling.application_style as application_style
+import constants.defaults
 
 #===============================
 # LIVE DATA POP UPS

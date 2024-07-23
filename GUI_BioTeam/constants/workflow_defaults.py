@@ -49,3 +49,17 @@ BLOOD_FR = [0.25]
 BLOOD_V = [1, 0.2] 
 #BLOOD_V[0] for Human Blood/POCII workflow 
 #BLOOD_V[1] for Mouse Blood workflow
+#================================================
+# DIRECTIONS FOR MOTORS 
+#================================================
+
+DIR_M1_UP = 1
+DIR_M1_DOWN = -1
+DIR_M2_UP = -1
+DIR_M2_DOWN = 1
+DIR_M3_RIGHT = 1
+DIR_M3_LEFT = 2
+DIR_M4_UP = 2
+DIR_M4_DOWN = 1
+
+

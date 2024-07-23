@@ -1,7 +1,7 @@
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
-from credentials import usernames, passwords
-import application_style
+from constants.credentials import usernames, passwords
+import styling.application_style as application_style
 
 class CustomMessageBox(QtWidgets.QMessageBox):
     def __init__(self, parent=None):
