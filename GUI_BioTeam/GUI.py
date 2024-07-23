@@ -1,9 +1,9 @@
 
 import sys
 from PyQt5 import QtWidgets, QtGui
+
 from views.login_dialog import LoginDialog
 from views.login_dialog import CustomMessageBox
-from views.layout import Ui_MainWindow  # Ensure layout.py is correctly referenced
 from controllers.functionality import Functionality  # Ensure functionality.py is correctly referenced
 
 

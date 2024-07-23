@@ -2,8 +2,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QIcon, QPixmap
 
 import sys
+import os 
 
-import application_style
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
+import styling.application_style as application_style
 import resources_rc
 
 #===============================

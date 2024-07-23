@@ -2,9 +2,12 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QIntValidator
 import sys
-import defaults
+import os 
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/..')
+import constants.defaults
 import resources_rc
-import application_style
+import styling.application_style as application_style
 
 class PlottingFrame(QtWidgets.QFrame): 
     def __init__(self):

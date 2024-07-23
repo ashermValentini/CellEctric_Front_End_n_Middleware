@@ -1,19 +1,19 @@
 import time
 import sys
-import os
 import serial
-import pandas as pd
-from datetime import datetime  # This allows you to use datetime.now()
-
+from datetime import datetime  
 from scipy.signal import butter, filtfilt
-
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+import matplotlib.ticker as ticker
+import numpy as np
 from PyQt5 import QtWidgets, QtCore, QtGui 
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTimer, QDateTime
 from PyQt5.QtWidgets import QProgressBar, QMessageBox
 
-import application_style
-import device_IDs
-import workflow_defaults
+import styling.application_style as application_style
+import constants.device_IDs
+import constants.workflow_defaults as workflow_defaults
 
 from views.layout import Ui_MainWindow
 from views.layout_popup_dialogues import PopupWindow
@@ -30,35 +30,9 @@ from models.serial_workers import PulseGeneratorSerialWorker
 from models.serial_workers import PeristalticDriverWorker
 from models.serial_workers import PowerSupplyUnitSerialWorker
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-import matplotlib.ticker as ticker
-import numpy as np
-
-#================================================
-# DIRECTIONS FOR MOTORS 
-#================================================
-
-DIR_M1_UP = 1
-DIR_M1_DOWN = -1
-DIR_M2_UP = -1
-DIR_M2_DOWN = 1
-DIR_M3_RIGHT = 1
-DIR_M3_LEFT = 2
-DIR_M4_UP = 2
-DIR_M4_DOWN = 1
-
-#================================================
-# MOTOR NUMBERS 
-#================================================
-
-FLASK_MOTOR = 3
-PIERCE_MOTOR = 4
-BLOOD_SYRINGE = 1 
-FLUIDICS_MOTOR = 2
 
 #========================
-# MAIN GUI THREAD
+# MAIN GUI CONTROLLER
 #========================
 
 class Functionality(QtWidgets.QMainWindow):
@@ -173,11 +147,11 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         self.device_serials= [None, None,None, None, None]                                # device_serials = [PSU, PG, 3PAC, temperature_sensor]
         
-        esp32_RTOS_serial = SerialDeviceBySerialNumber(device_IDs.THREE_PAC_DRIVER_SERIAL_NUMBERS)
-        temperature_sensor_serial = TemperatureSensorSerial(device_IDs.TEMPERATURE_SENSOR_VENDOR_ID, device_IDs.TEMPERATURE_SENSOR_PRODUCT_ID) # Create Instance of TemperatureSensorSerial Class   
-        pulse_generator_serial = SerialConnections(device_IDs.PG_PSU_VENDOR_ID, device_IDs.PG_PRODUCT_ID)
-        psu_serial = SerialConnections(device_IDs.PG_PSU_VENDOR_ID, device_IDs.PSU_PRODUCT_ID)
-        peristaltic_driver_serial = SerialDeviceBySerialNumber(device_IDs.PERISTALTIC_DRIVER_SERIAL_NUMBERS)
+        esp32_RTOS_serial = SerialDeviceBySerialNumber(constants.device_IDs.THREE_PAC_DRIVER_SERIAL_NUMBERS)
+        temperature_sensor_serial = TemperatureSensorSerial(constants.device_IDs.TEMPERATURE_SENSOR_VENDOR_ID, constants.device_IDs.TEMPERATURE_SENSOR_PRODUCT_ID) # Create Instance of TemperatureSensorSerial Class   
+        pulse_generator_serial = SerialConnections(constants.device_IDs.PG_PSU_VENDOR_ID, constants.device_IDs.PG_PRODUCT_ID)
+        psu_serial = SerialConnections(constants.device_IDs.PG_PSU_VENDOR_ID, constants.device_IDs.PSU_PRODUCT_ID)
+        peristaltic_driver_serial = SerialDeviceBySerialNumber(constants.device_IDs.PERISTALTIC_DRIVER_SERIAL_NUMBERS)
         
         self.device_serials[0] = psu_serial.establish_connection()
         self.device_serials[1] = pulse_generator_serial.establish_connection()
@@ -352,9 +326,9 @@ class Functionality(QtWidgets.QMainWindow):
         self.blood_pump_timer = None 
         if self.flag_connections[2]: 
             self.ui.blood_frame.button_blood_top.clicked.connect(lambda: self.movement_homing(1))                               # connect the signal to the slot 
-            self.ui.blood_frame.button_blood_up.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_UP, False))        # connect the signal to the slot    
+            self.ui.blood_frame.button_blood_up.pressed.connect(lambda: self.movement_startjogging(1, workflow_defaults.DIR_M1_UP, False))        # connect the signal to the slot    
             self.ui.blood_frame.button_blood_up.released.connect(lambda: self.movement_stopjogging(1))                          # connect the signal to the slot              
-            self.ui.blood_frame.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, DIR_M1_DOWN, False))    # connect the signal to the slot
+            self.ui.blood_frame.button_blood_down.pressed.connect(lambda: self.movement_startjogging(1, workflow_defaults.DIR_M1_DOWN, False))    # connect the signal to the slot
             self.ui.blood_frame.button_blood_down.released.connect(lambda: self.movement_stopjogging(1))            # connect the signal to the slot
             self.ui.blood_frame.button_blood_play_pause.pressed.connect(self.toggle_blood_pump)
         
@@ -370,16 +344,16 @@ class Functionality(QtWidgets.QMainWindow):
         #region:   
         if self.flag_connections[2]: 
             self.ui.flask_motors_frame.button_flask_bottom.clicked.connect(lambda: self.movement_homing(4))                        # connect the signal to the slot 
-            self.ui.flask_motors_frame.button_flask_up.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_UP, True))     # connect the signal to the slot    
+            self.ui.flask_motors_frame.button_flask_up.pressed.connect(lambda: self.movement_startjogging(4, workflow_defaults.DIR_M4_UP, True))     # connect the signal to the slot    
             self.ui.flask_motors_frame.button_flask_up.released.connect(lambda: self.movement_stopjogging(4))                      # connect the signal to the slot              
-            self.ui.flask_motors_frame.button_flask_down.pressed.connect(lambda: self.movement_startjogging(4, DIR_M4_DOWN, True)) # connect the signal to the slot
+            self.ui.flask_motors_frame.button_flask_down.pressed.connect(lambda: self.movement_startjogging(4, workflow_defaults.DIR_M4_DOWN, True)) # connect the signal to the slot
             self.ui.flask_motors_frame.button_flask_down.released.connect(lambda: self.movement_stopjogging(4))                    # connect the signal to the slot   
 
         if self.flag_connections[2]:
             self.ui.flask_motors_frame.button_flask_leftmost.clicked.connect(lambda: self.movement_homing(3))                           # connect the signal to the slot 
-            self.ui.flask_motors_frame.button_flask_right.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_RIGHT, True))     # connect the signal to the slot    
+            self.ui.flask_motors_frame.button_flask_right.pressed.connect(lambda: self.movement_startjogging(3, workflow_defaults.DIR_M3_RIGHT, True))     # connect the signal to the slot    
             self.ui.flask_motors_frame.button_flask_right.released.connect(lambda: self.movement_stopjogging(3))                      # connect the signal to the slot              
-            self.ui.flask_motors_frame.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, DIR_M3_LEFT, True)) # connect the signal to the slot
+            self.ui.flask_motors_frame.button_flask_left.pressed.connect(lambda: self.movement_startjogging(3, workflow_defaults.DIR_M3_LEFT, True)) # connect the signal to the slot
             self.ui.flask_motors_frame.button_flask_left.released.connect(lambda: self.movement_stopjogging(3))                    # connect the signal to the slot
         
         self.ui.flask_motors_frame.button_flask_up.setEnabled(False)
@@ -393,9 +367,9 @@ class Functionality(QtWidgets.QMainWindow):
         #region:
         if self.flag_connections[2]:
             self.ui.fluidic_motors_frame.button_bottom.clicked.connect(lambda: self.movement_homing(2))                           # connect the signal to the slot 
-            self.ui.fluidic_motors_frame.button_up.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_UP, False))     # connect the signal to the slot    
+            self.ui.fluidic_motors_frame.button_up.pressed.connect(lambda: self.movement_startjogging(2, workflow_defaults.DIR_M2_UP, False))     # connect the signal to the slot    
             self.ui.fluidic_motors_frame.button_up.released.connect(lambda: self.movement_stopjogging(2))                      # connect the signal to the slot              
-            self.ui.fluidic_motors_frame.button_down.pressed.connect(lambda: self.movement_startjogging(2, DIR_M2_DOWN, False)) # connect the signal to the slot
+            self.ui.fluidic_motors_frame.button_down.pressed.connect(lambda: self.movement_startjogging(2, workflow_defaults.DIR_M2_DOWN, False)) # connect the signal to the slot
             self.ui.fluidic_motors_frame.button_down.released.connect(lambda: self.movement_stopjogging(2))                    # connect the signal to the slot
         
         self.ui.fluidic_motors_frame.button_up.setEnabled(False)
@@ -558,8 +532,10 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.safe_disconnect_frame.reset_button.pressed.connect(lambda: self.reset_frame_progress_bar(self.ui.safe_disconnect_frame.progress_bar))
 
         #endregion
-        #just for now so that i dont have to home the motors every single fucking time 
-        #self.enable_motor_buttons()
+        if hasattr(self, 'username') and self.username == "asher":     
+            self.enable_motor_buttons()
+        else:    
+            pass
 
 # region : TEMPERATURE  
     def update_temp_data(self, temp_data): 
