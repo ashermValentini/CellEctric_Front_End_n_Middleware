@@ -4,7 +4,7 @@ import sys
 import defaults
 import resources_rc
 import application_style
-from roundprogressBar import QRoundProgressBar
+from views.roundprogressBar import QRoundProgressBar
 
 class SucroseEthanolFrame(QtWidgets.QFrame):
     def __init__(self, title, default_flow_rate, default_volume):

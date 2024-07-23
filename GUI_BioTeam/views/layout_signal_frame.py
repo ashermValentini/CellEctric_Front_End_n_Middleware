@@ -116,7 +116,6 @@ class SignalFrame(QtWidgets.QFrame):
         return line_edit, group_box  # Return the line edit and the group box for further reference
     
     def set_button_style(self, button, font_size = 20, padding = 20):
-        print('button on')
         button.setStyleSheet(f"""
             QPushButton {{
                 border: 2px solid white;
@@ -134,7 +133,6 @@ class SignalFrame(QtWidgets.QFrame):
         """)
 
     def reset_button_style(self, button, font_size=20, padding=20):
-        print("Resetting style")  # Debugging print statement
         button.setStyleSheet(f"""
             QPushButton {{
                 border: 2px solid white;

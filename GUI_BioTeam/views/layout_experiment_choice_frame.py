@@ -4,7 +4,6 @@ import sys
 import defaults
 import resources_rc
 import application_style
-from roundprogressBar import QRoundProgressBar
 
 class ExperimentChoiceFrame(QtWidgets.QFrame): 
     def __init__(self, username):
