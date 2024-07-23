@@ -7,9 +7,6 @@ from datetime import datetime  # This allows you to use datetime.now()
 
 from scipy.signal import butter, filtfilt
 
-#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-#from Communication_Functions.communication_functions import *
-
 from PyQt5 import QtWidgets, QtCore, QtGui 
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot, QMutex, QTimer, QDateTime
 from PyQt5.QtWidgets import QProgressBar, QMessageBox
@@ -18,22 +15,20 @@ import application_style
 import device_IDs
 import workflow_defaults
 
-from layout import Ui_MainWindow
-from layout_popup_dialogues import PopupWindow
-from layout_popup_dialogues import EndPopupWindow
-from layout_popup_dialogues import SyringeSettingsPopupWindow
+from views.layout import Ui_MainWindow
+from views.layout_popup_dialogues import PopupWindow
+from views.layout_popup_dialogues import EndPopupWindow
+from views.layout_popup_dialogues import SyringeSettingsPopupWindow
 
-from data_saving_workers import DataSavingWorker
-
-from serial_connections import SerialConnections
-from serial_connections import TemperatureSensorSerial
-from serial_connections import SerialDeviceBySerialNumber
-
-from serial_workers import TempWorker
-from serial_workers import ESP32SerialWorker
-from serial_workers import PulseGeneratorSerialWorker
-from serial_workers import PeristalticDriverWorker
-from serial_workers import PowerSupplyUnitSerialWorker
+from models.data_saving_workers import DataSavingWorker
+from models.serial_connections import SerialConnections
+from models.serial_connections import TemperatureSensorSerial
+from models.serial_connections import SerialDeviceBySerialNumber
+from models.serial_workers import TempWorker
+from models.serial_workers import ESP32SerialWorker
+from models.serial_workers import PulseGeneratorSerialWorker
+from models.serial_workers import PeristalticDriverWorker
+from models.serial_workers import PowerSupplyUnitSerialWorker
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -427,7 +422,7 @@ class Functionality(QtWidgets.QMainWindow):
         self.ui.signal_frame.line_edit_min_signal.setReadOnly(True)                                              #negative value should not be able to be edited
         self.ui.signal_frame.line_edit_max_signal.textChanged.connect(self.line_edit_min_signal_text_changed)    #updates to the positive signal value must be reflected in the negative line edit
         
-        self.current_setpoint_text = self.ui.signal_frame.line_edit_max_signal.text().strip()
+        self.last_setpoint_text = self.ui.signal_frame.line_edit_max_signal.text().strip()
         #endregion
         #==============================================================================================================================================================================================================================
         # Plotting Frame functionality (not the same as the plotting canvas)
@@ -989,9 +984,8 @@ class Functionality(QtWidgets.QMainWindow):
         neg_setpoint = int(neg_setpoint_text)
         neg_setpoint = abs(neg_setpoint)
 
-        self.current_setpoint_text = self.ui.signal_frame.line_edit_max_signal.text().strip()
+        self.last_setpoint_text = self.ui.signal_frame.line_edit_max_signal.text().strip()
         
-        #send_PSU_enable(self.device_serials[0], 1)
         self.psuWorker.start_psu()
         
         time.sleep(.1)
@@ -1016,8 +1010,8 @@ class Functionality(QtWidgets.QMainWindow):
         pulse_length_int = int(pulse_length_text)
         on_time = 248
 
-        if not current_setpoint == self.current_setpoint_text and self.signal_is_enabled: 
-            self.psuWorker.start_psu() 
+        if (not current_setpoint == self.last_setpoint_text) and self.signal_is_enabled: 
+            self.start_psu() 
 
         self.pgWorker.set_pulse_shape(rep_rate_int, pulse_length_int, on_time)
         self.pgWorker.start_pg()
@@ -1049,8 +1043,8 @@ class Functionality(QtWidgets.QMainWindow):
         self.pg_is_enabled = False
         self.pgWorker.stop_pg()
 
-        if not current_setpoint == self.current_setpoint_text and self.signal_is_enabled: 
-            self.psuWorker.start_psu() 
+        if (not current_setpoint == self.last_setpoint_text) and self.signal_is_enabled: 
+            self.start_psu() 
 
         message = "Stopped PG"
         if self.live_data_is_logging: 

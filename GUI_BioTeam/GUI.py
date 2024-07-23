@@ -1,25 +1,10 @@
-'''
-import sys
-import os
-from PyQt5 import QtWidgets, QtGui
-from layout import Ui_MainWindow
-from functionality import Functionality
-
-
-app = QtWidgets.QApplication(sys.argv)
-QtGui.QFontDatabase.addApplicationFont(":/fonts/static/Archivo-Regular.ttf")
-
-window = Functionality()
-window.show()
-sys.exit(app.exec_())
-'''
 
 import sys
 from PyQt5 import QtWidgets, QtGui
-from login_dialog import LoginDialog
-from login_dialog import CustomMessageBox
-from layout import Ui_MainWindow  # Ensure layout.py is correctly referenced
-from functionality import Functionality  # Ensure functionality.py is correctly referenced
+from views.login_dialog import LoginDialog
+from views.login_dialog import CustomMessageBox
+from views.layout import Ui_MainWindow  # Ensure layout.py is correctly referenced
+from controllers.functionality import Functionality  # Ensure functionality.py is correctly referenced
 
 
 def main():

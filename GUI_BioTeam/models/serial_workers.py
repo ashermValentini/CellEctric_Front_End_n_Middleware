@@ -19,8 +19,6 @@ PG_TYPE_DATAEND = 0x1001
 PG_TYPE_PULSEDATA = 0x1002
 PG_TYPE_ZERODATA = 0x1003
 
-#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-#from Communication_Functions.communication_functions import *
 
 class TempWorker(QObject):
     update_temp = pyqtSignal(float)
@@ -84,14 +82,17 @@ class ESP32SerialWorker(QObject):
                 self.parse_and_emit_data(line)
 
     def read_serial_line(self):
-        if self.esp32_RTOS_serial.serial_device.in_waiting:
-            try:
-                # Using 'replace' to substitute invalid characters with a placeholder
-                return self.esp32_RTOS_serial.serial_device.readline().decode('utf-8', 'replace').strip()
-            except UnicodeDecodeError as e:
-                #print(f"Failed to decode line, error: {e}")
-                pass
-        return None
+        try:    
+            if self.esp32_RTOS_serial.serial_device.in_waiting:
+                try:
+                    # Using 'replace' to substitute invalid characters with a placeholder
+                    return self.esp32_RTOS_serial.serial_device.readline().decode('utf-8', 'replace').strip()
+                except UnicodeDecodeError as e:
+                    #print(f"Failed to decode line, error: {e}")
+                    pass
+            return None
+        except Exception as e:
+            print(f"Error in read_serial_line for esp32: {e}") 
 
     def parse_and_emit_data(self, line):
         if not line:
@@ -149,7 +150,6 @@ class PulseGeneratorSerialWorker(QObject):
         self._is_running = False
         self._lock = QMutex()
         self._def_crc16_table()
-
 
     @pyqtSlot()
     def run(self):
@@ -303,7 +303,7 @@ class PulseGeneratorSerialWorker(QObject):
         if verbose: print(sendable_bytedata)
 
         # TEST THE CRC AND SET DATA TO 0 IF CRC IS WRONG
-        crc_check, _ = self.testCRC(sendable_bytedata, verbose)
+        crc_check, _ = self.testCRC(sendable_bytedata, verbose=0)
         if not crc_check: sendable_bytedata = 0
 
         return sendable_bytedata
@@ -330,12 +330,11 @@ class PulseGeneratorSerialWorker(QObject):
         if verbose: print(sendable_bytedata)
 
         # TEST THE CRC AND SET DATA TO 0 IF CRC IS WRONG
-        crc_check, _ = self.testCRC(sendable_bytedata, verbose)
+        crc_check, _ = self.testCRC(sendable_bytedata, verbose=0)
         if not crc_check: sendable_bytedata = 0
 
         return sendable_bytedata
 
-    # CRAFT PULSE PACKAGE FOR PG
     def PG_CraftPackage_setTimes(self, repRate=5000, frequency=0 ,pulseLength=75, onTime=248, verbose=0):
         # CALCULATE THE repRate IF THE FREQUENCY IS SET (from HZ to us)
         if frequency:
@@ -367,7 +366,7 @@ class PulseGeneratorSerialWorker(QObject):
         if verbose: print(sendable_bytedata)
 
         # TEST THE CRC AND SET DATA TO 0 IF CRC IS WRONG
-        crc_check, _ = self.testCRC(sendable_bytedata, verbose)
+        crc_check, _ = self.testCRC(sendable_bytedata, verbose=0)
         if not crc_check: sendable_bytedata = 0
 
         return sendable_bytedata
@@ -376,7 +375,7 @@ class PulseGeneratorSerialWorker(QObject):
         if verbose: print("==================== START: READING ====================")      # PRINT FORMATTING
 
         serialData = ser.read(64)                                   # READ 64 BYTES OF THE DATA STREAM (= 1 PACKET)
-        crc_status, crc_value = self.testCRC(serialData, verbose)        # CHECK THE CRC AND RETURN THE CRC-VALUE
+        crc_status, crc_value = self.testCRC(serialData, verbose=0)        # CHECK THE CRC AND RETURN THE CRC-VALUE
 
         # SHOW ERROR MESSAGE, IF CRC IS WRONG
         if not crc_status:
@@ -411,7 +410,7 @@ class PulseGeneratorSerialWorker(QObject):
         packet = self.CraftPackage_run()
 
         # SEND PACKET
-        success = self.writeSerialData(ser, packet, verbose=verbose)
+        success = self.writeSerialData(ser, packet, verbose=0)
         if not success:
             if verbose: print("ERROR: Could not write serial data to PG to enable it.")
             return False
@@ -428,21 +427,18 @@ class PulseGeneratorSerialWorker(QObject):
 
         return zerodata
 
-    # STOP THE PG
     def send_PG_disable(self, ser, verbose=0):
-        package = self.CraftPackage_stop(verbose)
-        success = self.writeSerialData(ser, package, verbose=verbose)
+        package = self.CraftPackage_stop(verbose=0)
+        success = self.writeSerialData(ser, package, verbose=0)
         return success
 
-    # SEND ALL SETPOINTS
     def send_PG_pulsetimes(self, ser, repRate=5000, frequency=0, pulseLength=75, onTime=248, verbose=0):
-        package = self.PG_CraftPackage_setTimes(repRate, frequency, pulseLength, onTime, verbose)
-        success = self.writeSerialData(ser, package, verbose=verbose)
+        package = self.PG_CraftPackage_setTimes(repRate, frequency, pulseLength, onTime, verbose=0)
+        success = self.writeSerialData(ser, package, verbose=0)
         return success
 
-    # READS AND RESTRUCTURES PG DATA (ACCORDING TO DIFFERENT DATA-TYPES)
     def read_PG_data(self, ser, verbose=0):
-        serData, crcStatus, _ = self.readSerialData(ser, verbose)
+        serData, crcStatus, _ = self.readSerialData(ser, verbose=0)
 
         # CHECK IF CRC IS CORRECT
         if not crcStatus:
@@ -622,7 +618,7 @@ class PowerSupplyUnitSerialWorker(QObject):
         if verbose: print(sendable_bytedata)
 
         # TEST THE CRC AND SET DATA TO 0 IF CRC IS WRONG
-        crc_check, _ = self.testCRC(sendable_bytedata, verbose)
+        crc_check, _ = self.testCRC(sendable_bytedata, verbose=0)
         if not crc_check: sendable_bytedata = 0
 
         return sendable_bytedata
@@ -649,7 +645,7 @@ class PowerSupplyUnitSerialWorker(QObject):
         if verbose: print(sendable_bytedata)
 
         # TEST THE CRC AND SET DATA TO 0 IF CRC IS WRONG
-        crc_check, _ = self.testCRC(sendable_bytedata, verbose)
+        crc_check, _ = self.testCRC(sendable_bytedata, verbose=0)
         if not crc_check: sendable_bytedata = 0
 
         return sendable_bytedata
@@ -658,7 +654,7 @@ class PowerSupplyUnitSerialWorker(QObject):
         if verbose: print("==================== START: READING ====================")      # PRINT FORMATTING
 
         serialData = ser.read(64)                                   # READ 64 BYTES OF THE DATA STREAM (= 1 PACKET)
-        crc_status, crc_value = self.testCRC(serialData, verbose)        # CHECK THE CRC AND RETURN THE CRC-VALUE
+        crc_status, crc_value = self.testCRC(serialData, verbose=0)        # CHECK THE CRC AND RETURN THE CRC-VALUE
 
         # SHOW ERROR MESSAGE, IF CRC IS WRONG
         if not crc_status:
@@ -724,7 +720,7 @@ class PowerSupplyUnitSerialWorker(QObject):
         if verbose: print(sendable_bytedata)
 
         # TEST THE CRC AND SET DATA TO 0 IF CRC IS WRONG
-        crc_check, _ = self.testCRC(sendable_bytedata, verbose)
+        crc_check, _ = self.testCRC(sendable_bytedata, verbose=0)
         if not crc_check: sendable_bytedata = 0
 
         return sendable_bytedata
@@ -739,14 +735,14 @@ class PowerSupplyUnitSerialWorker(QObject):
             self._lock.unlock()  # Ensure the lock is always released
 
     def send_PSU_enable(self, ser, verbose=0):
-        package = self.CraftPackage_run(verbose)
-        success = self.writeSerialData(ser, package, verbose=verbose)
+        package = self.CraftPackage_run(verbose=0)
+        success = self.writeSerialData(ser, package, verbose=0)
         return success
 
     # STOP THE PSU
     def send_PSU_disable(self, ser, verbose=0):
-        package = self.CraftPackage_stop(verbose)
-        success = self.writeSerialData(ser, package, verbose=verbose)
+        package = self.CraftPackage_stop(verbose=0)
+        success = self.writeSerialData(ser, package, verbose=0)
         return success
 
     def stop_psu(self): 
@@ -759,10 +755,10 @@ class PowerSupplyUnitSerialWorker(QObject):
             self._lock.unlock()  # Ensure the lock is always released
     # SEND ALL SETPOINTS
     def send_PSU_setpoints(self, ser, posVoltage, negVoltage, verbose=0):
-        package = self.PSU_CraftPackage_setSetpoints(posVoltage, negVoltage, verbose)
+        package = self.PSU_CraftPackage_setSetpoints(posVoltage, negVoltage, verbose=0)
         self._lock.lock()
         try: 
-            success = self.writeSerialData(ser, package, verbose=verbose)
+            success = self.writeSerialData(ser, package, verbose=0)
             return success
         except Exception as e: 
             print(f"error in send_PSU_setpoints: {e}")
@@ -773,7 +769,7 @@ class PowerSupplyUnitSerialWorker(QObject):
     def read_PSU_data(self, ser, verbose=0):
 
         # READ SERIAL DATA FROM PSU
-        serData, crcStatus, _ = self.readSerialData(ser, verbose)
+        serData, crcStatus, _ = self.readSerialData(ser, verbose=0)
 
         # CHECK IF CRC IS CORRECT
         if not crcStatus:
@@ -807,9 +803,12 @@ class PeristalticDriverWorker(QObject):
                 self.parse_and_emit_data(line)
 
     def read_serial_line(self):
-        if self.esp32_RTOS_serial.serial_device.in_waiting:
-            return self.esp32_RTOS_serial.serial_device.readline().decode('utf-8').strip()
-        return None
+        try:
+            if self.esp32_RTOS_serial.serial_device.in_waiting:
+                return self.esp32_RTOS_serial.serial_device.readline().decode('utf-8').strip()
+            return None
+        except Exception as e:
+            print(f"Error in read_serial_line for peristaltic driver board: {e}") 
 
     def parse_and_emit_data(self, line):
         #print(f"Raw line received: {line}")

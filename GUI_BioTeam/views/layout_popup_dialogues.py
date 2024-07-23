@@ -6,8 +6,6 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.patches import FancyBboxPatch
 from matplotlib.transforms import Bbox
-from roundprogressBar import QRoundProgressBar
-from roundprogressBar import MainWindow
 
 import resources_rc
 import application_style

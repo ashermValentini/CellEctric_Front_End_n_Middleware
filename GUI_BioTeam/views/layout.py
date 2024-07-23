@@ -6,23 +6,22 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.patches import FancyBboxPatch
 from matplotlib.transforms import Bbox
-from roundprogressBar import QRoundProgressBar
-from roundprogressBar import MainWindow
+
 
 import resources_rc
 import application_style
 import defaults
 
-from layout_temperature_frame import TemperatureFrame
-from layout_signal_frame import SignalFrame
-from layout_plotting_frame import PlottingFrame
-from layout_connections_frame import ConnectionsFrame
-from layout_sucrose_ethanol_frames import SucroseEthanolFrame
-from layout_blood_frame import BloodFrame
-from layout_fluidic_motors_frame import FluidicMotorsFrame
-from layout_flask_motor_frame import FlaskMotorsFrame
-from layout_workflow_subevent_frame import CustomExperimentFrame
-from layout_popup_dialogues import SyringeSettingsPopupWindow
+from views.layout_temperature_frame import TemperatureFrame
+from views.layout_signal_frame import SignalFrame
+from views.layout_plotting_frame import PlottingFrame
+from views.layout_connections_frame import ConnectionsFrame
+from views.layout_sucrose_ethanol_frames import SucroseEthanolFrame
+from views.layout_blood_frame import BloodFrame
+from views.layout_fluidic_motors_frame import FluidicMotorsFrame
+from views.layout_flask_motor_frame import FlaskMotorsFrame
+from views.layout_workflow_subevent_frame import CustomExperimentFrame
+from views.layout_popup_dialogues import SyringeSettingsPopupWindow
 
 #===============================
 # MAIN WINDOW LAYOUT CLASS
